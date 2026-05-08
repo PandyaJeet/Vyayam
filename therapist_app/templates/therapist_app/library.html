@@ -1,0 +1,39 @@
+{% extends "therapist_app/base_therapist.html" %}
+{% block title %}Exercise Library — Therapist Console{% endblock %}
+
+{% block content %}
+<div class="t-page-header">
+  <div>
+    <h2>Exercise library</h2>
+    <p>{{ total_count }} exercises available · clinic library + your custom additions</p>
+  </div>
+  <button type="button" class="t-btn" disabled title="Custom exercise creation — coming soon"><i class="fas fa-plus"></i> New exercise</button>
+</div>
+
+<div class="t-filters">
+  <a class="t-filter {% if pattern == 'All' %}is-active{% endif %}" href="?pattern=All">All</a>
+  {% for p in patterns %}
+    <a class="t-filter {% if pattern == p %}is-active{% endif %}" href="?pattern={{ p }}">{{ p }}</a>
+  {% endfor %}
+</div>
+
+<div class="t-lib-grid">
+  {% for e in exercises %}
+    <div class="t-lib-card">
+      <div class="t-lib-card__hero"><i class="fas fa-dumbbell"></i></div>
+      <div class="t-lib-card__body">
+        <div class="t-lib-card__name">{{ e.name }}</div>
+        <div class="t-lib-card__pills">
+          <span class="t-pill">{{ e.movement_pattern }}</span>
+          <span class="t-pill t-pill--neutral">{{ e.equipment }}</span>
+          {% if e.v2_ghost_supported %}<span class="t-pill t-pill--green" title="V2 ghost coach available"><i class="fas fa-ghost"></i> Ghost</span>{% endif %}
+        </div>
+        <div class="t-lib-card__sub">{{ e.description }}</div>
+        <div class="t-lib-card__sub" style="margin-top:4px; opacity:.65;">
+          {{ e.default_sets }} sets · {{ e.default_reps }} reps · {{ e.default_rest_seconds }}s rest
+        </div>
+      </div>
+    </div>
+  {% endfor %}
+</div>
+{% endblock %}

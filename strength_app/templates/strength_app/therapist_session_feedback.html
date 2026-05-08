@@ -1,0 +1,78 @@
+{% extends 'strength_app/therapist_session_base.html' %}
+{% block title %}How was it? — VYAYAM{% endblock %}
+{% block bottom_nav %}{% endblock %}
+
+{% block content %}
+<section style="margin-bottom:14px;">
+  <div style="font-size:.72rem; color:#666; font-weight:700; letter-spacing:.08em;">EXERCISE {{ exercise_index|add:1 }} / {{ total_exercises }} · feedback</div>
+  <h1 style="font-size:1.4rem; font-weight:800; margin:6px 0; letter-spacing:-0.02em;">{{ item.exercise_name }}</h1>
+  <div class="ts-progress"><div style="width:{% widthratio exercise_index|add:1 total_exercises 100 %}%;"></div></div>
+</section>
+
+<form method="post" action="{% url 'therapist_session_feedback' idx=exercise_index %}">
+  {% csrf_token %}
+
+  <div class="ts-card" style="margin-bottom:14px;">
+    <div style="font-weight:700; margin-bottom:6px;">Sets you completed</div>
+    <div style="font-size:.78rem; color:#666; margin-bottom:10px;">Prescribed: {{ item.sets }}</div>
+    <input type="number" name="sets_completed" min="0" max="20" value="{{ log_item.sets_completed|default:item.sets }}"
+           style="width:100%; padding:12px; border-radius:10px; border:1px solid #d4d8d4; font-size:1rem;"/>
+  </div>
+
+  <div class="ts-card" style="margin-bottom:14px;">
+    <div style="font-weight:700; margin-bottom:6px;">Pain level (0–10)</div>
+    <div style="font-size:.78rem; color:#666; margin-bottom:10px;">0 = none · 10 = severe</div>
+    <input type="hidden" name="pain" id="pain-input" value="{{ log_item.pain|default:0 }}"/>
+    <div class="ts-pain-scale" id="pain-scale">
+      {% for i in "0123456789X" %}
+        <button type="button" class="ts-pain-btn" data-val="{{ forloop.counter0 }}" aria-pressed="false">{{ forloop.counter0 }}</button>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="ts-card" style="margin-bottom:14px;">
+    <div style="font-weight:700; margin-bottom:10px;">How did it feel?</div>
+    <input type="hidden" name="difficulty" id="diff-input" value="{{ log_item.difficulty|default:'' }}"/>
+    <div class="ts-diff-row">
+      {% for v, label in difficulty_choices %}
+        <button type="button" class="ts-diff-btn" data-val="{{ v }}" aria-pressed="false">{{ label }}</button>
+      {% endfor %}
+    </div>
+  </div>
+
+  <button type="submit" class="ts-btn" style="width:100%; justify-content:center;">
+    {% if is_last_exercise %}Continue → overall feedback{% else %}Next exercise{% endif %}
+    <span class="material-symbols-outlined">arrow_forward</span>
+  </button>
+</form>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+(function(){
+  const painInput = document.getElementById('pain-input');
+  const diffInput = document.getElementById('diff-input');
+
+  function setActive(group, value) {
+    document.querySelectorAll(group).forEach(b => {
+      const match = String(b.dataset.val) === String(value);
+      b.setAttribute('aria-pressed', match ? 'true' : 'false');
+    });
+  }
+  document.querySelectorAll('.ts-pain-btn').forEach(b => {
+    b.addEventListener('click', () => {
+      painInput.value = b.dataset.val;
+      setActive('.ts-pain-btn', b.dataset.val);
+    });
+  });
+  document.querySelectorAll('.ts-diff-btn').forEach(b => {
+    b.addEventListener('click', () => {
+      diffInput.value = b.dataset.val;
+      setActive('.ts-diff-btn', b.dataset.val);
+    });
+  });
+  if (painInput.value !== '') setActive('.ts-pain-btn', painInput.value);
+  if (diffInput.value !== '') setActive('.ts-diff-btn', diffInput.value);
+})();
+</script>
+{% endblock %}

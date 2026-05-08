@@ -1,0 +1,68 @@
+{% extends "therapist_app/base_therapist.html" %}
+{% block title %}Patients — Therapist Console{% endblock %}
+
+{% block content %}
+<div class="t-page-header">
+  <h2>All patients</h2>
+  <a class="t-btn" href="{% url 'therapist_dashboard' %}#t-invite">
+    <i class="fas fa-user-plus"></i> Invite patient
+  </a>
+</div>
+
+<form method="get" action="" class="t-filters">
+  <a class="t-filter {% if filter_kind == 'all' %}is-active{% endif %}" href="?filter=all{% if q %}&q={{ q }}{% endif %}">All <span class="ct">{{ counts.all }}</span></a>
+  <a class="t-filter {% if filter_kind == 'active' %}is-active{% endif %}" href="?filter=active{% if q %}&q={{ q }}{% endif %}">Active <span class="ct">{{ counts.active }}</span></a>
+  <a class="t-filter {% if filter_kind == 'pending' %}is-active{% endif %}" href="?filter=pending{% if q %}&q={{ q }}{% endif %}">Pending invite <span class="ct">{{ counts.pending }}</span></a>
+  <a class="t-filter {% if filter_kind == 'flagged' %}is-active{% endif %}" href="?filter=flagged{% if q %}&q={{ q }}{% endif %}">Flagged <span class="ct">{{ counts.flagged }}</span></a>
+  <input type="hidden" name="filter" value="{{ filter_kind }}"/>
+  <input class="t-search" type="text" name="q" value="{{ q }}" placeholder="Search by name…"/>
+</form>
+
+<div class="t-card t-table-card">
+  <table class="t-table">
+    <thead>
+      <tr>
+        <th>Patient</th><th>Condition</th><th>Program</th><th>Compliance</th>
+        <th>Last session</th><th>Status</th><th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for c in cards %}
+      <tr {% if not c.pending %}onclick="location.href='{% url 'therapist_patient_detail' c.id %}'"{% else %}class="t-row-static"{% endif %}>
+        <td>
+          <div style="display:flex; align-items:center; gap:10px;">
+            <span class="t-avatar t-avatar--sm">{{ c.link.initials }}</span>
+            <div>
+              <div style="font-weight:700; font-size:.88rem;">{{ c.name }}</div>
+              <div style="font-size:.72rem; color:var(--muted); opacity:.7;">{% if c.age %}{{ c.age }}y · {% endif %}{% if c.sex %}{{ c.sex }} · {% endif %}{{ c.location|default:"—" }}</div>
+            </div>
+          </div>
+        </td>
+        <td><span class="t-pill t-pill--{{ c.condition_tone }}">{{ c.condition|default:"—" }}</span></td>
+        <td>{% if c.pending %}<span style="color:var(--muted); opacity:.6;">—</span>{% else %}Wk {{ c.week }}/{{ c.total_weeks }}{% endif %}</td>
+        <td>
+          {% if c.pending %}<span style="color:var(--muted); opacity:.6;">—</span>
+          {% else %}
+            <div class="t-progressbar">
+              <div class="t-progressbar__track"><div class="t-progressbar__fill" style="width:{{ c.compliance }}%;"></div></div>
+              <span style="font-size:.76rem; font-weight:700;">{{ c.compliance }}%</span>
+            </div>
+          {% endif %}
+        </td>
+        <td>{{ c.last_session }}</td>
+        <td>
+          {% if c.pending %}<span class="t-pill t-pill--warn"><i class="fas fa-paper-plane"></i> Invited</span>
+          {% elif c.flags %}<span class="t-pill t-pill--error"><i class="fas fa-exclamation-triangle"></i> Needs attention</span>
+          {% else %}<span class="t-pill t-pill--green"><i class="fas fa-check"></i> On track</span>{% endif %}
+        </td>
+        <td style="text-align:right;">
+          {% if not c.pending %}<i class="fas fa-chevron-right" style="color:var(--muted); opacity:.4;"></i>{% endif %}
+        </td>
+      </tr>
+      {% empty %}
+      <tr class="t-row-static"><td colspan="7" style="text-align:center; color:var(--muted); padding:24px;">No patients match this filter.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

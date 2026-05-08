@@ -45,9 +45,57 @@ def _require_patient(request):
     return (p, None) if p else (None, redirect('patient_login'))
 
 
+_DEMO_SESSION = {
+    'status': 'ready',
+    'meta': {
+        'patient_name': 'Demo User',
+        'session_label': 'Strength Session',
+        'is_deload': False,
+        'difficulty': 'Beginner',
+        'estimated_duration_minutes': 20,
+    },
+    'warmup': {
+        'estimated_minutes': 5,
+        'phases': {'elevate': [], 'mobilise': [], 'activate': [], 'prime': []},
+    },
+    'working_sets': [
+        {
+            'exercise_id': 'full_squats',
+            'exercise_name': 'Full Squats',
+            'movement_pattern': 'squat',
+            'sets': 3,
+            'reps': 10,
+            'tempo': '3-1-2-0',
+            'tempo_parts': ['3', '1', '2', '0'],
+            'rest_seconds': 60,
+            'prescribed_rest': 60,
+            'capability_level': 2,
+            'form_cues': ['Chest tall', 'Knees tracking over toes', 'Drive through mid-foot'],
+            'mind_muscle_cue': '',
+            'hold_duration': 0,
+            'is_unilateral': False,
+            'asymmetry': {},
+        },
+    ],
+    'cooldown': {
+        'estimated_minutes': 5,
+        'phases': {'light_movement': [], 'static_stretch': [], 'breathing': []},
+    },
+    'modifiers_applied': {},
+    'session_summary': {
+        'session_type': 'Strength Session',
+        'estimated_minutes': 20,
+        'total_exercises': 1,
+    },
+}
+
+_DEMO_PATIENT_IDS = {'DEMO_USER01'}
+
+
 def _get_or_refresh_session_data(request, patient):
     """
     Return the stored v1_session dict. Regenerate if missing or stale (new day).
+    Demo patients get a hardcoded minimal session regardless of profile.
     """
     stored = request.session.get('v1_session')
     stored_date = request.session.get('v1_session_date', '')
@@ -55,6 +103,16 @@ def _get_or_refresh_session_data(request, patient):
 
     if stored and stored_date == today_str:
         return stored
+
+    if patient.patient_id in _DEMO_PATIENT_IDS:
+        data = dict(_DEMO_SESSION)
+        data['meta'] = dict(_DEMO_SESSION['meta'])
+        data['meta']['patient_id'] = patient.patient_id
+        data['meta']['patient_name'] = patient.name
+        request.session['v1_session'] = data
+        request.session['v1_session_date'] = today_str
+        request.session['v1_exercise_results'] = []
+        return data
 
     try:
         data = generate_v1_session(patient)
@@ -109,6 +167,9 @@ def v1_dashboard(request):
     patient, err = _require_patient(request)
     if err:
         return err
+
+    if patient.therapist_managed:
+        return redirect('therapist_session_today')
 
     profile = patient.strength_profiles.order_by('-assessed_at').first()
 
@@ -294,28 +355,118 @@ def v1_session_overview(request):
 
 
 # ============================================================================
-# VIEW 3: WARMUP
+# VIEW 3: WARMUP — redirects into coached V2 flow
 # ============================================================================
+
+# Warmup exercises that have V2 ghost templates in v1_exercise_execute.html.
+# All three exercise IDs are confirmed in EXERCISE_TYPE_MAP in the template.
+_COACHED_WARMUP = [
+    {
+        'exercise_id': 'marching_on_spot',
+        'exercise_name': 'Marching on Spot',
+        'movement_pattern': 'squat',
+        'sets': 1,
+        'reps': 20,
+        'hold_duration': 0,
+        'tempo': '1-0-1-0',
+        'tempo_parts': ['1', '0', '1', '0'],
+        'rest_seconds': 20,
+        'prescribed_rest': 20,
+        'capability_level': 1,
+        'form_cues': ['Drive knees to hip height', 'Pump arms opposite to legs', 'Stay on balls of feet'],
+        'mind_muscle_cue': '',
+    },
+    {
+        'exercise_id': 'full_squats',
+        'exercise_name': 'Bodyweight Squat',
+        'movement_pattern': 'squat',
+        'sets': 2,
+        'reps': 8,
+        'hold_duration': 0,
+        'tempo': '2-1-2-0',
+        'tempo_parts': ['2', '1', '2', '0'],
+        'rest_seconds': 30,
+        'prescribed_rest': 30,
+        'capability_level': 1,
+        'form_cues': ['Chest tall', 'Knees tracking over toes', 'Drive through mid-foot'],
+        'mind_muscle_cue': '',
+    },
+    {
+        'exercise_id': 'glute_bridge',
+        'exercise_name': 'Glute Bridge',
+        'movement_pattern': 'hinge',
+        'sets': 1,
+        'reps': 12,
+        'hold_duration': 0,
+        'tempo': '2-1-2-0',
+        'tempo_parts': ['2', '1', '2', '0'],
+        'rest_seconds': 20,
+        'prescribed_rest': 20,
+        'capability_level': 1,
+        'form_cues': ['Squeeze glutes at top', 'Neutral spine throughout', 'Feet flat on floor'],
+        'mind_muscle_cue': '',
+    },
+]
+
+# Demo-only warmup override — single partial_squat primer.
+_DEMO_COACHED_WARMUP = [
+    {
+        'exercise_id': 'partial_squats',
+        'exercise_name': 'Partial Squat',
+        'movement_pattern': 'squat',
+        'sets': 1,
+        'reps': 8,
+        'hold_duration': 0,
+        'tempo': '2-1-1-0',
+        'tempo_parts': ['2', '1', '1', '0'],
+        'rest_seconds': 20,
+        'prescribed_rest': 20,
+        'capability_level': 1,
+        'form_cues': ['Only go as deep as is comfortable', 'Chest tall throughout', 'Knees tracking over toes'],
+        'mind_muscle_cue': '',
+    },
+]
+
 
 def v1_warmup(request):
     patient, err = _require_patient(request)
     if err:
         return err
 
-    session_data = request.session.get('v1_session', {})
-    warmup = session_data.get('warmup', {})
-    phases = warmup.get('phases', {})
+    warmup_list = _DEMO_COACHED_WARMUP if patient.patient_id in _DEMO_PATIENT_IDS else _COACHED_WARMUP
+    request.session['v1_warmup_exercises'] = warmup_list
+    request.session['v1_in_warmup_flow'] = True
+    request.session.modified = True
+    return redirect('v1_execute_warmup_exercise', warmup_index=0)
 
+
+# ============================================================================
+# VIEW 3b: EXECUTE WARMUP EXERCISE (V2 coached, same template as main)
+# ============================================================================
+
+def v1_execute_warmup_exercise(request, warmup_index):
+    patient, err = _require_patient(request)
+    if err:
+        return err
+
+    warmup_exercises = request.session.get('v1_warmup_exercises', [])
+    if not warmup_exercises or warmup_index >= len(warmup_exercises):
+        request.session.pop('v1_warmup_exercises', None)
+        request.session['v1_in_warmup_flow'] = False
+        return redirect('v1_execute_exercise', exercise_index=0)
+
+    exercise = warmup_exercises[warmup_index]
+    # Always show "Next Exercise" button — routing is controlled by save handler
     context = {
-        'patient': patient,
-        'warmup': warmup,
-        'elevate':  phases.get('elevate', []),
-        'mobilise': phases.get('mobilise', []),
-        'activate': phases.get('activate', []),
-        'prime':    phases.get('prime', []),
+        'patient':          patient,
+        'exercise':         exercise,
+        'exercise_index':   warmup_index,
+        'total_exercises':  len(warmup_exercises),
+        'is_last_exercise': False,
+        'next_exercise_index': warmup_index + 1,
         'has_strength_profile': True,
     }
-    return render(request, 'strength_app/v1_warmup.html', context)
+    return render(request, 'strength_app/v1_exercise_execute.html', context)
 
 
 # ============================================================================
@@ -326,6 +477,10 @@ def v1_execute_exercise(request, exercise_index):
     patient, err = _require_patient(request)
     if err:
         return err
+
+    # Entering main exercise flow — ensure warmup state is cleared
+    request.session.pop('v1_warmup_exercises', None)
+    request.session['v1_in_warmup_flow'] = False
 
     session_data = request.session.get('v1_session', {})
     working_sets = session_data.get('working_sets', [])
@@ -398,13 +553,25 @@ def v1_save_exercise_result(request):
     request.session['v1_exercise_results'] = results
     request.session.modified = True
 
-    next_index = exercise_index + 1
-    if next_index >= total:
-        from django.urls import reverse
-        next_url = reverse('v1_cooldown')
+    from django.urls import reverse
+
+    if request.session.get('v1_in_warmup_flow'):
+        warmup_exercises = request.session.get('v1_warmup_exercises', [])
+        next_warmup = exercise_index + 1
+        if next_warmup < len(warmup_exercises):
+            next_url = reverse('v1_execute_warmup_exercise', args=[next_warmup])
+        else:
+            # Warmup complete — transition to main exercises
+            request.session.pop('v1_warmup_exercises', None)
+            request.session['v1_in_warmup_flow'] = False
+            request.session.modified = True
+            next_url = reverse('v1_execute_exercise', args=[0])
     else:
-        from django.urls import reverse
-        next_url = reverse('v1_execute_exercise', args=[next_index])
+        next_index = exercise_index + 1
+        if next_index >= total:
+            next_url = reverse('v1_cooldown')
+        else:
+            next_url = reverse('v1_execute_exercise', args=[next_index])
 
     return JsonResponse({'status': 'saved', 'next_url': next_url})
 

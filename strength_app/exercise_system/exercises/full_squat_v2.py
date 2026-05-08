@@ -32,8 +32,8 @@ class FullSquatsV2:
     - Primary angle: Knee flexion (hip → knee → ankle)
     - Standing: 170-180° (nearly straight)
     - Target depth: 85-95° (full depth, thighs parallel or below)
-    - Back angle: Must stay >150° (avoid rounding)
     - Hip angle: <90° at bottom
+    - Knee tracking: valgus (inward collapse) monitored via knee-over-ankle alignment
     
     Key differences from Partial Squats:
     - Deeper range of motion (90° vs 120°)
@@ -95,16 +95,27 @@ class FullSquatsV2:
         # Calculate angles
         left_knee = analyzer.calculate_angle(lh, lk, la)
         right_knee = analyzer.calculate_angle(rh, rk, ra)
+        # NOTE: Spinal alignment cannot be measured with MediaPipe Pose
+        # (no landmarks between shoulders and hips). Cues for "back
+        # rounding" or thoracolumbar position are not implementable
+        # with this hardware. Form analysis here is limited to:
+        # knee tracking, depth, foot pressure proxies, hip-knee
+        # alignment. Do not add cues that claim to measure spine
+        # position without clear documentation of the proxy used.
+        #
+        # avg_back below is the hip flexion angle (shoulder→hip→knee),
+        # NOT spinal curvature. It is retained only for form-score
+        # weighting in FormCalculator; do not use it for safety warnings.
         left_back = analyzer.calculate_angle(ls, lh, lk)
         right_back = analyzer.calculate_angle(rs, rh, rk)
-        
+
         # Smooth
         left_knee = analyzer.smooth_angle(left_knee, 'left')
         right_knee = analyzer.smooth_angle(right_knee, 'right')
-        
+
         # Average
         avg_knee = (left_knee + right_knee) / 2
-        avg_back = (left_back + right_back) / 2
+        avg_back = (left_back + right_back) / 2  # hip flexion angle — see note above
         
         return {
             'left_knee': left_knee,
@@ -170,22 +181,6 @@ class FullSquatsV2:
                 status=FormStatus.INCORRECT,
                 angle=knee_angle,
                 message="Check depth"
-            )
-        
-        # Back angle (critical for safety)
-        back_angle = angles.get('avg_back', 0)
-        
-        if back_angle < 150:
-            feedback['back'] = JointFeedback(
-                status=FormStatus.INCORRECT,
-                angle=back_angle,
-                message="Back rounded - dangerous!"
-            )
-        else:
-            feedback['back'] = JointFeedback(
-                status=FormStatus.CORRECT,
-                angle=back_angle,
-                message="Back straight"
             )
         
         return feedback

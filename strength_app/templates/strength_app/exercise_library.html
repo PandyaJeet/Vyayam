@@ -1,10 +1,8 @@
 {% extends 'strength_app/base_gamified.html' %}
 
 {% block title %}Exercise Library — VYAYAM{% endblock %}
-{% block bottom_nav %}{% endblock %}
-
 {% block content %}
-<div class="max-w-3xl mx-auto px-4 pt-6 pb-12 space-y-6">
+<div class="max-w-3xl mx-auto px-4 pt-6 pb-28 space-y-6">
 
   <!-- Header -->
   <div class="text-center mb-2">
@@ -171,7 +169,7 @@
 
   <!-- Back -->
   <div class="text-center pt-2">
-    <a href="{% url 'dashboard' %}"
+    <a href="{% url 'v1_dashboard' %}"
        class="inline-flex items-center gap-2 px-5 py-2.5 border border-outline-variant/40 bg-surface-container text-on-secondary-container font-semibold text-sm rounded-xl no-underline">
       <i class="fas fa-arrow-left text-xs"></i>Back to Dashboard
     </a>

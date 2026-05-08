@@ -1,0 +1,30 @@
+{% extends "therapist_app/base_therapist.html" %}
+{% block title %}Reports — Therapist Console{% endblock %}
+
+{% block content %}
+<div class="t-page-header">
+  <h2>Reports</h2>
+</div>
+
+<div class="t-card t-table-card">
+  {% for r in reports %}
+    <div class="t-report-row">
+      <div class="t-report-row__id">
+        <div class="t-report-row__icon {% if r.status == 'flagged' %}is-flagged{% endif %}"><i class="fas fa-file-medical-alt"></i></div>
+        <div>
+          <div class="t-report-row__title">{{ r.title }}</div>
+          <div class="t-report-row__sub">{{ r.link.display_name }} · {{ r.created_at|date:"M d, Y" }} · {{ r.get_generated_by_display }}</div>
+        </div>
+      </div>
+      <div class="t-report-row__actions">
+        <span class="t-pill {% if r.status == 'flagged' %}t-pill--error{% else %}t-pill--green{% endif %}">{{ r.get_status_display }}</span>
+        <a class="t-btn t-btn--outline t-btn--sm" href="{% url 'therapist_patient_detail' r.link.id %}?tab=reports"><i class="fas fa-arrow-right"></i> Open patient</a>
+      </div>
+    </div>
+  {% empty %}
+    <div style="padding:24px; text-align:center; color:var(--muted);">
+      No reports yet. Generate one from any patient's Reports tab.
+    </div>
+  {% endfor %}
+</div>
+{% endblock %}

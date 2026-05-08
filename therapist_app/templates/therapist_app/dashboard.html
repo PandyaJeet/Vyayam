@@ -1,0 +1,92 @@
+{% extends "therapist_app/base_therapist.html" %}
+{% block title %}Dashboard — Therapist Console{% endblock %}
+
+{% block content %}
+<div class="t-page-header">
+  <div>
+    <h2>Good morning, {{ therapist.full_name|cut:"Dr. " }}</h2>
+    <p>
+      You have
+      <strong style="color:var(--error);">{{ flagged_count }} patient{{ flagged_count|pluralize }} flagged</strong>
+      and
+      <strong>{{ today_count }} session{{ today_count|pluralize }} completed</strong>
+      today.
+    </p>
+  </div>
+  <button class="t-btn" type="button" onclick="document.getElementById('t-invite').scrollIntoView({behavior:'smooth'}); document.getElementById('invite-name').focus();">
+    <i class="fas fa-user-plus"></i> Invite patient
+  </button>
+</div>
+
+<div class="t-stats">
+  <div class="t-stat">
+    <div class="t-stat__val">{{ active_count }}</div>
+    <div class="t-stat__lbl">Active patients</div>
+  </div>
+  <div class="t-stat">
+    <div class="t-stat__val">{{ today_count }}</div>
+    <div class="t-stat__lbl">Sessions today</div>
+  </div>
+  <div class="t-stat">
+    <div class="t-stat__val t-stat__val--err">{{ flagged_count }}</div>
+    <div class="t-stat__lbl">Patients flagged</div>
+  </div>
+  <div class="t-stat">
+    <div class="t-stat__val t-stat__val--warn">{{ reports_due }}</div>
+    <div class="t-stat__lbl">Reports due this week</div>
+  </div>
+</div>
+
+<div style="display:flex; justify-content:space-between; align-items:center; margin:18px 0 12px;">
+  <div class="t-section-eyebrow">Your patients ({{ cards|length }})</div>
+  <a class="t-link" href="{% url 'therapist_patient_list' %}">View all →</a>
+</div>
+
+<div class="t-patient-grid">
+  {% for c in cards %}
+    {% include "therapist_app/_patient_card.html" with c=c %}
+  {% empty %}
+    <div class="t-card" style="grid-column:1/-1; text-align:center; color:var(--muted);">
+      No patients yet. Invite your first patient below.
+    </div>
+  {% endfor %}
+</div>
+
+<section id="t-invite" class="t-invite" style="margin-top:28px;">
+  <div class="t-invite__title">Invite a new patient</div>
+  <p style="color:var(--muted); font-size:.85rem; margin-bottom:14px;">
+    Dev mode: We create a Django user with an unusable password. The invite stays
+    <em>pending</em> until you click <strong>Simulate accept</strong> on their card,
+    which creates a PatientProfile and sets their password to <code>patient</code> for PWA login.
+    <strong>Mobile number</strong> is the patient's PWA login identifier — add it now so they can log in immediately after accept.
+  </p>
+  <form method="post" action="{% url 'therapist_invite_patient' %}">
+    {% csrf_token %}
+    <div class="t-invite__grid">
+      <div class="t-field" style="margin:0;">
+        <label class="t-label" for="invite-name">Full name <span style="color:var(--danger,#dc2626);">*</span></label>
+        <input class="t-input" id="invite-name" name="name" placeholder="Anika Patel" required/>
+      </div>
+      <div class="t-field" style="margin:0;">
+        <label class="t-label" for="invite-phone">Mobile number <span style="color:var(--danger,#dc2626);">*</span></label>
+        <input class="t-input" id="invite-phone" name="phone" type="tel" placeholder="9876543210" pattern="[0-9]{10,15}" required/>
+      </div>
+      <div class="t-field" style="margin:0;">
+        <label class="t-label" for="invite-email">Email <span style="color:var(--muted); font-weight:400;">(optional)</span></label>
+        <input class="t-input" id="invite-email" name="email" type="email" placeholder="anika@example.com"/>
+      </div>
+      <div class="t-field" style="margin:0;">
+        <label class="t-label" for="invite-condition">Primary condition</label>
+        <input class="t-input" id="invite-condition" name="primary_condition" placeholder="Right meniscus tear"/>
+      </div>
+      <div class="t-field" style="margin:0;">
+        <label class="t-label" for="invite-age">Age</label>
+        <input class="t-input" id="invite-age" name="age" type="number" min="13" max="100"/>
+      </div>
+    </div>
+    <div style="margin-top:14px; display:flex; gap:8px;">
+      <button class="t-btn" type="submit"><i class="fas fa-paper-plane"></i> Send invite</button>
+    </div>
+  </form>
+</section>
+{% endblock %}

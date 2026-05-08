@@ -14,6 +14,7 @@ from . import v1_session_views as views_session
 from . import v1_progress_views as views_progress
 from . import v1_coach_views as views_coach
 from . import v1_nutrition_views as views_nutrition
+from . import v1_therapist_session_views as views_thrx
 
 urlpatterns = [
 
@@ -59,8 +60,9 @@ urlpatterns = [
     # ========================================================================
     path('v1/dashboard/',                                   views_session.v1_dashboard,             name='v1_dashboard'),
     path('v1/session/',                                     views_session.v1_session_overview,      name='v1_session_overview'),
-    path('v1/session/warmup/',                              views_session.v1_warmup,                name='v1_warmup'),
-    path('v1/session/exercise/<int:exercise_index>/',       views_session.v1_execute_exercise,      name='v1_execute_exercise'),
+    path('v1/session/warmup/',                              views_session.v1_warmup,                    name='v1_warmup'),
+    path('v1/session/warmup/exercise/<int:warmup_index>/', views_session.v1_execute_warmup_exercise,   name='v1_execute_warmup_exercise'),
+    path('v1/session/exercise/<int:exercise_index>/',       views_session.v1_execute_exercise,          name='v1_execute_exercise'),
     path('v1/session/save-exercise/',                       views_session.v1_save_exercise_result,  name='v1_save_exercise_result'),
     path('v1/session/cooldown/',                            views_session.v1_cooldown,              name='v1_cooldown'),
     path('v1/session/conditioning/',                        views_session.v1_conditioning_session,  name='v1_conditioning_session'),
@@ -130,6 +132,18 @@ urlpatterns = [
     path('exercises/', views.exercise_library, name='exercise_library'),
     path('exercises/<str:exercise_id>/', views.exercise_detail, name='exercise_detail'),
     path('exercises/<str:exercise_id>/execute/', views.exercise_execute, name='exercise_execute'),
+
+    # ========================================================================
+    # THERAPIST-DRIVEN PATIENT SESSION (B2B2C)
+    # ========================================================================
+    path('therapist-session/today/',                 views_thrx.therapist_session_today,     name='therapist_session_today'),
+    path('therapist-session/start/',                 views_thrx.therapist_session_start,     name='therapist_session_start'),
+    path('therapist-session/exercise/<int:idx>/',    views_thrx.therapist_session_exercise,  name='therapist_session_exercise'),
+    path('therapist-session/feedback/<int:idx>/',    views_thrx.therapist_session_feedback,  name='therapist_session_feedback'),
+    path('therapist-session/complete/',              views_thrx.therapist_session_complete,  name='therapist_session_complete'),
+    path('therapist-session/finished/',              views_thrx.therapist_session_finished,  name='therapist_session_finished'),
+    path('therapist-session/progress/',              views_thrx.therapist_session_progress,  name='therapist_session_progress'),
+    path('therapist-session/profile/',               views_thrx.therapist_session_profile,   name='therapist_session_profile'),
 
     # ========================================================================
     # NUTRITION MODULE

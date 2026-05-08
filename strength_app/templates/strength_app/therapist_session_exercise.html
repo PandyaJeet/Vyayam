@@ -1,0 +1,140 @@
+{% extends 'strength_app/therapist_session_base.html' %}
+{% block title %}{{ item.exercise_name }} — VYAYAM{% endblock %}
+{% block bottom_nav %}{% endblock %}
+
+{% block content %}
+<section style="margin-bottom:14px;">
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+    <div style="font-size:.72rem; color:#666; font-weight:700; letter-spacing:.08em;">EXERCISE {{ exercise_index|add:1 }} / {{ total_exercises }}</div>
+    <a href="{{ today_url }}" style="font-size:.78rem; color:#777; text-decoration:none;">Pause</a>
+  </div>
+  <div class="ts-progress"><div style="width:{% widthratio exercise_index total_exercises 100 %}%;"></div></div>
+</section>
+
+<div class="ts-card" style="margin-bottom:14px;">
+  <h2 style="font-size:1.4rem; font-weight:800; margin:0 0 4px; letter-spacing:-0.02em;">{{ item.exercise_name }}</h2>
+  <div style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:12px;">
+    {% if enriched.movement_pattern %}<span class="ts-pill ts-pill-neutral">{{ enriched.movement_pattern }}</span>{% endif %}
+    <span class="ts-pill ts-pill-neutral">{{ enriched.equipment|default:"None" }}</span>
+  </div>
+
+  <div class="video-frame" style="margin-bottom:14px;">
+    {% if enriched.video_url %}
+      <iframe src="{{ enriched.video_url }}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+    {% else %}
+      <div class="placeholder">
+        <span class="material-symbols-outlined" style="font-size:2.4rem;">smart_display</span>
+        <div>Video demo coming soon</div>
+      </div>
+    {% endif %}
+  </div>
+
+  {% if enriched.description %}
+    <p style="font-size:.86rem; line-height:1.55; color:#444; margin:0 0 14px;">{{ enriched.description }}</p>
+  {% endif %}
+
+  <div style="background:#fafbfa; border:1px solid #ececec; border-radius:12px; padding:12px 14px;">
+    <div class="ts-row-kv"><span>Sets</span><strong>{{ item.sets }}</strong></div>
+    <div class="ts-row-kv"><span>Reps</span><strong>{{ item.reps }}</strong></div>
+    <div class="ts-row-kv"><span>Load</span><strong>{{ item.load|default:"BW" }}</strong></div>
+    <div class="ts-row-kv"><span>Rest between sets</span><strong>{{ item.rest_seconds }}s</strong></div>
+    {% if item.tempo %}<div class="ts-row-kv"><span>Tempo</span><strong>{{ item.tempo }}</strong></div>{% endif %}
+  </div>
+
+  {% if item.notes %}
+  <div style="margin-top:12px; background:#fff7ed; border-left:3px solid #d97706; padding:10px 14px; border-radius:8px; font-size:.82rem; color:#6b3a09;">
+    <strong>Therapist note:</strong> {{ item.notes }}
+  </div>
+  {% endif %}
+</div>
+
+<div class="ts-card" style="margin-bottom:14px;">
+  <div style="font-weight:700; margin-bottom:10px;">Track sets</div>
+  <div id="sets-row" style="display:flex; gap:8px; flex-wrap:wrap;">
+    {% for n in item.sets|rjust:item.sets %}{% endfor %}
+  </div>
+  <div id="rest-timer" style="margin-top:14px; display:none; background:#0c6c3f; color:#fff; border-radius:12px; padding:14px; text-align:center;">
+    <div style="font-size:.74rem; letter-spacing:.08em; opacity:.8;">REST</div>
+    <div id="rest-countdown" style="font-size:2rem; font-weight:800;">0:00</div>
+    <button type="button" id="rest-skip" style="margin-top:6px; background:transparent; border:1px solid rgba(255,255,255,.5); color:#fff; padding:6px 14px; border-radius:999px; font-size:.78rem; cursor:pointer;">Skip rest</button>
+  </div>
+</div>
+
+<form method="get" action="{{ feedback_url }}" style="display:flex; gap:10px;">
+  <button type="submit" class="ts-btn" style="flex:1; justify-content:center;">
+    Done · log feedback <span class="material-symbols-outlined">arrow_forward</span>
+  </button>
+</form>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+(function(){
+  const totalSets = {{ item.sets }};
+  const restSecs = {{ item.rest_seconds }};
+  const row = document.getElementById('sets-row');
+  let completed = 0;
+
+  function render() {
+    row.innerHTML = '';
+    for (let i = 1; i <= totalSets; i++) {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.textContent = 'Set ' + i + (i <= completed ? ' ✓' : '');
+      btn.style.flex = '1 1 90px';
+      btn.style.minWidth = '90px';
+      btn.style.padding = '12px';
+      btn.style.borderRadius = '10px';
+      btn.style.border = '1px solid #d4d8d4';
+      btn.style.cursor = 'pointer';
+      btn.style.fontWeight = '700';
+      btn.style.fontSize = '.86rem';
+      if (i <= completed) {
+        btn.style.background = '#e8f5ee';
+        btn.style.borderColor = '#0c6c3f';
+        btn.style.color = '#0c6c3f';
+      } else {
+        btn.style.background = '#fff';
+      }
+      btn.addEventListener('click', () => {
+        if (i === completed + 1) {
+          completed = i;
+          render();
+          if (i < totalSets) startRest();
+        }
+      });
+      row.appendChild(btn);
+    }
+  }
+
+  let restInterval = null;
+  function startRest() {
+    let t = restSecs;
+    const box = document.getElementById('rest-timer');
+    const cd = document.getElementById('rest-countdown');
+    box.style.display = 'block';
+    cd.textContent = formatTime(t);
+    if (restInterval) clearInterval(restInterval);
+    restInterval = setInterval(() => {
+      t -= 1;
+      if (t <= 0) {
+        clearInterval(restInterval);
+        box.style.display = 'none';
+        return;
+      }
+      cd.textContent = formatTime(t);
+    }, 1000);
+  }
+  function formatTime(s) {
+    const m = Math.floor(s / 60); const ss = s % 60;
+    return m + ':' + (ss < 10 ? '0' : '') + ss;
+  }
+  document.getElementById('rest-skip').addEventListener('click', () => {
+    if (restInterval) clearInterval(restInterval);
+    document.getElementById('rest-timer').style.display = 'none';
+  });
+
+  render();
+})();
+</script>
+{% endblock %}

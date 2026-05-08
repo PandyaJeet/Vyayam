@@ -1,0 +1,11 @@
+{% load therapist_extras %}
+{% with width=96 height=32 %}
+{% with poly=data|pain_polyline:width|safe color=data|pain_color trend=data|pain_trend %}
+<div class="t-pain">
+  <svg width="{{ width }}" height="{{ height }}" viewBox="0 0 {{ width }} {{ height }}">
+    <polyline points="{{ poly }}" fill="none" stroke="{{ color }}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+  </svg>
+  <span><i class="fas fa-arrow-{{ trend }}" style="color:{{ color }}; margin-right:3px;"></i> pain</span>
+</div>
+{% endwith %}
+{% endwith %}

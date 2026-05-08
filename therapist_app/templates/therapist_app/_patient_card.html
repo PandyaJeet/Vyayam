@@ -1,0 +1,60 @@
+{% load therapist_extras %}
+<a class="t-patient-card tone-{{ c.status_tone }}" href="{% if c.pending %}#{% else %}{% url 'therapist_patient_detail' c.id %}{% endif %}">
+  <div class="t-patient-card__head">
+    <span class="t-avatar t-avatar--md">{{ c.link.initials }}</span>
+    <div class="t-patient-card__id">
+      <div class="t-patient-card__name">{{ c.name }}</div>
+      <div class="t-patient-card__sub">
+        {% if c.age %}{{ c.age }}y · {% endif %}{% if c.sex %}{{ c.sex }} · {% endif %}{{ c.location|default:"—" }}
+      </div>
+      <span class="t-pill t-pill--{{ c.condition_tone }}">{{ c.condition|default:"Pending intake" }}</span>
+    </div>
+    {% if not c.pending %}
+      {% include "therapist_app/_compliance_ring.html" with pct=c.compliance size=56 %}
+    {% endif %}
+  </div>
+
+  {% if c.pending %}
+    <div class="t-patient-card__pending">
+      <span><i class="fas fa-paper-plane"></i> Invite sent — awaiting onboarding</span>
+      <form method="post" action="{% url 'therapist_simulate_accept' c.id %}" class="accept-form" onclick="event.stopPropagation();">
+        {% csrf_token %}
+        <button type="submit" class="t-btn t-btn--sm t-btn--outline" style="border-color:var(--warn); color:var(--warn);">
+          <i class="fas fa-check"></i> Simulate accept
+        </button>
+      </form>
+    </div>
+  {% else %}
+    <div class="t-patient-card__row">
+      <div>
+        <div class="lbl">Program</div>
+        <div class="val">Week {{ c.week }} of {{ c.total_weeks }}</div>
+      </div>
+      <div style="text-align:right;">
+        <div class="lbl">Last session</div>
+        <div class="val">{{ c.last_session }}</div>
+      </div>
+    </div>
+    <div class="t-patient-card__divider">
+      <div>
+        <div class="lbl">7-day completion</div>
+        <div class="t-spark">
+          {% for v in c.sparkline %}
+            <span class="t-spark__dot {% if v %}is-on{% endif %}" title="{% if v %}Done{% else %}Missed{% endif %}"></span>
+          {% endfor %}
+        </div>
+      </div>
+      {% if c.pain_trend %}
+        {% include "therapist_app/_pain_spark.html" with data=c.pain_trend %}
+      {% else %}
+        <span style="font-size:.7rem; color:var(--muted); opacity:.5;">No pain data</span>
+      {% endif %}
+    </div>
+    {% if c.flags %}
+      <div class="t-patient-card__flags">
+        <i class="fas fa-exclamation-triangle"></i>
+        {{ c.flags|join:" · " }}
+      </div>
+    {% endif %}
+  {% endif %}
+</a>

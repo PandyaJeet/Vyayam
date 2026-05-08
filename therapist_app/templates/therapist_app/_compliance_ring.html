@@ -1,0 +1,14 @@
+{% load therapist_extras %}
+{% with size=size|default:56 %}
+{% with r=size|ring_radius circ=size|ring_circ off=pct|ring_offset:size color=pct|ring_color half=size|divide:2 textY=size|ring_text_y %}
+<svg class="t-ring" width="{{ size }}" height="{{ size }}" viewBox="0 0 {{ size }} {{ size }}">
+  <circle cx="{{ half }}" cy="{{ half }}" r="{{ r }}" fill="none" stroke="#eef0ef" stroke-width="4"/>
+  <circle cx="{{ half }}" cy="{{ half }}" r="{{ r }}" fill="none"
+    stroke="{{ color }}" stroke-width="4"
+    stroke-dasharray="{{ circ }}" stroke-dashoffset="{{ off }}"
+    stroke-linecap="round"
+    transform="rotate(-90 {{ half }} {{ half }})"/>
+  <text x="{{ half }}" y="{{ textY }}" text-anchor="middle" font-size="{{ size|ring_font }}" font-weight="800" fill="#1a1c1c">{{ pct }}%</text>
+</svg>
+{% endwith %}
+{% endwith %}

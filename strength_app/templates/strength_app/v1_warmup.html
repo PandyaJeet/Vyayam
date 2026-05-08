@@ -17,8 +17,8 @@
   <!-- Top bar -->
   <div class="bg-surface-container-lowest rounded-lg px-5 py-4 shadow-[0_4px_20px_rgba(26,28,28,0.05)] flex items-center justify-between">
     <div>
-      <div class="text-lg font-extrabold text-on-surface">Warm-Up</div>
-      <div class="text-xs text-on-secondary-container font-medium mt-0.5">4 phases · ~8 min</div>
+      <div class="text-lg font-extrabold text-on-surface">Warm-Up Phases</div>
+      <div class="text-xs text-on-secondary-container font-medium mt-0.5">5–7 minutes total. Complete these phases before starting your session.</div>
     </div>
     <div class="text-sm text-on-secondary-container">
       <i class="fas fa-user me-1 opacity-50"></i>{{ patient.name }}
@@ -29,11 +29,17 @@
   <div class="bg-surface-container-lowest rounded-lg shadow-[0_4px_20px_rgba(26,28,28,0.04)] overflow-hidden">
     <button type="button" onclick="toggle('phase1')"
             class="w-full px-5 py-4 flex items-center justify-between font-bold text-on-surface hover:bg-primary/5 transition-colors text-left">
-      <div class="flex items-center gap-2">
-        <span class="inline-flex w-7 h-7 rounded-full bg-primary/10 border-2 border-primary items-center justify-center text-primary text-xs font-extrabold flex-shrink-0">1</span>
-        <span class="text-base">🔥 Elevate Heart Rate</span>
+      <div class="flex items-center gap-3 flex-1 min-w-0">
+        <span class="inline-flex items-center justify-center px-2 py-0.5 bg-primary/10 border border-primary/30 rounded text-primary text-[9px] font-extrabold flex-shrink-0 leading-none">1/4</span>
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2 flex-wrap">
+            <span class="text-base">🔥 Elevate Heart Rate</span>
+            <span class="text-[10px] font-medium text-on-secondary-container bg-surface-container px-2 py-0.5 rounded-full">~90 sec</span>
+          </div>
+          <div class="text-xs font-normal text-on-secondary-container mt-0.5">Raise heart rate and warm up muscles</div>
+        </div>
       </div>
-      <i class="fas fa-chevron-down chevron-icon open text-on-secondary-container text-sm" id="chevron1"></i>
+      <i class="fas fa-chevron-down chevron-icon open text-on-secondary-container text-sm flex-shrink-0 ml-2" id="chevron1"></i>
     </button>
     <div class="phase-body open divide-y divide-outline-variant/15 px-5 pb-4" id="phase1">
       {% if elevate %}
@@ -52,7 +58,7 @@
         {% endfor %}
       {% else %}
         <div class="py-3 text-sm text-on-secondary-container italic opacity-70">
-          Light cardio of your choice — brisk walk, bike or jog for 5 min.
+          Light cardio of your choice — brisk walk, bike or jog for 90 seconds.
         </div>
       {% endif %}
     </div>
@@ -62,11 +68,17 @@
   <div class="bg-surface-container-lowest rounded-lg shadow-[0_4px_20px_rgba(26,28,28,0.04)] overflow-hidden">
     <button type="button" onclick="toggle('phase2')"
             class="w-full px-5 py-4 flex items-center justify-between font-bold text-on-surface hover:bg-primary/5 transition-colors text-left">
-      <div class="flex items-center gap-2">
-        <span class="inline-flex w-7 h-7 rounded-full bg-primary/10 border-2 border-primary items-center justify-center text-primary text-xs font-extrabold flex-shrink-0">2</span>
-        <span class="text-base">🔄 Mobilise Joints</span>
+      <div class="flex items-center gap-3 flex-1 min-w-0">
+        <span class="inline-flex items-center justify-center px-2 py-0.5 bg-primary/10 border border-primary/30 rounded text-primary text-[9px] font-extrabold flex-shrink-0 leading-none">2/4</span>
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2 flex-wrap">
+            <span class="text-base">🔄 Mobilise Joints</span>
+            <span class="text-[10px] font-medium text-on-secondary-container bg-surface-container px-2 py-0.5 rounded-full">~2 min</span>
+          </div>
+          <div class="text-xs font-normal text-on-secondary-container mt-0.5">Open up joints and prepare range of motion</div>
+        </div>
       </div>
-      <i class="fas fa-chevron-down chevron-icon text-on-secondary-container text-sm" id="chevron2"></i>
+      <i class="fas fa-chevron-down chevron-icon text-on-secondary-container text-sm flex-shrink-0 ml-2" id="chevron2"></i>
     </button>
     <div class="phase-body divide-y divide-outline-variant/15 px-5 pb-4" id="phase2">
       {% if mobilise %}
@@ -95,11 +107,17 @@
   <div class="bg-surface-container-lowest rounded-lg shadow-[0_4px_20px_rgba(26,28,28,0.04)] overflow-hidden">
     <button type="button" onclick="toggle('phase3')"
             class="w-full px-5 py-4 flex items-center justify-between font-bold text-on-surface hover:bg-primary/5 transition-colors text-left">
-      <div class="flex items-center gap-2">
-        <span class="inline-flex w-7 h-7 rounded-full bg-primary/10 border-2 border-primary items-center justify-center text-primary text-xs font-extrabold flex-shrink-0">3</span>
-        <span class="text-base">⚡ Activate Key Muscles</span>
+      <div class="flex items-center gap-3 flex-1 min-w-0">
+        <span class="inline-flex items-center justify-center px-2 py-0.5 bg-primary/10 border border-primary/30 rounded text-primary text-[9px] font-extrabold flex-shrink-0 leading-none">3/4</span>
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2 flex-wrap">
+            <span class="text-base">⚡ Activate Key Muscles</span>
+            <span class="text-[10px] font-medium text-on-secondary-container bg-surface-container px-2 py-0.5 rounded-full">~90 sec</span>
+          </div>
+          <div class="text-xs font-normal text-on-secondary-container mt-0.5">Wake up stabilizers and key muscle groups</div>
+        </div>
       </div>
-      <i class="fas fa-chevron-down chevron-icon text-on-secondary-container text-sm" id="chevron3"></i>
+      <i class="fas fa-chevron-down chevron-icon text-on-secondary-container text-sm flex-shrink-0 ml-2" id="chevron3"></i>
     </button>
     <div class="phase-body divide-y divide-outline-variant/15 px-5 pb-4" id="phase3">
       {% if activate %}
@@ -128,11 +146,17 @@
   <div class="bg-surface-container-lowest rounded-lg shadow-[0_4px_20px_rgba(26,28,28,0.04)] overflow-hidden">
     <button type="button" onclick="toggle('phase4')"
             class="w-full px-5 py-4 flex items-center justify-between font-bold text-on-surface hover:bg-primary/5 transition-colors text-left">
-      <div class="flex items-center gap-2">
-        <span class="inline-flex w-7 h-7 rounded-full bg-primary/10 border-2 border-primary items-center justify-center text-primary text-xs font-extrabold flex-shrink-0">4</span>
-        <span class="text-base">🎯 Prime Movement Patterns</span>
+      <div class="flex items-center gap-3 flex-1 min-w-0">
+        <span class="inline-flex items-center justify-center px-2 py-0.5 bg-primary/10 border border-primary/30 rounded text-primary text-[9px] font-extrabold flex-shrink-0 leading-none">4/4</span>
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2 flex-wrap">
+            <span class="text-base">🎯 Prime Movement Patterns</span>
+            <span class="text-[10px] font-medium text-on-secondary-container bg-surface-container px-2 py-0.5 rounded-full">~2 min</span>
+          </div>
+          <div class="text-xs font-normal text-on-secondary-container mt-0.5">Final neural prep — match today's session intensity</div>
+        </div>
       </div>
-      <i class="fas fa-chevron-down chevron-icon text-on-secondary-container text-sm" id="chevron4"></i>
+      <i class="fas fa-chevron-down chevron-icon text-on-secondary-container text-sm flex-shrink-0 ml-2" id="chevron4"></i>
     </button>
     <div class="phase-body divide-y divide-outline-variant/15 px-5 pb-4" id="phase4">
       {% if prime %}
@@ -158,10 +182,19 @@
   </div>
 
   <!-- CTA -->
-  <a href="{% url 'v1_execute_exercise' 0 %}"
-     class="block w-full py-4 bg-gradient-to-r from-primary to-primary-container text-white font-bold text-base rounded-xl text-center no-underline flex items-center justify-center gap-2">
-    <i class="fas fa-play"></i>Start Working Sets
-  </a>
+  <div class="space-y-3 pt-2">
+    <a href="{% url 'v1_execute_exercise' 0 %}"
+       class="block w-full py-4 bg-gradient-to-r from-primary to-primary-container text-white font-bold text-base rounded-xl text-center no-underline flex items-center justify-center gap-2">
+      <i class="fas fa-check-circle"></i>I've completed my warm-up — start session
+    </a>
+    <a href="{% url 'v1_execute_exercise' 0 %}"
+       class="block w-full py-2.5 border border-outline-variant/60 text-on-secondary-container text-sm font-medium rounded-xl text-center no-underline">
+      Skip warm-up
+    </a>
+    <p class="text-xs text-on-secondary-container/60 text-center px-2 leading-relaxed">
+      Skipping warm-up increases injury risk. Recommended only if you've already warmed up separately.
+    </p>
+  </div>
 
 </div>
 

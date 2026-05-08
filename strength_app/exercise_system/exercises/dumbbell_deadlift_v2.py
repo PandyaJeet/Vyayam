@@ -32,8 +32,8 @@ class DeadliftDumbbellV2:
     - Primary angle: Hip angle (shoulder → hip → knee)
     - Standing: 170-180° (fully extended hips)
     - Bottom: 90-110° (hinge at hips, not knees)
-    - Back angle: MUST stay >165° (straight back throughout)
-    - Knee angle: 165-175° (slight bend, not a squat)
+    - Knee angle: 165-175° (slight bend, not a squat; knee bending monitored)
+    - Hip hinge depth tracked via shoulder→hip→knee angle
     
     CRITICAL: This is a HIP HINGE, not a squat
     - Movement comes from hips, not knees
@@ -90,8 +90,17 @@ class DeadliftDumbbellV2:
         left_hip = analyzer.calculate_angle(ls, lh, lk)
         right_hip = analyzer.calculate_angle(rs, rh, rk)
         
-        # Hip extension angle (shoulder → hip → knee) — measures hinge depth, NOT spinal alignment
-        # NOTE: True lumbar alignment is not measurable with MediaPipe's 33 landmarks; no mid-spine points exist.
+        # NOTE: Spinal alignment cannot be measured with MediaPipe Pose
+        # (no landmarks between shoulders and hips). Cues for "back
+        # rounding" or thoracolumbar position are not implementable
+        # with this hardware. Form analysis here is limited to:
+        # knee tracking, depth, foot pressure proxies, hip-knee
+        # alignment. Do not add cues that claim to measure spine
+        # position without clear documentation of the proxy used.
+        #
+        # avg_back below is the hip flexion angle (shoulder→hip→knee),
+        # NOT spinal curvature. It is retained only for form-score
+        # weighting in FormCalculator; do not use it for safety warnings.
         left_back = analyzer.calculate_angle(ls, lh, lk)
         right_back = analyzer.calculate_angle(rs, rh, rk)
         
@@ -171,28 +180,6 @@ class DeadliftDumbbellV2:
                 status=FormStatus.NEEDS_ADJUSTMENT,
                 angle=hip_angle,
                 message="Adjust hip position"
-            )
-        
-        # Back angle (CRITICAL SAFETY)
-        back_angle = angles.get('avg_back', 0)
-        
-        if back_angle < 160:
-            feedback['back'] = JointFeedback(
-                status=FormStatus.INCORRECT,
-                angle=back_angle,
-                message="BACK ROUNDED - STOP!"
-            )
-        elif back_angle < 165:
-            feedback['back'] = JointFeedback(
-                status=FormStatus.NEEDS_ADJUSTMENT,
-                angle=back_angle,
-                message="Keep back straighter"
-            )
-        else:
-            feedback['back'] = JointFeedback(
-                status=FormStatus.CORRECT,
-                angle=back_angle,
-                message="Perfect back position"
             )
         
         # Knee angle (should NOT bend much)
@@ -292,15 +279,10 @@ class DeadliftDumbbellV2:
             tempo=tempo_data
         )
         
-        # Extra penalty for rounded back (safety critical)
-        back_angle = angles.get('avg_back', 180)
-        if back_angle < 160:
-            form_score = min(form_score, 50)  # Cap at 50 if back rounds
-        
         self.current_rep_form_scores.append(form_score)
-        
+
         return form_score
-    
+
     def draw_ar_overlay(self, frame, angles, joints_coords, form_score):
         """Draw AR overlay"""
         if self.probation_mode:

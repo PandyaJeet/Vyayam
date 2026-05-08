@@ -1,0 +1,89 @@
+{% load static %}<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <title>{% block title %}Therapist Console — VYAYAM{% endblock %}</title>
+  <meta name="viewport" content="width=1280"/>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet"/>
+
+  <link rel="stylesheet" href="{% static 'therapist_app/css/therapist.css' %}"/>
+  {% block extra_head %}{% endblock %}
+</head>
+<body>
+  {% if user.is_authenticated and user.therapist %}
+  <header class="t-topbar">
+    <div class="t-topbar__brand">
+      <a href="{% url 'therapist_dashboard' %}" style="text-decoration:none; display:flex; align-items:center; gap:12px;">
+        <span class="t-wordmark">VYAYAM</span>
+        <span class="t-topbar__sub">Therapist Console</span>
+      </a>
+    </div>
+    <button class="t-bell" type="button" aria-label="Notifications" title="Notification panel — coming soon" onclick="return false;">
+      <i class="fas fa-bell"></i>
+      <span class="t-bell__dot"></span>
+    </button>
+    <a class="t-userchip" href="{% url 'therapist_settings' %}">
+      <span class="t-avatar t-avatar--xs">{{ user.therapist.initials }}</span>
+      <span class="t-userchip__name">
+        <strong>{{ user.therapist.full_name|cut:"Dr. " }}</strong>
+        <span class="t-userchip__sub">{{ user.therapist.specialization|default:"Physiotherapist" }}</span>
+      </span>
+      <i class="fas fa-chevron-down" style="font-size:.7rem; color:var(--muted); margin-left:4px;"></i>
+    </a>
+    <a class="t-btn t-btn--ghost t-btn--sm" href="{% url 'therapist_logout' %}" style="margin-left:8px;">
+      <i class="fas fa-sign-out-alt"></i> Sign out
+    </a>
+  </header>
+
+  <div class="t-shell">
+    <aside class="t-sidebar">
+      <a class="t-nav-item {% if active_section == 'dashboard' %}is-active{% endif %}" href="{% url 'therapist_dashboard' %}">
+        <i class="fas fa-th-large" style="width:18px; font-size:.88rem;"></i>
+        <span class="label">Dashboard</span>
+      </a>
+      <a class="t-nav-item {% if active_section == 'patients' %}is-active{% endif %}" href="{% url 'therapist_patient_list' %}">
+        <i class="fas fa-users" style="width:18px; font-size:.88rem;"></i>
+        <span class="label">Patients</span>
+        <span class="count">{{ user.therapist.active_link_count }}</span>
+      </a>
+      <a class="t-nav-item {% if active_section == 'library' %}is-active{% endif %}" href="{% url 'therapist_library' %}">
+        <i class="fas fa-book-medical" style="width:18px; font-size:.88rem;"></i>
+        <span class="label">Exercise Library</span>
+      </a>
+      <a class="t-nav-item {% if active_section == 'reports' %}is-active{% endif %}" href="{% url 'therapist_reports' %}">
+        <i class="fas fa-file-medical-alt" style="width:18px; font-size:.88rem;"></i>
+        <span class="label">Reports</span>
+      </a>
+      <a class="t-nav-item {% if active_section == 'settings' %}is-active{% endif %}" href="{% url 'therapist_settings' %}">
+        <i class="fas fa-cog" style="width:18px; font-size:.88rem;"></i>
+        <span class="label">Settings</span>
+      </a>
+      <div style="flex:1;"></div>
+      <div class="t-sidebar__footer">
+        <strong>{{ user.therapist.clinic_name|default:"Solo practice" }}</strong>
+        Reg. {{ user.therapist.registration_number|default:"—" }}
+      </div>
+    </aside>
+
+    <main class="t-main">
+      {% if messages %}
+      <div class="t-flash-stack">
+        {% for m in messages %}
+          <div class="t-flash {% if 'error' in m.tags or 'danger' in m.tags %}is-error{% elif 'warning' in m.tags %}is-warn{% endif %}">{{ m }}</div>
+        {% endfor %}
+      </div>
+      {% endif %}
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+  {% else %}
+    {% block anon_content %}{% endblock %}
+  {% endif %}
+
+  {% block extra_scripts %}{% endblock %}
+</body>
+</html>

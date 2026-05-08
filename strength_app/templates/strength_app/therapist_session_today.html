@@ -1,0 +1,110 @@
+{% extends 'strength_app/therapist_session_base.html' %}
+{% block title %}Today's Rehabilitation Session — VYAYAM{% endblock %}
+
+{% block content %}
+<section style="margin-bottom:18px;">
+  <div style="font-size:.75rem; letter-spacing:.08em; color:#666; font-weight:700;">{{ today|date:"D, M d" }}</div>
+  <h1 style="font-size:1.55rem; font-weight:800; letter-spacing:-0.02em; margin:5px 0 3px;">Today's Rehabilitation Session</h1>
+  {% if link %}
+    <div style="color:#0c6c3f; font-size:.86rem; font-weight:600;">Prescribed by {{ link.therapist.full_name }}</div>
+  {% endif %}
+</section>
+
+{% if rx %}
+<div class="ts-card" style="margin-bottom:14px;">
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+    <div>
+      <div style="font-size:.72rem; color:#666; font-weight:700; letter-spacing:.08em;">PROGRAMME · WEEK {{ rx.week_number }}</div>
+      <div style="font-size:1rem; font-weight:800; margin-top:2px;">{{ items|length }} exercise{{ items|length|pluralize }}</div>
+    </div>
+    {% if in_flight %}
+      <span class="ts-pill ts-pill-warn"><span class="material-symbols-outlined" style="font-size:1rem;">play_circle</span> In progress</span>
+    {% else %}
+      <span class="ts-pill"><span class="material-symbols-outlined" style="font-size:1rem;">healing</span> Ready</span>
+    {% endif %}
+  </div>
+
+  {% if rx.notes_for_patient %}
+  <div style="background:#f0f7f3; border-left:3px solid #0c6c3f; padding:10px 14px; border-radius:8px; font-size:.84rem; line-height:1.5; color:#1a4a32; margin-bottom:14px;">
+    <strong>Note from {{ link.therapist.full_name }}:</strong> {{ rx.notes_for_patient }}
+  </div>
+  {% endif %}
+
+  <ol style="list-style:none; padding:0; margin:0 0 16px; display:flex; flex-direction:column; gap:8px;">
+    {% for x in items %}
+    <li style="padding:12px 14px; background:#fafbfa; border:1px solid #ececec; border-radius:12px;">
+      <div style="display:flex; gap:12px; align-items:flex-start;">
+        <div style="width:26px; height:26px; border-radius:50%; background:#0c6c3f; color:#fff; font-weight:800; font-size:.76rem; display:flex; align-items:center; justify-content:center; flex-shrink:0; margin-top:2px;">{{ forloop.counter }}</div>
+        <div style="flex:1; min-width:0;">
+          <div style="font-weight:700; font-size:.94rem;">{{ x.name }}</div>
+          <div style="font-size:.78rem; color:#555; margin-top:2px;">
+            {{ x.item.sets }} sets × {{ x.item.reps }} reps
+            {% if x.equipment and x.equipment != "None" and x.equipment != "—" %} · {{ x.equipment }}{% endif %}
+            · {{ x.item.rest_seconds }}s rest
+            {% if x.item.load and x.item.load != "BW" %} · {{ x.item.load }}{% endif %}
+          </div>
+          {% if x.description %}
+            <div style="font-size:.8rem; color:#444; margin-top:5px; line-height:1.45;">{{ x.description }}</div>
+          {% endif %}
+          {% if x.item.notes %}
+          <div style="margin-top:7px; background:#fff7ed; border-left:2px solid #d97706; padding:7px 10px; border-radius:6px; font-size:.78rem; color:#6b3a09; line-height:1.4;">
+            <strong>Therapist note:</strong> {{ x.item.notes }}
+          </div>
+          {% endif %}
+          {% if x.v2_ghost_supported %}
+            <span class="ts-pill" style="margin-top:7px; font-size:.66rem;"><span class="material-symbols-outlined" style="font-size:.9rem;">spatial_tracking</span> Form coach</span>
+          {% endif %}
+        </div>
+      </div>
+    </li>
+    {% endfor %}
+  </ol>
+
+  {% if in_flight %}
+    <a class="ts-btn" href="{% url 'therapist_session_exercise' idx=in_flight.state.current_index %}" style="text-decoration:none; width:100%; justify-content:center; display:inline-flex;">
+      <span class="material-symbols-outlined">play_arrow</span>
+      Resume session
+    </a>
+  {% else %}
+    <form method="post" action="{% url 'therapist_session_start' %}" style="margin:0;">
+      {% csrf_token %}
+      <button type="submit" class="ts-btn" style="width:100%; justify-content:center;">
+        <span class="material-symbols-outlined">play_arrow</span>
+        Start your session
+      </button>
+    </form>
+  {% endif %}
+</div>
+{% else %}
+<div class="ts-card" style="margin-bottom:14px; text-align:center; padding:30px 18px;">
+  <span class="material-symbols-outlined" style="font-size:2.4rem; color:#9ca6a3;">pending_actions</span>
+  <div style="font-weight:700; margin-top:8px;">No session ready yet.</div>
+  <div style="color:#666; font-size:.86rem; margin-top:4px;">Your physiotherapist hasn't published this week's programme. Check back later.</div>
+</div>
+{% endif %}
+
+{% if last_log %}
+<div class="ts-card-tight" style="margin-bottom:14px;">
+  <div style="font-size:.72rem; color:#666; font-weight:700; letter-spacing:.08em; margin-bottom:6px;">LAST SESSION</div>
+  <div style="display:flex; justify-content:space-between; align-items:center;">
+    <div>
+      <div style="font-weight:700;">{{ last_log.completed_at|date:"M d, H:i" }}</div>
+      <div style="font-size:.78rem; color:#666;">
+        {% if last_log.duration_minutes is not None %}{{ last_log.duration_minutes }} min · {% endif %}
+        Overall pain {{ last_log.overall_pain|default:"—" }}/10
+      </div>
+    </div>
+    <span class="ts-pill">{{ last_log.completion_pct }}% done</span>
+  </div>
+</div>
+{% endif %}
+
+<div class="ts-card" style="background:#fffbeb; border-color:#d97706;">
+  <div style="display:flex; gap:10px; align-items:flex-start;">
+    <span class="material-symbols-outlined" style="font-size:1.3rem; color:#d97706; flex-shrink:0; margin-top:1px;">warning</span>
+    <div style="font-size:.8rem; color:#78350f; line-height:1.55;">
+      This programme is prescribed and supervised by your physiotherapist. If you experience pain above 6/10, sharp or unusual pain, or anything new, <strong>stop and message your therapist</strong> before continuing.
+    </div>
+  </div>
+</div>
+{% endblock %}

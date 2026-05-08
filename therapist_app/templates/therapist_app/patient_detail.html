@@ -1,0 +1,674 @@
+{% extends "therapist_app/base_therapist.html" %}
+{% load therapist_extras %}
+{% block title %}{{ link.display_name }} — Therapist Console{% endblock %}
+
+{% block content %}
+<a class="t-back" href="{% url 'therapist_dashboard' %}"><i class="fas fa-arrow-left"></i> Back to dashboard</a>
+
+<div class="t-card" style="margin-bottom:16px;">
+  <div class="t-detail-hero">
+    <span class="t-avatar t-avatar--lg">{{ link.initials }}</span>
+    <div class="t-detail-hero__id">
+      <h2 class="t-detail-hero__name">{{ link.display_name }}</h2>
+      <div class="t-detail-hero__sub">
+        {% if link.age %}{{ link.age }}y · {% endif %}{% if link.sex %}{{ link.sex }} · {% endif %}{{ link.location|default:"—" }}
+        {% if link.injury_date %} · Injury: {{ link.injury_date }}{% endif %}
+      </div>
+      <div class="t-detail-hero__pills">
+        <span class="t-pill t-pill--{{ link.condition_tone }}">{{ link.primary_condition|default:"—" }}</span>
+        <span class="t-pill t-pill--neutral">Wk {{ card.week }}/{{ link.total_weeks }}</span>
+        {% if link.program_start %}<span class="t-pill t-pill--neutral">Started {{ link.program_start }}</span>{% endif %}
+        {% for f in card.flags %}
+          <span class="t-pill t-pill--error"><i class="fas fa-exclamation-triangle"></i> {{ f }}</span>
+        {% endfor %}
+      </div>
+    </div>
+    <div class="t-detail-hero__rh">
+      {% include "therapist_app/_compliance_ring.html" with pct=card.compliance size=68 %}
+      <a class="t-btn t-btn--outline t-btn--sm" href="?tab=messages"><i class="fas fa-comment-medical"></i> Quick message</a>
+      <button type="button" class="t-btn t-btn--sm" id="open-edit-details"><i class="fas fa-user-edit"></i> Edit patient details</button>
+    </div>
+  </div>
+</div>
+
+<div class="t-tabs">
+  <a class="t-tab {% if tab == 'today' %}is-active{% endif %}" href="?tab=today">Today's Program</a>
+  <a class="t-tab {% if tab == 'builder' %}is-active{% endif %}" href="?tab=builder">Program Builder</a>
+  <a class="t-tab {% if tab == 'progress' %}is-active{% endif %}" href="?tab=progress">Progress</a>
+  <a class="t-tab {% if tab == 'history' %}is-active{% endif %}" href="?tab=history">Session History</a>
+  <a class="t-tab {% if tab == 'messages' %}is-active{% endif %}" href="?tab=messages">Messages</a>
+  <a class="t-tab {% if tab == 'reports' %}is-active{% endif %}" href="?tab=reports">Reports</a>
+</div>
+
+{# ---- TODAY TAB ---- #}
+{% if tab == 'today' %}
+<div class="t-grid-2-1">
+  <div style="display:flex; flex-direction:column; gap:12px;">
+    <div class="t-card">
+      <div class="t-card-title">
+        <span>Prescribed for {{ link.display_name|truncatewords:1 }}</span>
+        <span class="t-pill">Week {{ card.week }}</span>
+      </div>
+      <div style="display:flex; flex-direction:column; gap:10px;">
+        {% for item in rx_items %}
+          <div class="t-rx-row">
+            <div class="t-rx-row__num">{{ forloop.counter }}</div>
+            <div class="t-rx-row__id">
+              <div class="t-rx-row__name">{{ item.exercise_name }}</div>
+              <div class="t-rx-row__sub">{{ item.sets }} × {{ item.reps }} · {{ item.load }} · rest {{ item.rest_seconds }}s{% if item.tempo %} · {{ item.tempo }}{% endif %}</div>
+            </div>
+            <i class="fas fa-play-circle" style="color:var(--primary); font-size:1.4rem;"></i>
+          </div>
+        {% empty %}
+          <div style="color:var(--muted); font-size:.9rem; padding:18px; text-align:center; border:1px dashed var(--border); border-radius:12px;">
+            No active prescription yet. Open the <a class="t-link" href="?tab=builder">Program Builder</a> to publish one.
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    {% if last_completed_log %}
+    <div class="t-card">
+      <div class="t-card-title">
+        <span>Last session — {{ last_completed_log.completed_at|date:"M d, H:i" }}</span>
+        <span class="t-pill {% if last_completed_log.completion_pct >= 90 %}t-pill--green{% elif last_completed_log.completion_pct >= 60 %}t-pill--warn{% else %}t-pill--error{% endif %}">{{ last_completed_log.completion_pct }}% complete</span>
+      </div>
+      <div style="display:flex; flex-direction:column; gap:6px; font-size:.86rem;">
+        {% for li in last_completed_log.items.all %}
+          <div style="display:grid; grid-template-columns:24px 1fr auto auto auto; gap:10px; align-items:center; padding:8px 10px; background:#fafbfa; border:1px solid #ececec; border-radius:10px;">
+            <div style="font-weight:700; color:var(--muted);">{{ forloop.counter }}.</div>
+            <div>
+              <div style="font-weight:600;">{{ li.exercise_name }}</div>
+              <div style="font-size:.74rem; color:var(--muted);">{{ li.sets_completed }} sets done</div>
+            </div>
+            <span class="t-pill t-pill--neutral" style="font-size:.7rem;">Pain {{ li.pain|default:"—" }}/10</span>
+            <span class="t-pill {% if li.difficulty == 'easy' %}t-pill--green{% elif li.difficulty == 'right' %}t-pill--green{% elif li.difficulty == 'hard' %}t-pill--warn{% elif li.difficulty == 'too_hard' %}t-pill--error{% else %}t-pill--neutral{% endif %}" style="font-size:.7rem;">{{ li.get_difficulty_display|default:"—" }}</span>
+            <i class="fas {% if li.completed_at %}fa-check-circle{% else %}fa-times-circle{% endif %}" style="color:{% if li.completed_at %}var(--green){% else %}#ccc{% endif %};"></i>
+          </div>
+        {% endfor %}
+      </div>
+      {% if last_completed_log.overall_comment %}
+      <div style="margin-top:12px; background:#f0f7f3; border-left:3px solid var(--primary); padding:10px 14px; border-radius:8px; font-size:.84rem; color:#1a4a32;">
+        <strong>Patient note:</strong> {{ last_completed_log.overall_comment }}
+      </div>
+      {% endif %}
+      <div class="t-row-kv" style="margin-top:10px;"><span>Overall pain</span><strong>{{ last_completed_log.overall_pain|default:"—" }}/10</strong></div>
+      {% if last_completed_log.duration_minutes is not None %}<div class="t-row-kv"><span>Duration</span><strong>{{ last_completed_log.duration_minutes }} min</strong></div>{% endif %}
+    </div>
+    {% endif %}
+  </div>
+
+  <div style="display:flex; flex-direction:column; gap:12px;">
+    <div class="t-card">
+      <div class="t-card-title">Today snapshot</div>
+      <div class="t-row-kv"><span>Active prescription</span><strong>{% if rx_items %}Wk {{ rx.week_number }} · {{ rx_items|length }} ex{% else %}—{% endif %}</strong></div>
+      <div class="t-row-kv"><span>Last completed</span><strong>{% if last_completed_log %}{{ last_completed_log.completed_at|timesince }} ago{% else %}—{% endif %}</strong></div>
+      <div class="t-row-kv"><span>Sessions logged</span><strong>{{ session_logs|length }}</strong></div>
+    </div>
+    <div class="t-card">
+      <div class="t-card-title">Patient context</div>
+      {% if health_profile %}
+        <div class="t-row-kv"><span>Affected side</span><strong>{{ health_profile.get_affected_side_display|default:"—" }}</strong></div>
+        <div class="t-row-kv"><span>Height / weight</span><strong>{{ health_profile.height_cm|default:"—" }} cm · {{ health_profile.weight_kg|default:"—" }} kg</strong></div>
+        {% if health_profile.surgery_date %}<div class="t-row-kv"><span>Surgery</span><strong>{{ health_profile.surgery_date }}</strong></div>{% endif %}
+      {% else %}
+        <div style="font-size:.82rem; color:var(--muted); line-height:1.5;">
+          No clinical intake yet. Click <strong>Edit patient details</strong> in the header to fill in.
+        </div>
+      {% endif %}
+    </div>
+    <div class="t-card">
+      <div class="t-card-title">Notes for patient</div>
+      <p style="font-size:.84rem; color:var(--muted); line-height:1.55; margin:0;">
+        {{ rx.notes_for_patient|default:"No published note yet." }}
+      </p>
+      <button type="button" class="t-btn t-btn--ghost t-btn--sm" style="margin-top:10px;" disabled title="Inline note editing — coming soon"><i class="fas fa-pen"></i> Edit note</button>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+{# ---- BUILDER TAB ---- #}
+{% if tab == 'builder' %}
+<div class="t-builder-grid">
+  <div>
+    <div class="t-builder-head">
+      <div>
+        <div class="meta">Week {{ current_week }} prescription</div>
+        <div class="submeta"><span id="builder-count">{{ rx_items|length }}</span> exercises · drag to reorder · click any field to edit</div>
+      </div>
+      <div class="t-builder-actions">
+        <span id="builder-dirty" class="t-pill t-pill--warn" style="display:none;"><i class="fas fa-circle"></i> Unsaved</span>
+        <button type="button" class="t-btn t-btn--ghost t-btn--sm" id="builder-reset"><i class="fas fa-undo"></i> Reset</button>
+        <button type="button" class="t-btn t-btn--sm" id="builder-publish"><i class="fas fa-check"></i> Publish to patient</button>
+      </div>
+    </div>
+
+    <div id="builder-stack" class="t-builder-stack" data-link-id="{{ link.id }}" data-week="{{ current_week }}"></div>
+
+    <button type="button" class="t-add-from-library" id="builder-add">
+      <i class="fas fa-plus"></i> Add exercise from library
+    </button>
+  </div>
+
+  <div style="display:flex; flex-direction:column; gap:12px;">
+    <div class="t-card">
+      <div class="t-card-title">AI suggestions</div>
+      <div class="t-suggest">
+        <div class="t-suggest__title">
+          <i class="fas fa-lightbulb" style="color:var(--primary);"></i>
+          <strong>Add eccentric variant</strong>
+        </div>
+        <div class="t-suggest__body">Patient compliance dipped Wed–Thu; eccentric step-ups (3-0-1 tempo) often address post-meniscus loading.</div>
+        <button class="t-btn t-btn--outline t-btn--sm" type="button" onclick="builderAddById('ex_step_up')"><i class="fas fa-check"></i> Apply</button>
+      </div>
+      <p style="font-size:.74rem; color:var(--muted); margin:0;">More suggestions arrive once we connect the AI engine in the follow-up.</p>
+    </div>
+    <div class="t-card">
+      <div class="t-card-title">Block summary</div>
+      <div class="t-row-kv"><span>Total exercises</span><strong id="bsum-count">{{ rx_items|length }}</strong></div>
+      <div class="t-row-kv"><span>Estimated duration</span><strong id="bsum-time">—</strong></div>
+      <div class="t-row-kv"><span>Movement patterns</span><strong id="bsum-patterns">—</strong></div>
+    </div>
+  </div>
+</div>
+
+<details id="builder-library" style="margin-top:16px;">
+  <summary style="cursor:pointer; color:var(--muted); font-size:.85rem;">Library — click an exercise to add</summary>
+  {% regroup catalog by movement_pattern as pattern_groups %}
+  {% for group in pattern_groups %}
+  <details open style="margin-top:12px;">
+    <summary style="cursor:pointer; font-size:.82rem; font-weight:700; color:var(--fg); padding:6px 0; border-bottom:1px solid var(--border); margin-bottom:8px;">{{ group.grouper }}</summary>
+    <div class="t-lib-grid" style="margin-top:8px;">
+      {% for e in group.list %}
+        <div class="t-lib-card" style="cursor:pointer;" onclick="builderAddById('{{ e.exercise_id }}')">
+          <div class="t-lib-card__hero"><i class="fas fa-dumbbell"></i></div>
+          <div class="t-lib-card__body">
+            <div class="t-lib-card__name">{{ e.name }}</div>
+            <div class="t-lib-card__pills">
+              <span class="t-pill">{{ e.movement_pattern }}</span>
+              <span class="t-pill t-pill--neutral">{{ e.equipment }}</span>
+              {% if e.v2_ghost_supported %}<span class="t-pill t-pill--green" title="V2 ghost coach"><i class="fas fa-ghost"></i></span>{% endif %}
+            </div>
+            <div class="t-lib-card__sub">{{ e.description }}</div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  </details>
+  {% endfor %}
+</details>
+{% endif %}
+
+{# ---- PROGRESS TAB ---- #}
+{% if tab == 'progress' %}
+<div class="t-grid-progress">
+  <div class="t-card">
+    <div class="t-card-title">Compliance · 8 weeks</div>
+    <div class="t-chart-placeholder">Charts spec'd in follow-up</div>
+    <div style="display:flex; justify-content:space-between; margin-top:10px; font-size:.78rem;">
+      <div><div style="color:var(--muted); font-size:.72rem;">Avg</div><strong>{{ card.compliance }}%</strong></div>
+      <div><div style="color:var(--muted); font-size:.72rem;">Best week</div><strong>—</strong></div>
+      <div><div style="color:var(--muted); font-size:.72rem;">Streak</div><strong>—</strong></div>
+    </div>
+  </div>
+  <div class="t-card">
+    <div class="t-card-title">Pain trend · 8 weeks</div>
+    <div class="t-chart-placeholder">Charts spec'd in follow-up</div>
+    <div style="margin-top:10px; font-size:.82rem; color:var(--muted); line-height:1.5;">
+      8-week aggregation of <code>SessionFeedback.pain_severity</code> will land here.
+    </div>
+  </div>
+  <div class="t-card">
+    <div class="t-card-title">Strength gates</div>
+    <div class="t-gate">
+      <i class="fas fa-check-circle" style="color:var(--green); font-size:1.05rem;"></i>
+      <div style="flex:1;">
+        <div class="t-gate__name">Single-leg balance · 30s</div>
+        <div class="t-gate__sub">Passed · manual mark</div>
+      </div>
+    </div>
+    <div class="t-gate">
+      <i class="fas fa-clock" style="color:var(--warn); font-size:1.05rem;"></i>
+      <div style="flex:1;">
+        <div class="t-gate__name">Goblet squat · BW</div>
+        <div class="t-gate__sub">In progress</div>
+      </div>
+    </div>
+    <div class="t-gate">
+      <i class="fas fa-lock" style="color:#9ca3af; font-size:1.05rem;"></i>
+      <div style="flex:1;">
+        <div class="t-gate__name">Single-leg hop test</div>
+        <div class="t-gate__sub">Locked · Wk 12</div>
+      </div>
+    </div>
+    <p style="font-size:.74rem; color:var(--muted); margin-top:10px;">Auto-pass detection lands in follow-up — manual mark only for now.</p>
+  </div>
+  <div class="t-card">
+    <div class="t-card-title">Range of motion</div>
+    <div class="t-rom-bar">
+      <div class="t-rom-bar__head"><span>Knee flex</span><span><strong>132°</strong> <span style="color:var(--muted); opacity:.7;">/ target 140°</span></span></div>
+      <div class="t-rom-bar__track"><div class="t-rom-bar__fill" style="width:94%;"></div></div>
+    </div>
+    <div class="t-rom-bar">
+      <div class="t-rom-bar__head"><span>Hip IR</span><span><strong>28°</strong> <span style="color:var(--muted); opacity:.7;">/ target 35°</span></span></div>
+      <div class="t-rom-bar__track"><div class="t-rom-bar__fill" style="width:80%;"></div></div>
+    </div>
+    <p style="font-size:.74rem; color:var(--muted); margin-top:8px;">Manual entry only — goniometer photo lands in follow-up.</p>
+  </div>
+</div>
+{% endif %}
+
+{# ---- HISTORY TAB ---- #}
+{% if tab == 'history' %}
+<div class="t-card t-table-card" style="margin-bottom:14px;">
+  <table class="t-table t-history-table">
+    <thead>
+      <tr>
+        <th>Date</th><th>Week</th><th>Completion</th>
+        <th>Overall pain</th><th>Patient note</th><th>Duration</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for s in session_logs %}
+      <tr class="summary">
+        <td><strong>{{ s.started_at|date:"M d" }}</strong> <span style="color:var(--muted); font-size:.74rem;">{{ s.started_at|date:"H:i" }}</span></td>
+        <td>Wk {{ s.prescription.week_number }}</td>
+        <td>
+          {% if s.is_complete %}
+            <span class="t-pill {% if s.completion_pct >= 90 %}t-pill--green{% elif s.completion_pct >= 60 %}t-pill--warn{% else %}t-pill--error{% endif %}">{{ s.completion_pct }}%</span>
+          {% else %}
+            <span class="t-pill t-pill--neutral">In progress</span>
+          {% endif %}
+        </td>
+        <td>{% if s.overall_pain is not None %}{{ s.overall_pain }}/10{% else %}—{% endif %}</td>
+        <td style="max-width:280px; color:var(--muted); font-size:.82rem;">{{ s.overall_comment|default:"—"|truncatewords:14 }}</td>
+        <td>{% if s.duration_minutes is not None %}{{ s.duration_minutes }} min{% else %}—{% endif %}</td>
+      </tr>
+      {% empty %}
+      <tr class="summary"><td colspan="6" style="text-align:center; color:var(--muted); padding:24px;">No sessions logged yet — once {{ link.display_name|truncatewords:1 }} completes a session, it will appear here.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% if session_logs %}
+<details>
+  <summary style="cursor:pointer; color:var(--muted); font-size:.85rem; padding:6px 0;">Per-exercise breakdown — {{ session_logs.0.started_at|date:"M d" }}</summary>
+  <div class="t-card" style="margin-top:8px;">
+    {% for li in session_logs.0.items.all %}
+      <div style="display:grid; grid-template-columns:24px 1fr auto auto auto; gap:10px; align-items:center; padding:8px 0; border-bottom:1px dashed var(--border);">
+        <div style="font-weight:700; color:var(--muted);">{{ forloop.counter }}.</div>
+        <div>
+          <div style="font-weight:600;">{{ li.exercise_name }}</div>
+          <div style="font-size:.74rem; color:var(--muted);">{{ li.sets_completed }} sets done</div>
+        </div>
+        <span class="t-pill t-pill--neutral">Pain {{ li.pain|default:"—" }}/10</span>
+        <span class="t-pill {% if li.difficulty == 'easy' or li.difficulty == 'right' %}t-pill--green{% elif li.difficulty == 'hard' %}t-pill--warn{% elif li.difficulty == 'too_hard' %}t-pill--error{% else %}t-pill--neutral{% endif %}">{{ li.get_difficulty_display|default:"—" }}</span>
+        <i class="fas {% if li.completed_at %}fa-check-circle{% else %}fa-times-circle{% endif %}" style="color:{% if li.completed_at %}var(--green){% else %}#ccc{% endif %};"></i>
+      </div>
+    {% endfor %}
+  </div>
+</details>
+{% endif %}
+
+{% endif %}
+
+{# ---- MESSAGES TAB ---- #}
+{% if tab == 'messages' %}
+<div class="t-msg-grid">
+  <div class="t-card t-msg-shell">
+    <div class="t-msg-shell__head">
+      <div>
+        <div style="font-weight:700; font-size:.95rem;">{{ link.display_name }}</div>
+        <div style="font-size:.72rem; color:var(--muted);">Async messaging</div>
+      </div>
+      <span class="t-pill t-pill--green"><i class="fas fa-lock"></i> End-to-end encrypted</span>
+    </div>
+    <div class="t-msg-shell__list" id="msg-list">
+      {% for m in messages %}
+        <div class="t-msg-row {% if m.is_from_therapist %}from-me{% else %}from-them{% endif %}">
+          <div class="t-msg-bubble {% if m.is_from_therapist %}from-me{% else %}from-them{% endif %}">
+            <div>{{ m.body }}</div>
+            <div class="meta">{{ m.sent_at|date:"D H:i" }}</div>
+          </div>
+        </div>
+      {% empty %}
+        <div style="text-align:center; color:var(--muted); font-size:.85rem; padding:24px;">No messages yet — say hi.</div>
+      {% endfor %}
+    </div>
+    <form class="t-msg-form" method="post" action="{% url 'therapist_send_message' link.id %}">
+      {% csrf_token %}
+      <input name="body" placeholder="Type a message…" autocomplete="off" required/>
+      <button type="submit" class="t-btn"><i class="fas fa-paper-plane"></i> Send</button>
+    </form>
+  </div>
+
+  <div style="display:flex; flex-direction:column; gap:12px;">
+    <div class="t-card">
+      <div class="t-card-title">Patient context</div>
+      <div class="t-row-kv"><span>Condition</span><strong>{{ link.primary_condition|default:"—" }}</strong></div>
+      <div class="t-row-kv"><span>Program</span><strong>Wk {{ card.week }}/{{ link.total_weeks }}</strong></div>
+      <div class="t-row-kv"><span>Compliance</span><strong>{{ card.compliance }}%</strong></div>
+      <div class="t-row-kv"><span>Last session</span><strong>{{ card.last_session }}</strong></div>
+    </div>
+    <div class="t-card">
+      <div class="t-card-title">Coming in follow-up</div>
+      <p style="font-size:.78rem; color:var(--muted); margin:0; line-height:1.5;">
+        Quick replies, file/video attachments, and 15s polling are deferred per the session scope.
+      </p>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+{# ---- REPORTS TAB ---- #}
+{% if tab == 'reports' %}
+<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+  <div style="font-size:.95rem; font-weight:800;">Reports for {{ link.display_name|truncatewords:1 }}</div>
+  <form method="post" action="{% url 'therapist_generate_report' link.id %}" style="margin:0;">
+    {% csrf_token %}
+    <button type="submit" class="t-btn"><i class="fas fa-file-medical-alt"></i> Generate new report</button>
+  </form>
+</div>
+<div class="t-card t-table-card">
+  {% for r in reports %}
+    <div class="t-report-row">
+      <div class="t-report-row__id">
+        <div class="t-report-row__icon {% if r.status == 'flagged' %}is-flagged{% endif %}"><i class="fas fa-file-medical-alt"></i></div>
+        <div>
+          <div class="t-report-row__title">{{ r.title }}</div>
+          <div class="t-report-row__sub">{{ r.created_at|date:"M d, Y" }} · {{ r.get_generated_by_display }}</div>
+        </div>
+      </div>
+      <div class="t-report-row__actions">
+        <span class="t-pill {% if r.status == 'flagged' %}t-pill--error{% else %}t-pill--green{% endif %}">{{ r.get_status_display }}</span>
+        <button type="button" class="t-btn t-btn--ghost t-btn--sm" title="PDF rendering lands in follow-up" disabled><i class="fas fa-download"></i> PDF</button>
+      </div>
+    </div>
+  {% empty %}
+    <div style="padding:24px; text-align:center; color:var(--muted);">
+      No reports yet — click Generate to create one.
+    </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+{# ---- EDIT PATIENT DETAILS MODAL ---- #}
+<div id="edit-details-modal" class="t-modal" style="display:none;">
+  <div class="t-modal__backdrop" data-close-modal></div>
+  <div class="t-modal__panel">
+    <div class="t-modal__head">
+      <div>
+        <div style="font-weight:800; font-size:1.05rem;">Edit patient details</div>
+        <div style="color:var(--muted); font-size:.78rem;">Therapist-driven onboarding · the patient never sees this form.</div>
+      </div>
+      <button type="button" class="t-modal__close" data-close-modal aria-label="Close"><i class="fas fa-times"></i></button>
+    </div>
+    <form method="post" action="{% url 'therapist_save_onboarding' link.id %}" class="t-modal__form">
+      {% csrf_token %}
+      <div class="t-form-grid">
+        <div class="t-field">
+          <label>Full name</label>
+          <input class="t-input" name="full_name" value="{{ link.full_name }}" required/>
+        </div>
+        <div class="t-field">
+          <label>Age</label>
+          <input class="t-input" name="age" type="number" min="13" max="100" value="{{ link.age|default_if_none:'' }}"/>
+        </div>
+        <div class="t-field">
+          <label>Sex</label>
+          <select class="t-input" name="sex">
+            <option value="" {% if not link.sex %}selected{% endif %}>—</option>
+            <option value="M" {% if link.sex == "M" %}selected{% endif %}>Male</option>
+            <option value="F" {% if link.sex == "F" %}selected{% endif %}>Female</option>
+            <option value="Other" {% if link.sex == "Other" %}selected{% endif %}>Other</option>
+          </select>
+        </div>
+        <div class="t-field">
+          <label>Height (cm)</label>
+          <input class="t-input" name="height_cm" type="number" min="80" max="240" step="0.5" value="{{ health_profile.height_cm|default_if_none:'' }}"/>
+        </div>
+        <div class="t-field">
+          <label>Weight (kg)</label>
+          <input class="t-input" name="weight_kg" type="number" min="20" max="300" step="0.5" value="{{ health_profile.weight_kg|default_if_none:'' }}"/>
+        </div>
+        <div class="t-field" style="grid-column:1/-1;">
+          <label>Primary condition</label>
+          <input class="t-input" name="primary_condition" placeholder="e.g. Right meniscus tear" value="{{ link.primary_condition }}"/>
+        </div>
+        <div class="t-field">
+          <label>Affected side</label>
+          <select class="t-input" name="affected_side">
+            {% with side=health_profile.affected_side %}
+            <option value="" {% if not side %}selected{% endif %}>—</option>
+            <option value="left"      {% if side == "left" %}selected{% endif %}>Left</option>
+            <option value="right"     {% if side == "right" %}selected{% endif %}>Right</option>
+            <option value="bilateral" {% if side == "bilateral" %}selected{% endif %}>Bilateral</option>
+            <option value="na"        {% if side == "na" %}selected{% endif %}>N/A</option>
+            {% endwith %}
+          </select>
+        </div>
+        <div class="t-field">
+          <label>Injury date</label>
+          <input class="t-input" name="injury_date" type="date" value="{{ link.injury_date|date:'Y-m-d' }}"/>
+        </div>
+        <div class="t-field">
+          <label>Surgery date (optional)</label>
+          <input class="t-input" name="surgery_date" type="date" value="{{ health_profile.surgery_date|date:'Y-m-d' }}"/>
+        </div>
+        <div class="t-field" style="grid-column:1/-1;">
+          <label>Pain medications (optional)</label>
+          <input class="t-input" name="pain_medications" placeholder="e.g. Paracetamol 500mg PRN" value="{{ health_profile.pain_medications|default:'' }}"/>
+        </div>
+        <div class="t-field" style="grid-column:1/-1;">
+          <label>Other conditions (optional)</label>
+          <input class="t-input" name="other_conditions" placeholder="e.g. Asthma, hypertension" value="{{ health_profile.other_conditions|default:'' }}"/>
+        </div>
+        <div class="t-field">
+          <label>Emergency contact name</label>
+          <input class="t-input" name="emergency_contact_name" value="{{ health_profile.emergency_contact_name|default:'' }}"/>
+        </div>
+        <div class="t-field">
+          <label>Emergency contact phone</label>
+          <input class="t-input" name="emergency_contact_phone" value="{{ health_profile.emergency_contact_phone|default:'' }}"/>
+        </div>
+        <div class="t-field" style="grid-column:1/-1;">
+          <label>Goals</label>
+          <textarea class="t-input" name="goals" rows="3" placeholder="Return to running pain-free; restore single-leg control…">{{ health_profile.goals|default:patient_profile.goals|default:'' }}</textarea>
+        </div>
+      </div>
+      <div class="t-modal__foot">
+        <button type="button" class="t-btn t-btn--ghost" data-close-modal>Cancel</button>
+        <button type="submit" class="t-btn"><i class="fas fa-save"></i> Save details</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<style>
+  .t-modal { position:fixed; inset:0; z-index:90; display:flex; align-items:flex-start; justify-content:center; padding:32px 16px; overflow-y:auto; }
+  .t-modal__backdrop { position:absolute; inset:0; background:rgba(15,23,28,0.55); }
+  .t-modal__panel { position:relative; background:#fff; border-radius:18px; width:min(720px, 100%); box-shadow:0 24px 60px rgba(0,0,0,0.18); max-height:calc(100vh - 64px); overflow-y:auto; }
+  .t-modal__head { display:flex; justify-content:space-between; align-items:center; padding:18px 22px; border-bottom:1px solid var(--border); }
+  .t-modal__close { background:none; border:0; cursor:pointer; font-size:1rem; color:var(--muted); padding:6px 8px; border-radius:8px; }
+  .t-modal__close:hover { background:#f3f4f3; }
+  .t-modal__form { padding:18px 22px 22px; }
+  .t-modal__foot { margin-top:16px; display:flex; gap:10px; justify-content:flex-end; }
+  .t-form-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  .t-form-grid .t-field { margin:0; }
+  .t-form-grid label { display:block; font-size:.74rem; color:var(--muted); font-weight:700; margin-bottom:4px; letter-spacing:.04em; text-transform:uppercase; }
+  .t-form-grid .t-input { width:100%; padding:9px 11px; border-radius:8px; border:1px solid var(--border); font-size:.92rem; font-family:inherit; }
+  .t-form-grid textarea.t-input { resize:vertical; }
+  @media (max-width:640px) { .t-form-grid { grid-template-columns:1fr; } }
+</style>
+
+<script>
+(function(){
+  const modal = document.getElementById('edit-details-modal');
+  const open = document.getElementById('open-edit-details');
+  if (!modal || !open) return;
+  open.addEventListener('click', () => { modal.style.display = 'flex'; });
+  modal.querySelectorAll('[data-close-modal]').forEach(el => {
+    el.addEventListener('click', () => { modal.style.display = 'none'; });
+  });
+})();
+</script>
+{% endblock %}
+
+{% block extra_scripts %}
+{% if tab == 'builder' %}
+<script>
+(function() {
+  const csrf = "{{ csrf_token }}";
+  const linkId = "{{ link.id }}";
+  const week = {{ current_week }};
+  const initial = {{ rx_items_json|safe }};
+  const catalog = {
+    {% for e in catalog %}"{{ e.exercise_id }}": {name: "{{ e.name|escapejs }}", pattern: "{{ e.movement_pattern }}", equipment: "{{ e.equipment }}"}{% if not forloop.last %},{% endif %}
+    {% endfor %}
+  };
+
+  let stack = initial.map((it, i) => ({...it, key: 'k' + i}));
+  let snapshot = JSON.stringify(stack);
+  let dragKey = null;
+
+  const stackEl = document.getElementById('builder-stack');
+  const dirtyEl = document.getElementById('builder-dirty');
+  const countEl = document.getElementById('builder-count');
+  const sumCount = document.getElementById('bsum-count');
+  const sumTime = document.getElementById('bsum-time');
+  const sumPatterns = document.getElementById('bsum-patterns');
+
+  function dirty() {
+    return JSON.stringify(stack) !== snapshot;
+  }
+  function refreshSummary() {
+    countEl.textContent = stack.length;
+    sumCount.textContent = stack.length;
+    const seconds = stack.reduce((a, x) => a + (parseInt(x.sets,10)||0) * 30 + (parseInt(x.sets,10)||0) * (parseInt(x.rest_seconds,10)||0), 0);
+    sumTime.textContent = stack.length ? Math.round(seconds / 60) + ' min' : '—';
+    const patterns = [...new Set(stack.map(x => (catalog[x.exercise_id] || {}).pattern).filter(Boolean))];
+    sumPatterns.textContent = patterns.length ? patterns.join(' · ') : '—';
+    dirtyEl.style.display = dirty() ? 'inline-flex' : 'none';
+  }
+
+  function render() {
+    stackEl.innerHTML = '';
+    stack.forEach((item, idx) => {
+      const meta = catalog[item.exercise_id] || {name: item.exercise_name, pattern: item.movement_pattern};
+      const card = document.createElement('div');
+      card.className = 't-builder-card';
+      card.draggable = true;
+      card.dataset.key = item.key;
+      card.innerHTML = `
+        <i class="fas fa-grip-vertical grip"></i>
+        <div class="num">${idx + 1}</div>
+        <div>
+          <div class="name">${meta.name}</div>
+          <div class="fields">
+            <span class="t-pill t-pill--neutral">${meta.pattern || ''}</span>
+            <span class="t-presc-field"><span class="k">Sets:</span><input data-k="sets" class="w-narrow" value="${item.sets}"/></span>
+            <span class="t-presc-field"><span class="k">Reps:</span><input data-k="reps" class="w-narrow" value="${item.reps}"/></span>
+            <span class="t-presc-field"><span class="k">Load:</span><input data-k="load" class="w-wide" value="${item.load || ''}"/></span>
+            <span class="t-presc-field"><span class="k">Rest (s):</span><input data-k="rest_seconds" value="${item.rest_seconds}"/></span>
+          </div>
+        </div>
+        <button type="button" class="trash" title="Remove"><i class="fas fa-trash"></i></button>
+      `;
+      card.querySelectorAll('input[data-k]').forEach(inp => {
+        inp.addEventListener('input', () => {
+          item[inp.dataset.k] = inp.value;
+          refreshSummary();
+        });
+      });
+      card.querySelector('.trash').addEventListener('click', () => {
+        stack = stack.filter(x => x.key !== item.key);
+        render();
+      });
+      card.addEventListener('dragstart', () => { dragKey = item.key; card.classList.add('is-dragging'); });
+      card.addEventListener('dragend', () => { dragKey = null; card.classList.remove('is-dragging'); });
+      card.addEventListener('dragover', e => {
+        e.preventDefault();
+        if (!dragKey || dragKey === item.key) return;
+        const from = stack.findIndex(x => x.key === dragKey);
+        const to = stack.findIndex(x => x.key === item.key);
+        if (from === -1 || to === -1) return;
+        const moved = stack.splice(from, 1)[0];
+        stack.splice(to, 0, moved);
+        render();
+      });
+      stackEl.appendChild(card);
+    });
+    refreshSummary();
+  }
+
+  window.builderAddById = function(id) {
+    const meta = catalog[id];
+    if (!meta) return;
+    stack.push({
+      key: 'k' + Date.now() + Math.random(),
+      exercise_id: id,
+      exercise_name: meta.name,
+      movement_pattern: meta.pattern,
+      sets: 3, reps: 10, load: 'BW', rest_seconds: 60, tempo: '', notes: ''
+    });
+    render();
+  };
+
+  document.getElementById('builder-add').addEventListener('click', () => {
+    const lib = document.getElementById('builder-library');
+    if (lib) {
+      lib.open = !lib.open;
+      if (lib.open) lib.scrollIntoView({behavior: 'smooth', block: 'nearest'});
+    }
+  });
+
+  document.getElementById('builder-reset').addEventListener('click', () => {
+    stack = initial.map((it, i) => ({...it, key: 'k' + i}));
+    snapshot = JSON.stringify(stack);
+    render();
+  });
+
+  async function postSave(publish) {
+    const items = stack.map(({key, ...rest}) => rest);
+    const res = await fetch(`/therapist/patient/${linkId}/program/save/`, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json', 'X-CSRFToken': csrf},
+      credentials: 'same-origin',
+      body: JSON.stringify({week_number: week, items, publish})
+    });
+    if (!res.ok) throw new Error('save failed: ' + res.status);
+    return await res.json();
+  }
+
+  document.getElementById('builder-publish').addEventListener('click', async () => {
+    try {
+      const r = await postSave(true);
+      snapshot = JSON.stringify(stack);
+      refreshSummary();
+      alert(`Published ${r.item_count} exercise${r.item_count === 1 ? '' : 's'} to ${'{{ link.display_name|escapejs }}'}.`);
+    } catch (e) {
+      alert('Could not publish: ' + e.message);
+    }
+  });
+
+  // Auto-save draft every 30s
+  setInterval(async () => {
+    if (!dirty()) return;
+    try { await postSave(false); } catch (e) { /* swallow drafts */ }
+  }, 30000);
+
+  render();
+})();
+</script>
+{% endif %}
+{% if tab == 'messages' %}
+<script>
+(function(){
+  const list = document.getElementById('msg-list');
+  if (list) list.scrollTop = list.scrollHeight;
+})();
+</script>
+{% endif %}
+{% endblock %}

@@ -60,6 +60,11 @@ def patient_login(request: HttpRequest):
                 has_profile = patient.strength_profiles.exists()
                 request.session['has_strength_profile'] = has_profile
 
+                # B2B2C: therapist-managed patients skip strength_app onboarding
+                # entirely and land on their therapist-driven session today page.
+                if patient.therapist_managed:
+                    return redirect('therapist_session_today')
+
                 if patient.gate_test_completed and has_profile:
                     return redirect('v1_dashboard')
 
@@ -1428,50 +1433,58 @@ def exercise_detail(request: HttpRequest, exercise_id: str):
 
 
 def exercise_execute(request, exercise_id):
-    """Execute exercise with camera (from exercise library)"""
+    """Execute exercise with camera (from exercise library) — V1 template with ghost + voice."""
     patient_id = request.session.get('patient_id')
     if not patient_id:
         return redirect('patient_login')
-    
+
     patient = get_object_or_404(PatientProfile, patient_id=patient_id)
-    
-    # Try to get exercise from registry
-    try:
-        from .exercise_system.exercise_registry_v2 import EXERCISE_METADATA
-        exercise_info = EXERCISE_METADATA.get(exercise_id)
-        if not exercise_info:
-            messages.error(request, f'Exercise "{exercise_id}" not found')
-            return redirect('exercise_library')
-    except ImportError:
-        exercise_info = {
-            'display_name': exercise_id.replace('_', ' ').title(),
-            'category': 'strength',
-            'level': 'intermediate',
-            'unilateral': False,
-        }
-    
-    # Normalise the exercise dict so exercise_execute.html works regardless of source.
-    # The workout route stores 'exercise_name'; the library route uses 'display_name'.
-    exercise_dict = {
+
+    from .exercise_system.exercise_registry_v2 import EXERCISE_METADATA
+    from .exercise_content import EXERCISE_CONTENT
+    from .exercise_content_gap_fill import EXERCISE_CONTENT_GAP_FILL as EXERCISE_CONTENT_GAP
+
+    meta = EXERCISE_METADATA.get(exercise_id, {})
+    if not meta:
+        messages.error(request, f'Exercise "{exercise_id}" not found')
+        return redirect('exercise_library')
+
+    content = EXERCISE_CONTENT.get(exercise_id) or EXERCISE_CONTENT_GAP.get(exercise_id) or {}
+
+    tempo = str(meta.get('tempo', '3-1-2-0'))
+    tempo_parts = tempo.split('-')
+    while len(tempo_parts) < 4:
+        tempo_parts.append('0')
+
+    exercise = {
         'exercise_id': exercise_id,
-        'exercise_name': exercise_info.get('display_name') or exercise_info.get('exercise_name') or exercise_id.replace('_', ' ').title(),
-        'sets': exercise_info.get('sets', 3),
-        'reps': exercise_info.get('reps', 10),
-        'hold_duration': exercise_info.get('hold_duration', 0),
-        'rest': exercise_info.get('rest', 60),
-        'type': exercise_info.get('category', 'strength'),
+        'exercise_name': meta.get('display_name', exercise_id.replace('_', ' ').title()),
+        'movement_pattern': meta.get('movement_pattern', 'unknown'),
+        'sets': 3,
+        'reps': 10,
+        'tempo': tempo,
+        'tempo_parts': tempo_parts,
+        'rest_seconds': 60,
+        'prescribed_rest': 60,
+        'is_unilateral': meta.get('unilateral', False),
+        'mind_muscle_cue': content.get('mind_muscle_cue_en', ''),
+        'form_cues': content.get('form_cues_en', []),
+        'instructions': content.get('instructions_en', ''),
+        'asymmetry': {},
+        'capability_level': meta.get('capability_level', 2),
     }
-    
+
     context = {
         'patient': patient,
-        'exercise': exercise_dict,
+        'exercise': exercise,
         'exercise_index': 0,
         'total_exercises': 1,
         'is_last_exercise': True,
-        'cv_available': CV_AVAILABLE,
+        'has_strength_profile': True,
+        'library_mode': True,
     }
-    
-    return render(request, 'strength_app/exercise_execute.html', context)
+
+    return render(request, 'strength_app/v1_exercise_execute.html', context)
 
 
 # ============================================================================

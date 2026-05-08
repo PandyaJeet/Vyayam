@@ -20,14 +20,7 @@ Context variables expected:
 
 {% block title %}Progress — VYAYAM{% endblock %}
 
-{% block extra_head %}
-<style>
-  .radar-grid {
-    background-image: radial-gradient(circle at center, #bec9be22 1px, transparent 1px);
-    background-size: 40px 40px;
-  }
-</style>
-{% endblock %}
+{% block extra_head %}{% endblock %}
 
 {% block body_class %}bg-background font-body text-on-surface min-h-screen flex flex-col{% endblock %}
 
@@ -45,80 +38,48 @@ Context variables expected:
   <!-- Radar Chart Card -->
   <section class="bg-surface-container-lowest rounded-[20px] py-5 px-3
                   shadow-[0_4px_20px_rgba(26,28,28,0.04)] border border-on-surface/[0.05]">
-    <div class="relative aspect-square w-full max-w-sm mx-auto flex items-center justify-center px-8">
-      <div class="absolute inset-0 radar-grid rounded-full border-[0.5px] border-outline-variant/10"></div>
+    <div class="max-w-[400px] mx-auto aspect-square">
       <svg class="w-full h-full drop-shadow-sm" viewBox="0 0 400 400">
-        <!-- Grid Rings -->
-        <circle class="text-outline-variant/20" cx="200" cy="200" fill="none" r="160" stroke="currentColor" stroke-width="1"></circle>
-        <circle class="text-outline-variant/20" cx="200" cy="200" fill="none" r="120" stroke="currentColor" stroke-width="1"></circle>
-        <circle class="text-outline-variant/20" cx="200" cy="200" fill="none" r="80"  stroke="currentColor" stroke-width="1"></circle>
-        <circle class="text-outline-variant/20" cx="200" cy="200" fill="none" r="40"  stroke="currentColor" stroke-width="1"></circle>
-        <!-- Axis Lines: Push, Pull, Carry, Lunge, Squat, Hinge, Core -->
-        <g class="text-outline-variant/30" stroke="currentColor" stroke-width="1">
-          <line x1="200" y1="200" x2="200" y2="40"></line>
-          <line x1="200" y1="200" x2="340" y2="120"></line>
-          <line x1="200" y1="200" x2="360" y2="280"></line>
-          <line x1="200" y1="200" x2="260" y2="380"></line>
-          <line x1="200" y1="200" x2="140" y2="380"></line>
-          <line x1="200" y1="200" x2="40"  y2="280"></line>
-          <line x1="200" y1="200" x2="60"  y2="120"></line>
+        <!-- Concentric rings at 20 / 40 / 60 / 80 / 100% of max radius (160) -->
+        <circle cx="200" cy="200" fill="none" r="32"  stroke="rgba(26,28,28,0.1)" stroke-width="1"/>
+        <circle cx="200" cy="200" fill="none" r="64"  stroke="rgba(26,28,28,0.1)" stroke-width="1"/>
+        <circle cx="200" cy="200" fill="none" r="96"  stroke="rgba(26,28,28,0.1)" stroke-width="1"/>
+        <circle cx="200" cy="200" fill="none" r="128" stroke="rgba(26,28,28,0.1)" stroke-width="1"/>
+        <circle cx="200" cy="200" fill="none" r="160" stroke="rgba(26,28,28,0.1)" stroke-width="1"/>
+        <!-- Axis spokes matching gamification angle order: Squat Hinge Push Pull Core Carry Lunge -->
+        <g stroke="rgba(26,28,28,0.1)" stroke-width="1">
+          <line x1="200" y1="200" x2="200" y2="40"/>
+          <line x1="200" y1="200" x2="325" y2="100"/>
+          <line x1="200" y1="200" x2="356" y2="236"/>
+          <line x1="200" y1="200" x2="269" y2="344"/>
+          <line x1="200" y1="200" x2="131" y2="344"/>
+          <line x1="200" y1="200" x2="44"  y2="236"/>
+          <line x1="200" y1="200" x2="75"  y2="100"/>
         </g>
-        <path class="fill-primary-container/20 stroke-primary stroke-2"
-              d="{{ radar_path|default:'M 200 60 L 320 130 L 340 260 L 250 360 L 140 370 L 60 270 L 80 140 Z' }}">
-        </path>
+        <!-- Filled polygon connecting all 7 score dots -->
+        <polygon fill="rgba(12,108,63,0.15)" stroke="#0c6c3f" stroke-width="2" stroke-linejoin="round"
+                 points="{{ radar_path|default:'200,104 275,140 262,214 228,258 145,315 106,221 150,160' }}"/>
+        <!-- Score dots -->
         {% for p in movement_patterns %}
-        <circle class="fill-primary" cx="{{ p.radar_x }}" cy="{{ p.radar_y }}" r="4.5"></circle>
+        <circle fill="#0c6c3f" cx="{{ p.radar_x }}" cy="{{ p.radar_y }}" r="4.5"/>
         {% empty %}
-        <circle class="fill-primary" cx="200" cy="60"  r="4.5"></circle>
-        <circle class="fill-primary" cx="320" cy="130" r="4.5"></circle>
-        <circle class="fill-primary" cx="340" cy="260" r="4.5"></circle>
-        <circle class="fill-primary" cx="250" cy="360" r="4.5"></circle>
-        <circle class="fill-primary" cx="140" cy="370" r="4.5"></circle>
-        <circle class="fill-primary" cx="60"  cy="270" r="4.5"></circle>
-        <circle class="fill-primary" cx="80"  cy="140" r="4.5"></circle>
+        <circle fill="#0c6c3f" cx="200" cy="104" r="4.5"/>
+        <circle fill="#0c6c3f" cx="275" cy="140" r="4.5"/>
+        <circle fill="#0c6c3f" cx="262" cy="214" r="4.5"/>
+        <circle fill="#0c6c3f" cx="228" cy="258" r="4.5"/>
+        <circle fill="#0c6c3f" cx="145" cy="315" r="4.5"/>
+        <circle fill="#0c6c3f" cx="106" cy="221" r="4.5"/>
+        <circle fill="#0c6c3f" cx="150" cy="160" r="4.5"/>
         {% endfor %}
+        <!-- Axis labels positioned just beyond each spoke tip -->
+        <text x="200" y="27"  text-anchor="middle" fill="#4a5a4e" font-size="10" font-weight="700" letter-spacing="0.08em">SQUAT</text>
+        <text x="330" y="96"  text-anchor="start"  fill="#4a5a4e" font-size="10" font-weight="700" letter-spacing="0.08em">HINGE</text>
+        <text x="361" y="240" text-anchor="start"  fill="#4a5a4e" font-size="10" font-weight="700" letter-spacing="0.08em">PUSH</text>
+        <text x="269" y="360" text-anchor="middle" fill="#4a5a4e" font-size="10" font-weight="700" letter-spacing="0.08em">PULL</text>
+        <text x="131" y="360" text-anchor="middle" fill="#4a5a4e" font-size="10" font-weight="700" letter-spacing="0.08em">CORE</text>
+        <text x="39"  y="240" text-anchor="end"    fill="#4a5a4e" font-size="10" font-weight="700" letter-spacing="0.08em">CARRY</text>
+        <text x="70"  y="96"  text-anchor="end"    fill="#4a5a4e" font-size="10" font-weight="700" letter-spacing="0.08em">LUNGE</text>
       </svg>
-
-      <!-- Floating Labels -->
-      {% for p in movement_patterns %}
-      <div class="absolute {{ p.label_pos }} {{ p.label_align }}">
-        <span class="block text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">{{ p.name }}</span>
-        {% if p.rank_class == 'gold' %}
-          <span class="inline-block px-2 py-0.5 bg-tertiary-fixed text-on-tertiary-fixed text-[8px] font-bold rounded-full">{{ p.rank_label }}</span>
-        {% else %}
-          <span class="inline-block px-2 py-0.5 bg-secondary-fixed text-on-secondary-fixed text-[8px] font-bold rounded-full">{{ p.rank_label }}</span>
-        {% endif %}
-      </div>
-      {% empty %}
-      <div class="absolute top-[-5%] left-1/2 -translate-x-1/2 text-center">
-        <span class="block text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">Push</span>
-        <span class="inline-block px-2 py-0.5 bg-tertiary-fixed text-on-tertiary-fixed text-[8px] font-bold rounded-full">GOLD II</span>
-      </div>
-      <div class="absolute top-[18%] right-[-15%] text-right">
-        <span class="block text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">Pull</span>
-        <span class="inline-block px-2 py-0.5 bg-secondary-fixed text-on-secondary-fixed text-[8px] font-bold rounded-full">SILVER I</span>
-      </div>
-      <div class="absolute bottom-[28%] right-[-18%] text-right">
-        <span class="block text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">Carry</span>
-        <span class="inline-block px-2 py-0.5 bg-[#f5d0b8] text-[#5a2e00] text-[8px] font-bold rounded-full">BRONZE II</span>
-      </div>
-      <div class="absolute bottom-[-5%] right-[10%] text-center">
-        <span class="block text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">Lunge</span>
-        <span class="inline-block px-2 py-0.5 bg-tertiary-fixed text-on-tertiary-fixed text-[8px] font-bold rounded-full">GOLD II</span>
-      </div>
-      <div class="absolute bottom-[-5%] left-[10%] text-center">
-        <span class="block text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">Squat</span>
-        <span class="inline-block px-2 py-0.5 bg-tertiary-fixed text-on-tertiary-fixed text-[8px] font-bold rounded-full">GOLD II</span>
-      </div>
-      <div class="absolute bottom-[28%] left-[-18%] text-left">
-        <span class="block text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">Hinge</span>
-        <span class="inline-block px-2 py-0.5 bg-secondary-fixed text-on-secondary-fixed text-[8px] font-bold rounded-full">SILVER I</span>
-      </div>
-      <div class="absolute top-[18%] left-[-15%] text-left">
-        <span class="block text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">Core</span>
-        <span class="inline-block px-2 py-0.5 bg-secondary-fixed text-on-secondary-fixed text-[8px] font-bold rounded-full">SILVER I</span>
-      </div>
-      {% endfor %}
     </div>
   </section>
 

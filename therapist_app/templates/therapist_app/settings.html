@@ -1,0 +1,45 @@
+{% extends "therapist_app/base_therapist.html" %}
+{% block title %}Settings — Therapist Console{% endblock %}
+
+{% block content %}
+<h2 style="margin:0 0 18px; font-size:1.4rem; font-weight:800; letter-spacing:-0.02em;">Settings</h2>
+
+<div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(300px, 1fr)); gap:16px;">
+  <div class="t-card">
+    <div class="t-card-title">Profile</div>
+    <div style="display:flex; gap:14px; margin-bottom:14px; align-items:center;">
+      <span class="t-avatar t-avatar--lg">{{ therapist.initials }}</span>
+      <div>
+        <div style="font-weight:700; font-size:1rem;">{{ therapist.full_name }}</div>
+        <div style="font-size:.8rem; color:var(--muted);">{{ therapist.specialization|default:"Physiotherapist" }}</div>
+      </div>
+    </div>
+    <div class="t-row-kv"><span>Email</span><strong>{{ therapist.user.email|default:therapist.user.username }}</strong></div>
+    <div class="t-row-kv"><span>Registration</span><strong>{{ therapist.registration_number|default:"—" }}</strong></div>
+    <div class="t-row-kv"><span>Clinic</span><strong>{{ therapist.clinic_name|default:"—" }}</strong></div>
+  </div>
+
+  <div class="t-card">
+    <div class="t-card-title">Notification preferences</div>
+    <div class="t-toggle-row"><span>Patient missed 3+ sessions</span><span class="t-toggle is-on"></span></div>
+    <div class="t-toggle-row"><span>Pain spike (&gt;5/10)</span><span class="t-toggle is-on"></span></div>
+    <div class="t-toggle-row"><span>Patient sent a message</span><span class="t-toggle is-on"></span></div>
+    <div class="t-toggle-row"><span>Weekly compliance digest</span><span class="t-toggle is-on"></span></div>
+    <div class="t-toggle-row"><span>Marketing &amp; product updates</span><span class="t-toggle"></span></div>
+  </div>
+
+  <div class="t-card">
+    <div class="t-card-title">Practice &amp; billing</div>
+    <div class="t-row-kv"><span>Plan</span><strong>Clinic Pro · {{ therapist.seat_limit }} active patient seats</strong></div>
+    <div class="t-row-kv"><span>Patient seats used</span><strong>{{ active_seats }} / {{ therapist.seat_limit }}</strong></div>
+    <div class="t-row-kv"><span>Next invoice</span><strong>—</strong></div>
+  </div>
+
+  <div class="t-card">
+    <div class="t-card-title">Data &amp; compliance</div>
+    <div class="t-row-kv"><span>HIPAA-equivalent (DPDP, India)</span><strong>Active</strong></div>
+    <div class="t-row-kv"><span>Patient data export</span><strong>On request</strong></div>
+    <div class="t-row-kv"><span>Audit log</span><strong>Coming in follow-up</strong></div>
+  </div>
+</div>
+{% endblock %}

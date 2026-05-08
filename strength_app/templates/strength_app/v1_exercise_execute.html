@@ -148,13 +148,19 @@
         </span>
         {% endif %}
       </div>
+      {% if library_mode %}
+      <span style="display:inline-block;padding:2px 8px;border-radius:12px;background:rgba(255,200,0,.15);color:#ffd76a;font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-top:2px;">Practice Mode</span>
+      {% else %}
       <div class="progress-text">Exercise {{ exercise_index|add:1 }} of {{ total_exercises }} · {{ exercise.movement_pattern|title }}</div>
+      {% endif %}
     </div>
+    {% if not library_mode %}
     <div style="flex:1;min-width:80px;">
       <div style="height:5px;border-radius:5px;background:rgba(255,255,255,.1);">
         <div style="height:100%;border-radius:5px;background:linear-gradient(90deg,#0c6c3f,#6bbf8a);width:{% widthratio exercise_index|add:1 total_exercises 100 %}%;"></div>
       </div>
     </div>
+    {% endif %}
   </div>
 
   <div class="main-layout">
@@ -348,7 +354,7 @@
       <!-- Submit -->
       <button class="submit-btn" id="submitBtn" onclick="saveAndNext()">
         <i class="fas fa-check me-2"></i>
-        {% if assessment_mode %}Score &amp; Next Test{% elif is_last_exercise %}Finish &amp; Cool Down{% else %}Next Exercise{% endif %}
+        {% if assessment_mode %}Score &amp; Next Test{% elif library_mode %}Finish Practice{% elif is_last_exercise %}Finish &amp; Cool Down{% else %}Next Exercise{% endif %}
       </button>
       <button class="skip-btn" onclick="skipExercise()">Skip this exercise</button>
 
@@ -384,6 +390,8 @@
   const EXERCISE_INDEX  = "{{ exercise_index }}";
   const TEMPO_PARTS     = ["{{ exercise.tempo_parts.0|default:3 }}, {{ exercise.tempo_parts.1|default:1 }}, {{ exercise.tempo_parts.2|default:2 }}, {{ exercise.tempo_parts.3|default:0 }}"];
   const IS_TEST_MODE = (window.location.pathname.indexOf('/test-exercise/') !== -1);
+  const LIBRARY_MODE = {{ library_mode|yesno:"true,false" }};
+  const LIBRARY_RETURN_URL = "{{ library_return_url|default:'' }}";
   const CAPABILITY_LEVEL = "{{ exercise.capability_level|default:2 }}";
   const EXERCISE_FORM_CUES = [{% for cue in exercise.form_cues %}"{{ cue|escapejs }}"{% if not forloop.last %},{% endif %}{% endfor %}];
   const MIND_MUSCLE_CUE = "{{ exercise.mind_muscle_cue.during|default:''|escapejs }}";
@@ -503,6 +511,42 @@ async function startCamera() {
       cues: { knee: 'Bend your knees more', hip: 'Sit your hips back', trunk: 'Keep chest up' },
       forceArrows: [
         { joint: 23, dir: { x: 0, y: -0.06 }, label: 'Press your back into the wall' },
+        { joint: 27, dir: { x: 0, y: 0.06 }, label: 'Drive your feet into the floor' },
+      ],
+    },
+
+    SQUAT_PARTIAL: {
+      name: 'Partial Squat',
+      bodyOrientation: 'standing',
+      cameraPosition: { view: 'front', instruction: 'Place camera in front of you at waist height. Step back so your full body is visible.' },
+      setupCues: [
+        'Stand with your feet shoulder width apart.',
+        'Point your toes slightly outward.',
+        'Weight in the middle of your feet.',
+        'You will only descend to a comfortable, pain-free depth.',
+      ],
+      stanceCheck: {
+        ankleToShoulderRatio: { min: 0.7, max: 1.4 },
+        maxFootRotation: 0.20,
+        kneeOverAnkle: true,
+        label: 'Feet shoulder width apart, toes slightly out',
+      },
+      phases: [
+        { name: 'stand', duration: 0,    joints: { knee: 175, hip: 175, trunk: 175 }, voice: 'Stand tall' },
+        { name: 'down',  duration: 2500, joints: { knee: 130, hip: 145, trunk: 170 }, voice: 'Go down to comfortable depth' },
+        { name: 'hold',  duration: 1000, joints: { knee: 130, hip: 145, trunk: 170 }, voice: 'Hold' },
+        { name: 'up',    duration: 1500, joints: { knee: 175, hip: 175, trunk: 175 }, voice: 'Come back up' },
+      ],
+      checkAngles: function(lm) {
+        var knee = (calcAngle(lm[LM.leftHip], lm[LM.leftKnee], lm[LM.leftAnkle]) +
+                    calcAngle(lm[LM.rightHip], lm[LM.rightKnee], lm[LM.rightAnkle])) / 2;
+        var hip  = (calcAngle(lm[LM.leftShoulder],  lm[LM.leftHip],  lm[LM.leftKnee]) +
+                    calcAngle(lm[LM.rightShoulder], lm[LM.rightHip], lm[LM.rightKnee])) / 2;
+        var trunk = calcAngle(lm[LM.leftShoulder], lm[LM.leftHip], lm[LM.leftAnkle]);
+        return { knee: knee, hip: hip, trunk: trunk };
+      },
+      cues: { knee: 'Bend knees a little more', hip: 'Shift hips back slightly', trunk: 'Keep chest up' },
+      forceArrows: [
         { joint: 27, dir: { x: 0, y: 0.06 }, label: 'Drive your feet into the floor' },
       ],
     },
@@ -1294,7 +1338,7 @@ async function startCamera() {
 
   const EXERCISE_TEMPLATE_MAP = {
     // SQUAT_BILATERAL (25)
-    'full_squats': 'SQUAT_BILATERAL', 'partial_squats': 'SQUAT_BILATERAL', 'box_squat': 'SQUAT_BILATERAL',
+    'full_squats': 'SQUAT_BILATERAL', 'partial_squats': 'SQUAT_PARTIAL', 'box_squat': 'SQUAT_BILATERAL',
     'goblet_squat': 'SQUAT_BILATERAL', 'sit_to_stand': 'SQUAT_BILATERAL', 'wall_sit': 'PLANK_FRONT',
     'heel_elevated_squat': 'SQUAT_BILATERAL', 'pause_squat': 'SQUAT_BILATERAL', 'prisoner_squat': 'SQUAT_BILATERAL',
     'sumo_squat': 'SQUAT_BILATERAL', 'tempo_squat': 'SQUAT_BILATERAL', 'squat_pulse': 'SQUAT_BILATERAL',
@@ -1447,7 +1491,7 @@ async function startCamera() {
     // ══════════════════════════════════════════════════════════
 
     // SQUAT_BILATERAL
-    'partial_squats': 'SQUAT_BILATERAL', 'box_squat': 'SQUAT_BILATERAL',
+    'partial_squats': 'SQUAT_PARTIAL', 'box_squat': 'SQUAT_BILATERAL',
     'sit_to_stand': 'SQUAT_BILATERAL', 'wall_sit': 'PLANK_FRONT',
     'pause_squat': 'SQUAT_BILATERAL', 'prisoner_squat': 'SQUAT_BILATERAL',
     'tempo_squat': 'SQUAT_BILATERAL', 'squat_pulse': 'SQUAT_BILATERAL',
@@ -1744,7 +1788,7 @@ async function startCamera() {
   const EXERCISE_TYPE_MAP = {};
   try { (function() {
     var templateToType = {
-      'SQUAT_BILATERAL': 'SQUAT',   'SQUAT_SINGLE': 'SQUAT_SINGLE',
+      'SQUAT_BILATERAL': 'SQUAT',   'SQUAT_SINGLE': 'SQUAT_SINGLE',  'SQUAT_PARTIAL': 'SQUAT_PARTIAL',
       'PUSH_UP':         'PUSH_UP', 'PLANK_FRONT':  'PLANK', 'PLANK_SIDE': 'SIDE_PLANK',
       'HINGE_BILATERAL': 'HINGE',   'HINGE_SINGLE': 'HINGE_SINGLE',
       'LUNGE_SPLIT':     'LUNGE',   'DEAD_BUG':     'DEAD_BUG',
@@ -2203,12 +2247,25 @@ async function startCamera() {
           if (_shoulderW > 0.01) {
             var _lValgus = lm[LM.leftAnkle].x  - lm[LM.leftKnee].x;
             var _rValgus = lm[LM.rightKnee].x  - lm[LM.rightAnkle].x;
-            var _vThresh = _shoulderW * 0.18;
+            var _vThresh = _shoulderW * 0.15;
             if (_lValgus > _vThresh || _rValgus > _vThresh) {
               if (Date.now() - VoiceCoach.lastSpokenTime > 4000) {
                 VoiceCoach.speak('Push your knees out. Do not let them cave in.', true);
               }
             }
+          }
+        }
+        // "Go deeper" cue — fires when user hovers at partial depth for 3+ seconds (full squat only)
+        if (ghostState.exerciseType === 'SQUAT') {
+          if (matchScore >= 50 && matchScore < 70) {
+            if (!ghostState._shallowStart) ghostState._shallowStart = Date.now();
+            if (Date.now() - ghostState._shallowStart >= 3000 &&
+                Date.now() - VoiceCoach.lastSpokenTime > 6000) {
+              VoiceCoach.speak('Try to go a little deeper', false);
+              ghostState._shallowStart = null;
+            }
+          } else {
+            ghostState._shallowStart = null;
           }
         }
         if (matchScore >= 70) {
@@ -2290,7 +2347,7 @@ async function startCamera() {
           if (_shoulderW > 0.01) {
             var _lValgus = lm[LM.leftAnkle].x  - lm[LM.leftKnee].x;
             var _rValgus = lm[LM.rightKnee].x  - lm[LM.rightAnkle].x;
-            var _vThresh = _shoulderW * 0.18;
+            var _vThresh = _shoulderW * 0.15;
             if (_lValgus > _vThresh || _rValgus > _vThresh) {
               if (Date.now() - VoiceCoach.lastSpokenTime > 4000) {
                 VoiceCoach.speak('Push your knees out. Do not let them cave in.', true);
@@ -2687,8 +2744,8 @@ async function startCamera() {
       ghost[LM.rightHip].y = userLm[LM.rightHip].y + hipDropFactor * maxDrop;
       ghost[LM.leftKnee].y  = (ghost[LM.leftHip].y  + ankleY) / 2;
       ghost[LM.rightKnee].y = (ghost[LM.rightHip].y + ankleY) / 2;
-      ghost[LM.leftKnee].x  = userLm[LM.leftKnee].x  - hipDropFactor * 0.05;
-      ghost[LM.rightKnee].x = userLm[LM.rightKnee].x + hipDropFactor * 0.05;
+      ghost[LM.leftKnee].x  = userLm[LM.leftKnee].x  + hipDropFactor * 0.05;
+      ghost[LM.rightKnee].x = userLm[LM.rightKnee].x - hipDropFactor * 0.05;
       ghost[LM.leftAnkle].y  = ankleY;
       ghost[LM.rightAnkle].y = ankleY;
       ghost[LM.leftShoulder].y  = userLm[LM.leftShoulder].y  + hipDropFactor * maxDrop * 0.9;
@@ -3942,6 +3999,21 @@ async function startCamera() {
     if (!type || !selectedLocation) { alert('Please complete all steps.'); return; }
     painReported = true;
 
+    if (LIBRARY_MODE) {
+      if (painAction === 'skip_exercise') {
+        document.getElementById('painProtocol').innerHTML =
+          `<div class="guidance-box guidance-skip_exercise"><p>${computeGuidance(type, severity).guidance}</p><p style="margin-top:8px;font-size:.78rem;opacity:.7;">Returning to exercise library in 3 seconds...</p></div>`;
+        setTimeout(() => { if (stream) stream.getTracks().forEach(t => t.stop()); window.location.href = LIBRARY_RETURN_URL || '{% url "exercise_library" %}'; }, 3000);
+      } else if (painAction === 'reduce_volume') {
+        remainingSets = Math.max(1, remainingSets - 1);
+        document.getElementById('painProtocol').classList.remove('show');
+        togglePain();
+      } else {
+        document.getElementById('painProtocol').classList.remove('show');
+      }
+      return;
+    }
+
     fetch('{% url "v1_save_exercise_result" %}', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
@@ -4046,6 +4118,12 @@ async function startCamera() {
       return;
     }
 
+    if (LIBRARY_MODE) {
+      if (stream) stream.getTracks().forEach(t => t.stop());
+      window.location.href = LIBRARY_RETURN_URL || '{% url "exercise_library" %}';
+      return;
+    }
+
     fetch('{% url "v1_save_exercise_result" %}', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrf() },
@@ -4093,6 +4171,11 @@ async function startCamera() {
     }
     if (IS_TEST_MODE) {
       window.location.href = '/v1/test-exercises/';
+      return;
+    }
+    if (LIBRARY_MODE) {
+      if (stream) stream.getTracks().forEach(t => t.stop());
+      window.location.href = LIBRARY_RETURN_URL || '{% url "exercise_library" %}';
       return;
     }
     fetch('{% url "v1_save_exercise_result" %}', {

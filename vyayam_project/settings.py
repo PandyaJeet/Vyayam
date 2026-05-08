@@ -35,7 +35,10 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'strength_app',
+    'therapist_app',
 ]
+
+LOGIN_URL = '/therapist/login/'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',

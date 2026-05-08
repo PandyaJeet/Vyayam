@@ -1,0 +1,98 @@
+{% extends 'strength_app/therapist_session_base.html' %}
+{% block title %}Profile — VYAYAM{% endblock %}
+
+{% block content %}
+{# ── Hero ── #}
+<section style="margin-bottom:18px; display:flex; gap:14px; align-items:center;">
+  <div style="width:54px; height:54px; border-radius:50%; background:#0c6c3f; color:#fff; font-size:1.3rem; font-weight:800; display:flex; align-items:center; justify-content:center; flex-shrink:0; letter-spacing:-0.02em;">
+    {{ patient.name|first|upper }}
+  </div>
+  <div>
+    <h1 style="font-size:1.35rem; font-weight:800; letter-spacing:-0.02em; margin:0 0 2px;">{{ patient.name }}</h1>
+    {% if link.primary_condition %}
+      <div style="color:#666; font-size:.84rem;">{{ link.primary_condition }}</div>
+    {% endif %}
+  </div>
+</section>
+
+{# ── Patient info ── #}
+<div class="ts-card" style="margin-bottom:14px;">
+  <div style="font-size:.72rem; color:#666; font-weight:700; letter-spacing:.08em; margin-bottom:10px;">YOUR DETAILS</div>
+  <div class="ts-row-kv"><span>Name</span><strong>{{ patient.name }}</strong></div>
+  <div class="ts-row-kv"><span>Phone</span><strong>{{ patient.phone|default:"—" }}</strong></div>
+  {% if patient.age %}<div class="ts-row-kv"><span>Age</span><strong>{{ patient.age }}</strong></div>{% endif %}
+  {% if health_profile %}
+    {% if health_profile.height_cm %}<div class="ts-row-kv"><span>Height</span><strong>{{ health_profile.height_cm }} cm</strong></div>{% endif %}
+    {% if health_profile.weight_kg %}<div class="ts-row-kv"><span>Weight</span><strong>{{ health_profile.weight_kg }} kg</strong></div>{% endif %}
+  {% endif %}
+</div>
+
+{# ── Your programme ── #}
+<div class="ts-card" style="margin-bottom:14px;">
+  <div style="font-size:.72rem; color:#666; font-weight:700; letter-spacing:.08em; margin-bottom:10px;">YOUR PROGRAMME</div>
+  {% if link.primary_condition %}<div class="ts-row-kv"><span>Condition</span><strong>{{ link.primary_condition }}</strong></div>{% endif %}
+  {% if health_profile %}
+    {% if health_profile.affected_side %}<div class="ts-row-kv"><span>Affected side</span><strong>{{ health_profile.get_affected_side_display }}</strong></div>{% endif %}
+  {% endif %}
+  {% if link %}
+  <div class="ts-row-kv"><span>Programme week</span><strong>Week {{ link.current_week }}</strong></div>
+  {% if link.program_start %}<div class="ts-row-kv"><span>Started</span><strong>{{ link.program_start|date:"M d, Y" }}</strong></div>{% endif %}
+  {% if link.total_weeks %}<div class="ts-row-kv"><span>Programme length</span><strong>{{ link.total_weeks }} weeks</strong></div>{% endif %}
+  {% endif %}
+  {% if health_profile.goals %}
+  <div style="margin-top:10px; background:#f0f7f3; border-left:2px solid #0c6c3f; padding:8px 12px; border-radius:6px; font-size:.8rem; color:#1a4a32; line-height:1.45; border-bottom:0;">
+    <div style="font-size:.68rem; color:#666; font-weight:700; letter-spacing:.06em; margin-bottom:3px;">GOALS</div>
+    {{ health_profile.goals }}
+  </div>
+  {% endif %}
+</div>
+
+{# ── Your therapist + message form ── #}
+{% if link %}
+<div class="ts-card" style="margin-bottom:14px;">
+  <div style="font-size:.72rem; color:#666; font-weight:700; letter-spacing:.08em; margin-bottom:10px;">YOUR THERAPIST</div>
+  <div style="display:flex; gap:12px; align-items:center; margin-bottom:14px;">
+    <div style="width:40px; height:40px; border-radius:50%; background:#e8f5ee; color:#0c6c3f; font-size:.9rem; font-weight:800; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+      {{ link.therapist.initials }}
+    </div>
+    <div>
+      <div style="font-weight:700; font-size:.95rem;">{{ link.therapist.full_name }}</div>
+      {% if link.therapist.clinic_name %}<div style="font-size:.8rem; color:#666;">{{ link.therapist.clinic_name }}</div>{% endif %}
+      {% if link.therapist.specialization %}<div style="font-size:.76rem; color:#9ca6a3;">{{ link.therapist.specialization }}</div>{% endif %}
+    </div>
+  </div>
+  <div style="border-top:1px solid #ececec; padding-top:12px;">
+    <div style="font-weight:700; font-size:.9rem; margin-bottom:4px;">Message your therapist</div>
+    <div style="font-size:.78rem; color:#666; margin-bottom:10px;">{{ link.therapist.full_name }} will see this next time they check in.</div>
+    <form method="post" action="{% url 'therapist_session_profile' %}">
+      {% csrf_token %}
+      <textarea name="message" rows="3"
+                placeholder="How are you feeling? Any concerns about the programme, pain levels, or upcoming appointments…"
+                style="width:100%; padding:12px; border-radius:10px; border:1px solid #d4d8d4; font-size:.88rem; resize:vertical; box-sizing:border-box; margin-bottom:10px; font-family:inherit;"></textarea>
+      <button type="submit" class="ts-btn-ghost" style="width:100%; justify-content:center;">
+        Send message <span class="material-symbols-outlined" style="font-size:1rem;">send</span>
+      </button>
+    </form>
+  </div>
+</div>
+{% endif %}
+
+{# ── Support links ── #}
+<div class="ts-card" style="margin-bottom:14px;">
+  <div style="font-size:.72rem; color:#666; font-weight:700; letter-spacing:.08em; margin-bottom:10px;">SUPPORT</div>
+  <a href="#" style="display:flex; justify-content:space-between; align-items:center; padding:10px 0; text-decoration:none; color:#1a1c1c; font-size:.9rem; font-weight:600; border-bottom:1px dashed #e6e8e6;">
+    Help &amp; FAQ
+    <span class="material-symbols-outlined" style="font-size:1.1rem; color:#9ca6a3;">chevron_right</span>
+  </a>
+  <a href="{% url 'privacy_policy' %}" style="display:flex; justify-content:space-between; align-items:center; padding:10px 0; text-decoration:none; color:#1a1c1c; font-size:.9rem; font-weight:600;">
+    Privacy &amp; data
+    <span class="material-symbols-outlined" style="font-size:1.1rem; color:#9ca6a3;">chevron_right</span>
+  </a>
+</div>
+
+{# ── Logout ── #}
+<a href="{% url 'patient_logout' %}" style="display:flex; align-items:center; justify-content:center; gap:8px; width:100%; padding:13px; border-radius:999px; background:#fef2f2; color:#dc2626; font-weight:700; font-size:.95rem; text-decoration:none; border:1px solid #fecaca; box-sizing:border-box;">
+  <span class="material-symbols-outlined" style="font-size:1.1rem;">logout</span>
+  Log out
+</a>
+{% endblock %}

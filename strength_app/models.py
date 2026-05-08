@@ -190,6 +190,10 @@ class PatientProfile(models.Model):
         choices=PRESCRIPTION_MODES,
         default='ai_auto'
     )
+    # B2B2C: when True, the patient was created by a therapist via therapist_app.
+    # Patient PWA login skips strength_app onboarding and routes to the
+    # therapist-driven session today page instead.
+    therapist_managed = models.BooleanField(default=False)
     assigned_therapist = models.ForeignKey(
         'TherapistProfile',
         on_delete=models.SET_NULL,

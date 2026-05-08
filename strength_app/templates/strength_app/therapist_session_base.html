@@ -1,0 +1,108 @@
+{% load static %}<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>{% block title %}Today's Session — VYAYAM{% endblock %}</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+  <style>
+    :root { color-scheme: light; }
+    body { font-family: 'Plus Jakarta Sans', system-ui, sans-serif; background:#f7f8f7; color:#1a1c1c; }
+    .ts-card { background:#fff; border:1px solid #e2e2e2; border-radius:18px; padding:18px; }
+    .ts-card-tight { background:#fff; border:1px solid #e2e2e2; border-radius:14px; padding:14px; }
+    .ts-pill { display:inline-flex; align-items:center; gap:4px; padding:3px 10px; border-radius:999px; font-size:.74rem; font-weight:700; background:#e8f5ee; color:#0c6c3f; }
+    .ts-pill-neutral { background:#eee; color:#444; }
+    .ts-pill-warn { background:#fef3c7; color:#92400e; }
+    .ts-btn { display:inline-flex; align-items:center; gap:8px; background:#0c6c3f; color:#fff; padding:12px 20px; border-radius:999px; font-weight:700; border:0; cursor:pointer; font-size:.95rem; }
+    .ts-btn:disabled { opacity:.55; cursor:not-allowed; }
+    .ts-btn-ghost { display:inline-flex; align-items:center; gap:8px; background:#fff; color:#0c6c3f; padding:10px 16px; border-radius:999px; font-weight:700; border:1px solid #cde0d3; cursor:pointer; font-size:.88rem; }
+    .ts-btn-outline { display:inline-flex; align-items:center; gap:8px; background:#fff; color:#1a1c1c; padding:10px 16px; border-radius:999px; font-weight:600; border:1px solid #d4d8d4; cursor:pointer; font-size:.88rem; }
+    .ts-row-kv { display:flex; justify-content:space-between; padding:8px 0; font-size:.86rem; border-bottom:1px dashed #e6e8e6; }
+    .ts-row-kv:last-child { border-bottom:0; }
+    .ts-row-kv span { color:#666; }
+    .ts-row-kv strong { color:#1a1c1c; font-weight:700; }
+    .ts-pain-scale { display:flex; gap:6px; flex-wrap:wrap; }
+    .ts-pain-btn { width:42px; height:42px; border:1px solid #d4d8d4; background:#fff; border-radius:10px; font-weight:700; cursor:pointer; }
+    .ts-pain-btn[aria-pressed="true"] { background:#0c6c3f; color:#fff; border-color:#0c6c3f; }
+    .ts-diff-row { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+    .ts-diff-btn { background:#fff; border:1px solid #d4d8d4; padding:14px; border-radius:12px; cursor:pointer; font-weight:600; text-align:center; }
+    .ts-diff-btn[aria-pressed="true"] { background:#e8f5ee; border-color:#0c6c3f; color:#0c6c3f; }
+    .ts-flash { background:#fef2f2; color:#991b1b; padding:10px 14px; border-radius:10px; font-size:.88rem; margin-bottom:12px; }
+    .ts-progress { width:100%; height:8px; background:#e8e8e8; border-radius:999px; overflow:hidden; }
+    .ts-progress > div { height:100%; background:linear-gradient(90deg, #0c6c3f, #6bbf8a); border-radius:999px; }
+    .video-frame { position:relative; padding-bottom:56.25%; background:linear-gradient(135deg,#1a1c1c,#3b4140); border-radius:14px; overflow:hidden; }
+    .video-frame iframe, .video-frame .placeholder { position:absolute; inset:0; width:100%; height:100%; }
+    .video-frame .placeholder { display:flex; align-items:center; justify-content:center; color:#9ca6a3; font-size:.92rem; gap:8px; flex-direction:column; }
+  </style>
+</head>
+<body>
+  <header style="position:sticky; top:0; z-index:20; background:#f7f8f7; padding:14px 18px; border-bottom:1px solid #e6e8e6; display:flex; align-items:center; gap:12px;">
+    <div style="font-weight:800; letter-spacing:-0.02em; color:#0c6c3f;">VYAYAM</div>
+    <div style="opacity:.5; font-size:.78rem;">Therapist programme</div>
+    <div style="margin-left:auto; display:flex; gap:8px; align-items:center;">
+      {% if patient %}<span style="font-size:.85rem; font-weight:700;">{{ patient.name }}</span>{% endif %}
+      <a href="{% url 'patient_logout' %}" style="font-size:.78rem; color:#777; text-decoration:none;"><span class="material-symbols-outlined" style="font-size:1.1rem; vertical-align:middle;">logout</span></a>
+    </div>
+  </header>
+
+  <main style="max-width:560px; margin:0 auto; padding:20px 18px 80px;">
+    {% if messages %}
+      {% for m in messages %}
+        <div class="ts-flash">{{ m }}</div>
+      {% endfor %}
+    {% endif %}
+    {% block content %}{% endblock %}
+  </main>
+
+  {% block extra_scripts %}{% endblock %}
+
+  {% block bottom_nav %}
+  <nav style="position:fixed; bottom:16px; left:12px; right:12px; z-index:50; display:flex; align-items:center; padding:6px; background:rgba(255,255,255,0.88); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px); border-radius:999px; box-shadow:0 -8px 32px rgba(0,0,0,0.09), 0 0 0 1px rgba(26,28,28,0.06);">
+    {% with active=request.resolver_match.url_name %}
+
+    {# Home tab #}
+    {% if active == 'therapist_session_today' %}
+    <a href="{% url 'therapist_session_today' %}" style="flex:1; display:flex; flex-direction:column; align-items:center; gap:2px; padding:10px 6px; background:#e8f5ee; color:#0c6c3f; border-radius:999px; text-decoration:none;">
+      <span class="material-symbols-outlined" style="font-size:22px; font-variation-settings:'FILL' 1;">home_health</span>
+      <span style="font-size:10px; font-weight:800; letter-spacing:.04em;">Home</span>
+    </a>
+    {% else %}
+    <a href="{% url 'therapist_session_today' %}" style="flex:1; display:flex; flex-direction:column; align-items:center; gap:2px; padding:10px 6px; color:#666; border-radius:999px; text-decoration:none;">
+      <span class="material-symbols-outlined" style="font-size:22px;">home_health</span>
+      <span style="font-size:10px; font-weight:600; letter-spacing:.04em;">Home</span>
+    </a>
+    {% endif %}
+
+    {# Progress tab #}
+    {% if active == 'therapist_session_progress' %}
+    <a href="{% url 'therapist_session_progress' %}" style="flex:1; display:flex; flex-direction:column; align-items:center; gap:2px; padding:10px 6px; background:#e8f5ee; color:#0c6c3f; border-radius:999px; text-decoration:none;">
+      <span class="material-symbols-outlined" style="font-size:22px; font-variation-settings:'FILL' 1;">monitoring</span>
+      <span style="font-size:10px; font-weight:800; letter-spacing:.04em;">Progress</span>
+    </a>
+    {% else %}
+    <a href="{% url 'therapist_session_progress' %}" style="flex:1; display:flex; flex-direction:column; align-items:center; gap:2px; padding:10px 6px; color:#666; border-radius:999px; text-decoration:none;">
+      <span class="material-symbols-outlined" style="font-size:22px;">monitoring</span>
+      <span style="font-size:10px; font-weight:600; letter-spacing:.04em;">Progress</span>
+    </a>
+    {% endif %}
+
+    {# Profile tab #}
+    {% if active == 'therapist_session_profile' %}
+    <a href="{% url 'therapist_session_profile' %}" style="flex:1; display:flex; flex-direction:column; align-items:center; gap:2px; padding:10px 6px; background:#e8f5ee; color:#0c6c3f; border-radius:999px; text-decoration:none;">
+      <span class="material-symbols-outlined" style="font-size:22px; font-variation-settings:'FILL' 1;">person</span>
+      <span style="font-size:10px; font-weight:800; letter-spacing:.04em;">Profile</span>
+    </a>
+    {% else %}
+    <a href="{% url 'therapist_session_profile' %}" style="flex:1; display:flex; flex-direction:column; align-items:center; gap:2px; padding:10px 6px; color:#666; border-radius:999px; text-decoration:none;">
+      <span class="material-symbols-outlined" style="font-size:22px;">person</span>
+      <span style="font-size:10px; font-weight:600; letter-spacing:.04em;">Profile</span>
+    </a>
+    {% endif %}
+
+    {% endwith %}
+  </nav>
+  {% endblock %}
+</body>
+</html>

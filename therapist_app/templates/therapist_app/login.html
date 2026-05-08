@@ -1,0 +1,31 @@
+{% extends "therapist_app/base_therapist.html" %}
+{% block title %}Therapist Login — VYAYAM{% endblock %}
+
+{% block anon_content %}
+<div class="t-login-page">
+  <div class="t-login-card">
+    <span class="t-wordmark">VYAYAM</span>
+    <h2>Therapist Console</h2>
+    <p>Sign in with your clinician credentials.</p>
+
+    {% if error %}<div class="t-flash is-error" style="margin-bottom:14px;">{{ error }}</div>{% endif %}
+
+    <form method="post" action="{% url 'therapist_login' %}">
+      {% csrf_token %}
+      <div class="t-field">
+        <label class="t-label" for="username">Username</label>
+        <input class="t-input" id="username" name="username" autocomplete="username" required/>
+      </div>
+      <div class="t-field">
+        <label class="t-label" for="password">Password</label>
+        <input class="t-input" id="password" name="password" type="password" autocomplete="current-password" required/>
+      </div>
+      <button class="t-btn" style="width:100%; justify-content:center;" type="submit">Sign in</button>
+    </form>
+
+    <p style="margin-top:18px; font-size:.78rem; color:var(--muted); text-align:center;">
+      Patients sign in via the <a class="t-link" href="/login/">main app</a>.
+    </p>
+  </div>
+</div>
+{% endblock %}
