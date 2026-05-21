@@ -54,6 +54,25 @@
   .start-cam-btn { padding: 10px 24px; background: linear-gradient(135deg,#0c6c3f,#6bbf8a);
     border: none; border-radius: 10px; color: #fff; font-weight: 700; cursor: pointer; font-size: .9rem; }
 
+  /* Video-reference PiP — MVP test for full_squats. Sits top-left over
+     the camera feed, autoplays muted, loops. Patient mirrors the demo
+     while looking at their own camera in the rest of the frame. */
+  .video-ref-pip { position: absolute; top: 12px; left: 12px; z-index: 30;
+    width: 130px; max-width: 35%; border-radius: 10px; overflow: hidden;
+    border: 2px solid rgba(56,189,248,.85); background: #000;
+    box-shadow: 0 6px 18px rgba(0,0,0,.5); display: none; }
+  .video-ref-pip video { width: 100%; display: block; }
+  .video-ref-pip .vrp-label { position: absolute; bottom: 4px; left: 6px;
+    font-size: .58rem; font-weight: 800; letter-spacing: .5px;
+    color: #38bdf8; text-shadow: 0 1px 2px rgba(0,0,0,.9);
+    text-transform: uppercase; }
+  .video-ref-mode-badge { position: absolute; top: 12px; left: 150px;
+    z-index: 30; background: rgba(56,189,248,.15);
+    border: 1px solid rgba(56,189,248,.5); color: #38bdf8;
+    border-radius: 8px; padding: 4px 10px; font-size: .65rem;
+    font-weight: 800; letter-spacing: .5px; text-transform: uppercase;
+    display: none; }
+
   /* Right panel */
   .right-panel { display: flex; flex-direction: column; gap: 14px; }
   .info-card { background: #1a1f3a; border-radius: 14px; padding: 18px; }
@@ -168,6 +187,16 @@
     <div class="video-section">
       <video id="cameraFeed" autoplay playsinline></video>
       <canvas id="videoCanvas"></canvas>
+
+      <!-- Video-reference PiP — hidden by default. JS toggles it on when
+           EXERCISE_ID matches the VIDEO_MODE allowlist (full_squats only
+           for the MVP). The <video>'s src is set dynamically. -->
+      <div class="video-ref-pip" id="videoRefPip">
+        <video id="videoRefPlayer" autoplay muted loop playsinline></video>
+        <div class="vrp-label">Reference</div>
+      </div>
+      <div class="video-ref-mode-badge" id="videoRefBadge">📹 Video Mode</div>
+
       <div class="form-overlay" id="formOverlay" style="display:none;">
         <span id="formScore" style="color:#22c55e;">—%</span>
       </div>
@@ -4709,6 +4738,28 @@ async function startCamera() {
     var ctx      = canvas.getContext('2d');
     var hasGhost = !!(EXERCISE_TYPE_MAP[EXERCISE_ID] && EXERCISE_PHASES[EXERCISE_TYPE_MAP[EXERCISE_ID]]);
 
+    // ── VIDEO_MODE — MVP test (full_squats only). Replaces the ghost
+    //    overlay with a looped reference video PiP + a simple knee-threshold
+    //    rep counter. To roll back, remove full_squats from the array
+    //    below; nothing else needs to change.
+    var VIDEO_MODE_EXERCISES = ['full_squats'];
+    var VIDEO_MODE = VIDEO_MODE_EXERCISES.indexOf(EXERCISE_ID) !== -1;
+    if (VIDEO_MODE) {
+      hasGhost = false;  // disable ghost rendering + rep counting entirely
+      var _vrPip    = document.getElementById('videoRefPip');
+      var _vrPlayer = document.getElementById('videoRefPlayer');
+      var _vrBadge  = document.getElementById('videoRefBadge');
+      if (_vrPip && _vrPlayer) {
+        // Hash-stable URL via Django staticfiles manifest (WhiteNoise compressed storage).
+        // Path matches strength_app/static/strength_app/videos/<EXERCISE_ID>.mp4.
+        _vrPlayer.src = "{% load static %}" + "{% static 'strength_app/videos/' %}" + EXERCISE_ID + ".mp4";
+        _vrPip.style.display = 'block';
+        // Some mobile browsers ignore autoplay until first user gesture; force-play after camera start.
+        _vrPlayer.play().catch(function(){ /* will retry on user interaction */ });
+      }
+      if (_vrBadge) _vrBadge.style.display = 'block';
+    }
+
     if (hasGhost) { initGhostAnimator(); }
 
     pose = new Pose({ locateFile: function(f) { return 'https://cdn.jsdelivr.net/npm/@mediapipe/pose/' + f; } });
@@ -4726,6 +4777,40 @@ async function startCamera() {
 
       if (results.poseLandmarks) {
         var lm = results.poseLandmarks;
+
+        // ── VIDEO_MODE simple rep counter (full_squats MVP) ──
+        //    Hysteresis on average knee flexion:
+        //      standing → down  when knee < 140°
+        //      down     → standing when knee > 165°  (counts 1 rep)
+        //    Uses the same calcAngle/LM helpers as the rest of the file.
+        //    Lives outside the hasGhost branch so it survives even if the
+        //    ghost system is later removed.
+        if (VIDEO_MODE) {
+          if (!window._videoModeRep) {
+            window._videoModeRep = { state: 'standing', counted: 0 };
+          }
+          var _vmLH = lm[LM.leftHip],  _vmLk = lm[LM.leftKnee],  _vmLa = lm[LM.leftAnkle];
+          var _vmRH = lm[LM.rightHip], _vmRk = lm[LM.rightKnee], _vmRa = lm[LM.rightAnkle];
+          if (_vmLH && _vmLk && _vmLa && _vmRH && _vmRk && _vmRa) {
+            var _vmKnee = (calcAngle(_vmLH, _vmLk, _vmLa) +
+                           calcAngle(_vmRH, _vmRk, _vmRa)) / 2;
+            if (window._videoModeRep.state === 'standing' && _vmKnee < 140) {
+              window._videoModeRep.state = 'down';
+            } else if (window._videoModeRep.state === 'down' && _vmKnee > 165) {
+              window._videoModeRep.state = 'standing';
+              window._videoModeRep.counted += 1;
+              if (typeof onRepCounted === 'function') {
+                onRepCounted(window._videoModeRep.counted);
+              }
+              // Show the Done button after the target reps are reached.
+              if (typeof PRESCRIBED_REPS !== 'undefined' &&
+                  window._videoModeRep.counted >= PRESCRIBED_REPS) {
+                var _vmDone = document.getElementById('completeSetBtn');
+                if (_vmDone) _vmDone.style.display = 'block';
+              }
+            }
+          }
+        }
 
         // --- CALIBRATION phase ---
         if (ghostState.mode === 'CALIBRATING') {
