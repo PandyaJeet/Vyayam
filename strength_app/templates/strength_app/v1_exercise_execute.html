@@ -395,6 +395,7 @@
   const CAPABILITY_LEVEL = "{{ exercise.capability_level|default:2 }}";
   const EXERCISE_FORM_CUES = [{% for cue in exercise.form_cues %}"{{ cue|escapejs }}"{% if not forloop.last %},{% endif %}{% endfor %}];
   const MIND_MUSCLE_CUE = "{{ exercise.mind_muscle_cue.during|default:''|escapejs }}";
+  window.VYAYAM_DEBUG = true;
 
   let stream = null;
   let pose   = null;
@@ -1289,6 +1290,702 @@ async function startCamera() {
       forceArrows: [],
     },
 
+    SL_RDL: {
+      name: 'Single-Leg RDL',
+      bodyOrientation: 'standing',
+      cameraPosition: { view: 'side', instruction: 'Place camera to your side. Your full body from head to foot must be visible.' },
+      setupCues: [
+        'Stand on your left leg. Slight soft bend in the knee.',
+        'Your right leg will extend behind you as you hinge forward.',
+        'Keep your back flat like a table. No rounding.',
+        'Reach your hands toward the floor as you hinge.',
+      ],
+      stanceCheck: {
+        maxFootRotation: 0.15,
+        label: 'Standing foot pointing forward',
+      },
+      supportingSide: 'left',
+      phases: [
+        { name: 'stand',      duration: 0,    joints: { hip: 175, knee_support: 170, trunk: 175, trail_leg: 175 }, voice: 'Stand tall on your left leg' },
+        { name: 'hinge_down', duration: 3000, joints: { hip: 105, knee_support: 165, trunk: 115, trail_leg: 140 }, voice: 'Hinge forward. Lift your back leg.' },
+        { name: 'hold',       duration: 800,  joints: { hip: 105, knee_support: 165, trunk: 115, trail_leg: 140 }, voice: 'Hold the T-position' },
+        { name: 'return',     duration: 2000, joints: { hip: 175, knee_support: 170, trunk: 175, trail_leg: 175 }, voice: 'Come back up. Stay balanced.' },
+      ],
+      checkAngles: function(lm) {
+        var hip          = calcAngle(lm[LM.leftShoulder],  lm[LM.leftHip],   lm[LM.leftKnee]);
+        var knee_support = calcAngle(lm[LM.leftHip],       lm[LM.leftKnee],  lm[LM.leftAnkle]);
+        var trunk        = calcAngle(lm[LM.leftShoulder],  lm[LM.leftHip],   lm[LM.leftAnkle]);
+        var trail_leg    = calcAngle(lm[LM.rightShoulder], lm[LM.rightHip],  lm[LM.rightKnee]);
+        return { hip: hip, knee_support: knee_support, trunk: trunk, trail_leg: trail_leg };
+      },
+      cues: {
+        hip:          'Hinge deeper — push hips back',
+        knee_support: 'Keep your supporting knee soft',
+        trunk:        'Keep your back flat',
+        trail_leg:    'Lift your back leg higher',
+      },
+      forceArrows: [],
+    },
+
+    // ───────────────────────────────────────────────────────────
+    // STRENGTH/MOBILITY — 4 dedicated coaches ported from V2 Python refs
+    // (DEAD_BUG already exists above as a generic supine-extension template
+    //  and matches dead_bug_v2.py — no separate template needed.)
+    // ───────────────────────────────────────────────────────────
+
+    GOBLET_SQUAT: {
+      name: 'Goblet Squat',
+      bodyOrientation: 'standing',
+      cameraPosition: { view: 'front', instruction: 'Place camera in front of you at waist height. Step back so your full body is visible.' },
+      setupCues: [
+        'Hold the weight at your chest. Elbows tucked in.',
+        'Feet shoulder width apart. Toes slightly out.',
+        'Squat down — keep your chest tall and elbows inside your knees.',
+        'Drive through your heels to stand back up.',
+      ],
+      stanceCheck: {
+        ankleToShoulderRatio: { min: 0.7, max: 1.4 },
+        maxFootRotation: 0.20,
+        kneeOverAnkle: true,
+        label: 'Feet shoulder width apart, toes slightly out',
+      },
+      // Ported from goblet_squat_v2.py: standing→descending→bottom (85°)→ascending
+      // Deeper bottom (85°) vs bodyweight squat (90°) — counterbalance allows it
+      phases: [
+        { name: 'stand',  duration: 0,    joints: { knee: 175, trunk: 175 }, voice: 'Hold the weight at your chest' },
+        { name: 'down',   duration: 2500, joints: { knee: 85,  trunk: 165 }, voice: 'Squat down — chest up' },
+        { name: 'hold',   duration: 800,  joints: { knee: 85,  trunk: 165 }, voice: 'Hold the bottom' },
+        { name: 'up',     duration: 2000, joints: { knee: 175, trunk: 175 }, voice: 'Drive up through your heels' },
+      ],
+      checkAngles: function(lm) {
+        var knee = (calcAngle(lm[LM.leftHip],  lm[LM.leftKnee],  lm[LM.leftAnkle]) +
+                    calcAngle(lm[LM.rightHip], lm[LM.rightKnee], lm[LM.rightAnkle])) / 2;
+        // Torso upright = shoulder-hip-knee angle (matches Python avg_torso)
+        var trunk = (calcAngle(lm[LM.leftShoulder],  lm[LM.leftHip],  lm[LM.leftKnee]) +
+                     calcAngle(lm[LM.rightShoulder], lm[LM.rightHip], lm[LM.rightKnee])) / 2;
+        return { knee: knee, trunk: trunk };
+      },
+      cues: { knee: 'Go deeper — thighs to parallel or below', trunk: 'Chest up — stay upright' },
+      forceArrows: [
+        { joint: 27, dir: { x: 0, y: 0.06 }, label: 'Drive your feet into the floor' },
+      ],
+    },
+
+    BW_RDL: {
+      name: 'Bodyweight RDL',
+      bodyOrientation: 'standing',
+      cameraPosition: { view: 'side', instruction: 'Place camera to your side. Your full body from head to foot must be visible.' },
+      setupCues: [
+        'Stand with feet hip-width. Soft bend in your knees.',
+        'Slide your hands down the front of your thighs.',
+        'Push your hips back as your torso tips forward. Back flat.',
+        'Drive hips forward to stand back up.',
+      ],
+      stanceCheck: {
+        ankleToShoulderRatio: { min: 0.4, max: 1.1 },
+        maxFootRotation: 0.15,
+        label: 'Feet hip width, toes forward',
+      },
+      // Ported from bodyweight_rdl_v2.py — hip-dominant hinge, knee stays soft (~158-162°)
+      // Phase machine: standing(175) → hinging(130) → bottom(90) → returning(130)
+      phases: [
+        { name: 'stand',  duration: 0,    joints: { hip: 175, knee: 170 }, voice: 'Stand tall — soft knees' },
+        { name: 'down',   duration: 2500, joints: { hip: 90,  knee: 158 }, voice: 'Hinge — push hips back' },
+        { name: 'hold',   duration: 800,  joints: { hip: 90,  knee: 158 }, voice: 'Hold — feel the hamstrings' },
+        { name: 'up',     duration: 2000, joints: { hip: 175, knee: 170 }, voice: 'Drive hips forward — stand tall' },
+      ],
+      checkAngles: function(lm) {
+        var knee = (calcAngle(lm[LM.leftHip],  lm[LM.leftKnee],  lm[LM.leftAnkle]) +
+                    calcAngle(lm[LM.rightHip], lm[LM.rightKnee], lm[LM.rightAnkle])) / 2;
+        var hip = (calcAngle(lm[LM.leftShoulder],  lm[LM.leftHip],  lm[LM.leftKnee]) +
+                   calcAngle(lm[LM.rightShoulder], lm[LM.rightHip], lm[LM.rightKnee])) / 2;
+        return { hip: hip, knee: knee };
+      },
+      // Python validate_form flags: knee < 140 (too much knee bend, squatting instead of hinging)
+      cues: { hip: 'Hinge deeper — push hips back', knee: 'Keep knees soft — do not squat' },
+      forceArrows: [
+        { joint: 23, dir: { x: -0.06, y: 0 }, label: 'Push hips back behind your heels' },
+      ],
+    },
+
+    WALL_PUSH_UP: {
+      name: 'Wall Push-Up',
+      bodyOrientation: 'standing',
+      cameraPosition: { view: 'side', instruction: 'Place camera to your side so it sees you and the wall.' },
+      setupCues: [
+        'Face the wall. Hands on the wall at shoulder height, shoulder width apart.',
+        'Step your feet back. Body straight from head to heels.',
+        'Bend your elbows to bring your chest toward the wall.',
+        'Elbows track at about forty-five degrees — not flared out.',
+      ],
+      stanceCheck: {
+        wristToShoulderRatio: { min: 0.8, max: 1.5 },
+        shoulderShrug: true,
+        bodyLine: true,
+        label: 'Hands at shoulder height, body straight',
+      },
+      // Ported from wall_push_up_v2.py — phases start(170) → down(90) → bottom → up(170)
+      // Python flags elbow flare via shoulder_angle > 60° (hip-shoulder-elbow)
+      phases: [
+        { name: 'start',  duration: 0,    joints: { elbow: 170, bodyLine: 175 }, voice: 'Hands on the wall — ready' },
+        { name: 'down',   duration: 2000, joints: { elbow: 90,  bodyLine: 175 }, voice: 'Lower your chest to the wall' },
+        { name: 'hold',   duration: 600,  joints: { elbow: 90,  bodyLine: 175 }, voice: 'Hold — chest to wall' },
+        { name: 'up',     duration: 1500, joints: { elbow: 170, bodyLine: 175 }, voice: 'Push back to straight arms' },
+      ],
+      checkAngles: function(lm) {
+        var elbow = (calcAngle(lm[LM.leftShoulder],  lm[LM.leftElbow],  lm[LM.leftWrist]) +
+                     calcAngle(lm[LM.rightShoulder], lm[LM.rightElbow], lm[LM.rightWrist])) / 2;
+        var bodyLine = calcAngle(lm[LM.leftShoulder], lm[LM.leftHip], lm[LM.leftAnkle]);
+        return { elbow: elbow, bodyLine: bodyLine };
+      },
+      cues: { elbow: 'Bend the elbows more', bodyLine: 'Body straight — do not let hips sag' },
+      forceArrows: [],
+    },
+
+    BAND_PULL_APART: {
+      name: 'Band Pull-apart',
+      bodyOrientation: 'standing',
+      cameraPosition: { view: 'front', instruction: 'Place camera in front of you at chest height. Full upper body visible.' },
+      setupCues: [
+        'Stand tall. Arms in front at shoulder height.',
+        'Grip the band just outside shoulder width.',
+        'Keep elbows nearly straight — small soft bend only.',
+        'Pull the band apart by squeezing the shoulder blades together.',
+      ],
+      stanceCheck: {
+        ankleToShoulderRatio: { min: 0.5, max: 1.3 },
+        maxFootRotation: 0.20,
+        shoulderShrug: true,
+        label: 'Stand tall, shoulders down',
+      },
+      // Ported from band_pull_apart_v2.py — Python tracks avg_elbow but its
+      // rep-counter thresholds (>185, >190) are buggy (angles cap at 180).
+      // JS adopts armSpread = wristSpan / shoulderSpan ratio for movement
+      // detection (matches the existing PULL template's correct approach)
+      // while still verifying elbow extension ≥150° at top (Python validate_form).
+      phases: [
+        { name: 'start',  duration: 0,    joints: { armSpread: 1.0, elbow: 170 }, voice: 'Arms in front — ready' },
+        { name: 'apart',  duration: 1800, joints: { armSpread: 2.2, elbow: 170 }, voice: 'Pull the band apart' },
+        { name: 'hold',   duration: 800,  joints: { armSpread: 2.2, elbow: 170 }, voice: 'Squeeze the shoulder blades' },
+        { name: 'return', duration: 1800, joints: { armSpread: 1.0, elbow: 170 }, voice: 'Return slowly' },
+      ],
+      checkAngles: function(lm) {
+        var wristSpan    = Math.abs(lm[LM.leftWrist].x    - lm[LM.rightWrist].x);
+        var shoulderSpan = Math.abs(lm[LM.leftShoulder].x - lm[LM.rightShoulder].x);
+        // armSpread is camera-distance invariant (ratio) — handles px vs normalised coord question
+        var armSpread = wristSpan / Math.max(shoulderSpan, 0.01);
+        var elbow = (calcAngle(lm[LM.leftShoulder],  lm[LM.leftElbow],  lm[LM.leftWrist]) +
+                     calcAngle(lm[LM.rightShoulder], lm[LM.rightElbow], lm[LM.rightWrist])) / 2;
+        return { armSpread: armSpread, elbow: elbow };
+      },
+      cues: { armSpread: 'Pull the band further apart', elbow: 'Keep arms straighter — small bend only' },
+      forceArrows: [],
+    },
+
+    // ───────────────────────────────────────────────────────────
+    // PLYOMETRICS — 6 ported from Python V2 reference implementations
+    // Each uses load → flight → landing → stick pattern.
+    // Landing phase carries the safety-critical valgus + absorption checks
+    // applied in the USER_FOLLOWS handler (search "Plyometric landing").
+    // ───────────────────────────────────────────────────────────
+
+    PLYO_TUCK_JUMPS: {
+      name: 'Tuck Jumps',
+      bodyOrientation: 'standing',
+      cameraPosition: { view: 'front', instruction: 'Place camera in front of you. Step back so the camera sees your full jump height and tuck.' },
+      setupCues: [
+        'Feet hip-width apart. Toes pointing forward.',
+        'Soft bend in your knees. Weight through the balls of your feet.',
+        'On the jump — pull your knees up toward your chest.',
+        'Land softly. Bend the knees on contact to absorb.',
+      ],
+      stanceCheck: {
+        ankleToShoulderRatio: { min: 0.5, max: 1.3 },
+        maxFootRotation: 0.18,
+        kneeOverAnkle: true,
+        label: 'Feet hip-width, toes forward for safe landing',
+      },
+      // Ported from tuck_jumps_v2.py phases: standing → loading → jumping → tucked → landing
+      phases: [
+        { name: 'rest',    duration: 0,    joints: { knee: 170, hip: 170 },              voice: 'Stand tall — ready' },
+        { name: 'load',    duration: 800,  joints: { knee: 130, hip: 130 },              voice: 'Load down' },
+        { name: 'flight',  duration: 250,  joints: { knee: 80,  hip: 80  },              voice: 'Jump and tuck' },
+        { name: 'landing', duration: 500,  joints: { knee: 130, hip: 130 },              voice: 'Absorb landing' },
+        { name: 'stick',   duration: 800,  joints: { knee: 165, hip: 165 },              voice: 'Stick it — stand tall' },
+      ],
+      checkAngles: function(lm) {
+        var knee = (calcAngle(lm[LM.leftHip],  lm[LM.leftKnee],  lm[LM.leftAnkle]) +
+                    calcAngle(lm[LM.rightHip], lm[LM.rightKnee], lm[LM.rightAnkle])) / 2;
+        var hip  = (calcAngle(lm[LM.leftShoulder],  lm[LM.leftHip],  lm[LM.leftKnee]) +
+                    calcAngle(lm[LM.rightShoulder], lm[LM.rightHip], lm[LM.rightKnee])) / 2;
+        return { knee: knee, hip: hip };
+      },
+      cues: { knee: 'Pull knees higher into the tuck', hip: 'Tuck deeper — knees toward chest' },
+      forceArrows: [],
+    },
+
+    PLYO_BROAD_JUMP: {
+      name: 'Broad Jump',
+      bodyOrientation: 'standing',
+      cameraPosition: { view: 'side', instruction: 'Place camera to your side. Step back so the camera sees the takeoff and the landing.' },
+      setupCues: [
+        'Stand with feet hip-width. Arms relaxed at your sides.',
+        'Hinge at the hips, swing the arms back as you load.',
+        'Drive the arms forward as you jump out for distance.',
+        'Land softly. Knees bend deeply to absorb. Hold the landing.',
+      ],
+      stanceCheck: {
+        ankleToShoulderRatio: { min: 0.5, max: 1.3 },
+        maxFootRotation: 0.18,
+        kneeOverAnkle: true,
+        label: 'Feet hip-width, toes forward',
+      },
+      // Ported from broad_jump_v2.py — bilateral horizontal jump for distance, stick the landing
+      phases: [
+        { name: 'rest',    duration: 0,    joints: { knee: 170, hip: 170 }, voice: 'Stand tall — ready' },
+        { name: 'load',    duration: 1000, joints: { knee: 120, hip: 100 }, voice: 'Hinge and load — arms back' },
+        { name: 'flight',  duration: 300,  joints: { knee: 170, hip: 145 }, voice: 'Drive out — jump for distance' },
+        { name: 'landing', duration: 500,  joints: { knee: 120, hip: 110 }, voice: 'Absorb landing' },
+        { name: 'stick',   duration: 1200, joints: { knee: 165, hip: 160 }, voice: 'Stick it — hold' },
+      ],
+      checkAngles: function(lm) {
+        var knee = (calcAngle(lm[LM.leftHip],  lm[LM.leftKnee],  lm[LM.leftAnkle]) +
+                    calcAngle(lm[LM.rightHip], lm[LM.rightKnee], lm[LM.rightAnkle])) / 2;
+        var hip  = (calcAngle(lm[LM.leftShoulder],  lm[LM.leftHip],  lm[LM.leftKnee]) +
+                    calcAngle(lm[LM.rightShoulder], lm[LM.rightHip], lm[LM.rightKnee])) / 2;
+        return { knee: knee, hip: hip };
+      },
+      cues: { knee: 'Bend the knees more on landing', hip: 'Sit hips back to load and absorb' },
+      forceArrows: [],
+    },
+
+    PLYO_LATERAL_BOUND_STICK: {
+      name: 'Lateral Bound and Stick',
+      bodyOrientation: 'standing',
+      cameraPosition: { view: 'front', instruction: 'Place camera in front of you. Step back so the camera sees both lateral landings.' },
+      setupCues: [
+        'Stand on one leg. Soft bend in the knee.',
+        'Push off sideways onto the other leg.',
+        'Land softly on a bent knee. Knee tracks over toes — do not let it cave in.',
+        'Stick the landing for three seconds before bounding back.',
+      ],
+      stanceCheck: {
+        maxFootRotation: 0.18,
+        hipLevel: true,
+        label: 'Stand on one foot, knee soft',
+      },
+      // Ported from lateral_bound_and_stick_v2.py — push off one leg, land on the other, hold 3s
+      phases: [
+        { name: 'rest',    duration: 0,    joints: { workingKnee: 165, hip: 170 }, voice: 'Stand on one leg' },
+        { name: 'load',    duration: 800,  joints: { workingKnee: 110, hip: 130 }, voice: 'Load down on the push leg' },
+        { name: 'flight',  duration: 300,  joints: { workingKnee: 160, hip: 160 }, voice: 'Bound sideways' },
+        { name: 'landing', duration: 500,  joints: { workingKnee: 120, hip: 120 }, voice: 'Absorb landing' },
+        { name: 'stick',   duration: 3000, joints: { workingKnee: 160, hip: 160 }, voice: 'Stick — hold three seconds' },
+      ],
+      checkAngles: function(lm) {
+        var leftKnee  = calcAngle(lm[LM.leftHip],  lm[LM.leftKnee],  lm[LM.leftAnkle]);
+        var rightKnee = calcAngle(lm[LM.rightHip], lm[LM.rightKnee], lm[LM.rightAnkle]);
+        var workingKnee = Math.min(leftKnee, rightKnee);
+        var hip = (calcAngle(lm[LM.leftShoulder],  lm[LM.leftHip],  lm[LM.leftKnee]) +
+                   calcAngle(lm[LM.rightShoulder], lm[LM.rightHip], lm[LM.rightKnee])) / 2;
+        return { workingKnee: workingKnee, hip: hip };
+      },
+      cues: { workingKnee: 'Bend the landing knee more', hip: 'Hinge at the hips on landing' },
+      forceArrows: [],
+    },
+
+    PLYO_SL_HOP_LATERAL: {
+      name: 'Single-Leg Hop Lateral',
+      bodyOrientation: 'standing',
+      cameraPosition: { view: 'front', instruction: 'Place camera in front of you. Step back so the camera sees side-to-side hops.' },
+      setupCues: [
+        'Stand on one leg. Slight bend in the knee.',
+        'Hop sideways on the same leg — push off and land on the same foot.',
+        'Land softly with a bent knee. Knee tracks over toes.',
+        'Stick each landing briefly before the next hop.',
+      ],
+      stanceCheck: {
+        maxFootRotation: 0.18,
+        hipLevel: true,
+        label: 'Stand on one foot, hips level',
+      },
+      // Ported from single_leg_hop_lateral_v2.py — same-leg lateral hops, sticking each landing
+      phases: [
+        { name: 'rest',    duration: 0,    joints: { workingKnee: 165, hip: 170 }, voice: 'Stand on one leg' },
+        { name: 'load',    duration: 600,  joints: { workingKnee: 120, hip: 140 }, voice: 'Load down' },
+        { name: 'flight',  duration: 250,  joints: { workingKnee: 160, hip: 160 }, voice: 'Hop sideways' },
+        { name: 'landing', duration: 400,  joints: { workingKnee: 125, hip: 125 }, voice: 'Absorb landing' },
+        { name: 'stick',   duration: 1500, joints: { workingKnee: 160, hip: 160 }, voice: 'Stick it' },
+      ],
+      checkAngles: function(lm) {
+        var leftKnee  = calcAngle(lm[LM.leftHip],  lm[LM.leftKnee],  lm[LM.leftAnkle]);
+        var rightKnee = calcAngle(lm[LM.rightHip], lm[LM.rightKnee], lm[LM.rightAnkle]);
+        var workingKnee = Math.min(leftKnee, rightKnee);
+        var hip = (calcAngle(lm[LM.leftShoulder],  lm[LM.leftHip],  lm[LM.leftKnee]) +
+                   calcAngle(lm[LM.rightShoulder], lm[LM.rightHip], lm[LM.rightKnee])) / 2;
+        return { workingKnee: workingKnee, hip: hip };
+      },
+      cues: { workingKnee: 'Bend the landing knee — absorb softly', hip: 'Sit the hip back on landing' },
+      forceArrows: [],
+    },
+
+    PLYO_SL_HOP_FORWARD: {
+      name: 'Single-Leg Hop Forward',
+      bodyOrientation: 'standing',
+      cameraPosition: { view: 'side', instruction: 'Place camera to your side. Step back so the camera sees forward hops along your path.' },
+      setupCues: [
+        'Stand on one leg. Slight bend in the knee.',
+        'Hop forward on the same leg. Push off and land on the same foot.',
+        'Land softly with a bent knee — soft landing each time.',
+        'Reset before the next hop. Quality over speed.',
+      ],
+      stanceCheck: {
+        maxFootRotation: 0.18,
+        hipLevel: true,
+        label: 'Stand on one foot, hips level',
+      },
+      // Ported from single_leg_hop_forward_v2.py — continuous forward hops, soft landings
+      phases: [
+        { name: 'rest',    duration: 0,    joints: { workingKnee: 165, hip: 170 }, voice: 'Stand on one leg' },
+        { name: 'load',    duration: 600,  joints: { workingKnee: 120, hip: 140 }, voice: 'Load down' },
+        { name: 'flight',  duration: 250,  joints: { workingKnee: 160, hip: 160 }, voice: 'Hop forward' },
+        { name: 'landing', duration: 400,  joints: { workingKnee: 125, hip: 125 }, voice: 'Absorb landing' },
+        { name: 'stick',   duration: 1000, joints: { workingKnee: 160, hip: 160 }, voice: 'Reset — stand tall' },
+      ],
+      checkAngles: function(lm) {
+        var leftKnee  = calcAngle(lm[LM.leftHip],  lm[LM.leftKnee],  lm[LM.leftAnkle]);
+        var rightKnee = calcAngle(lm[LM.rightHip], lm[LM.rightKnee], lm[LM.rightAnkle]);
+        var workingKnee = Math.min(leftKnee, rightKnee);
+        var hip = (calcAngle(lm[LM.leftShoulder],  lm[LM.leftHip],  lm[LM.leftKnee]) +
+                   calcAngle(lm[LM.rightShoulder], lm[LM.rightHip], lm[LM.rightKnee])) / 2;
+        return { workingKnee: workingKnee, hip: hip };
+      },
+      cues: { workingKnee: 'Bend the landing knee — soft landing', hip: 'Hinge at the hip on landing' },
+      forceArrows: [],
+    },
+
+    PLYO_SL_LANDING: {
+      name: 'Single-Leg Landing',
+      bodyOrientation: 'standing',
+      cameraPosition: { view: 'front', instruction: 'Place camera in front of you. Full body visible including feet.' },
+      setupCues: [
+        'Stand with feet hip-width.',
+        'Jump from both feet — small vertical hop.',
+        'Land on one leg only. Bend the knee about thirty degrees on contact.',
+        'Stick the landing for three seconds. No extra hops or adjustments.',
+      ],
+      stanceCheck: {
+        ankleToShoulderRatio: { min: 0.5, max: 1.3 },
+        maxFootRotation: 0.18,
+        kneeOverAnkle: true,
+        hipLevel: true,
+        label: 'Two-foot takeoff, one-leg landing',
+      },
+      // Ported from single_leg_landing_v2.py — ACL-prevention drill: 3s single-leg hold post-landing
+      // Target landing_knee 140° (~40° flexion) per Python reference
+      phases: [
+        { name: 'rest',    duration: 0,    joints: { knee: 170, hip: 170 },         voice: 'Stand tall — ready' },
+        { name: 'load',    duration: 700,  joints: { knee: 125, hip: 130 },         voice: 'Load both legs' },
+        { name: 'flight',  duration: 300,  joints: { knee: 160, hip: 160 },         voice: 'Jump' },
+        { name: 'landing', duration: 500,  joints: { workingKnee: 130, hip: 130 },  voice: 'Land on one leg — absorb' },
+        { name: 'stick',   duration: 3000, joints: { workingKnee: 140, hip: 150 },  voice: 'Stick — hold three seconds' },
+      ],
+      checkAngles: function(lm) {
+        var leftKnee  = calcAngle(lm[LM.leftHip],  lm[LM.leftKnee],  lm[LM.leftAnkle]);
+        var rightKnee = calcAngle(lm[LM.rightHip], lm[LM.rightKnee], lm[LM.rightAnkle]);
+        var knee = (leftKnee + rightKnee) / 2;
+        // Working = the more-bent leg (the landing leg) per Python: landing_knee = left_knee or right_knee
+        var workingKnee = Math.min(leftKnee, rightKnee);
+        var hip = (calcAngle(lm[LM.leftShoulder],  lm[LM.leftHip],  lm[LM.leftKnee]) +
+                   calcAngle(lm[LM.rightShoulder], lm[LM.rightHip], lm[LM.rightKnee])) / 2;
+        return { knee: knee, workingKnee: workingKnee, hip: hip };
+      },
+      cues: {
+        knee:        'Bend both knees on takeoff',
+        workingKnee: 'Bend the landing knee about thirty degrees — do not stiff-land',
+        hip:         'Sit the hip back to absorb',
+      },
+      forceArrows: [],
+    },
+
+    CLAMSHELL: {
+      name: 'Banded Clamshell',
+      bodyOrientation: 'sidelying_clamshell',
+      // sl_side: which leg is the WORKING (top) leg. 'left' = patient lies on right side.
+      sl_side: 'left',
+      cameraPosition: { view: 'front', instruction: 'Lie on your right side facing the camera. Your full body from head to feet must be visible.' },
+      setupCues: [
+        'Lie on your right side. Hips and knees bent at about ninety degrees.',
+        'Stack your feet together. Band sits just above your knees.',
+        'Keep your feet touching throughout the movement.',
+        'Rest your head on your bottom arm. Stay on your side — do not roll back.',
+      ],
+      stanceCheck: null,
+      // 4-phase machine matches clamshells_v2.py reference: closed → opening → open → closing → closed
+      // Phase joints.working_hip_abd are in "knee-separation × 100" units (matches state-machine thresholds)
+      phases: [
+        { name: 'closed',  duration: 0,    joints: { working_hip_abd: 5,  knee_flex: 90 }, voice: 'Lie on your side. Knees bent, feet together.' },
+        { name: 'opening', duration: 1200, joints: { working_hip_abd: 25, knee_flex: 90 }, voice: 'Lift knee' },
+        { name: 'open',    duration: 800,  joints: { working_hip_abd: 40, knee_flex: 90 }, voice: 'Hold' },
+        { name: 'closing', duration: 1200, joints: { working_hip_abd: 22, knee_flex: 90 }, voice: 'Lower' },
+      ],
+      checkAngles: function(lm) {
+        var side = ghostState.exerciseDef && ghostState.exerciseDef.sl_side ? ghostState.exerciseDef.sl_side : 'left';
+        var wHip   = lm[side === 'left' ? LM.leftHip   : LM.rightHip];
+        var wKnee  = lm[side === 'left' ? LM.leftKnee  : LM.rightKnee];
+        var wAnkle = lm[side === 'left' ? LM.leftAnkle : LM.rightAnkle];
+
+        // Knee separation in normalized × 100 units — matches Python reference (clamshells_v2.py).
+        // Use vertical (Y) delta because sidelying body is vertical in front-view frame.
+        var working_hip_abd = Math.max(0, Math.min(60, Math.abs(lm[LM.leftKnee].y - lm[LM.rightKnee].y) * 100));
+        var knee_flex       = calcAngle(wHip, wKnee, wAnkle);
+        return { working_hip_abd: working_hip_abd, knee_flex: knee_flex };
+      },
+      cues: {
+        working_hip_abd: 'Lift your top knee higher',
+        knee_flex:       'Keep your knees bent at ninety degrees',
+      },
+      forceArrows: [],
+    },
+
+    // ───────────────────────────────────────────────────────────
+    // GLUTE_BRIDGE_SUPINE — ported from glute_bridge_v2.py
+    // Supine hip-extension exercise (NOT a standing hinge — was incorrectly
+    // routed to HINGE which assumed standing orientation).
+    // Hip angle = shoulder–hip–ANKLE (ankle is the fixed ground reference
+    // in supine position; matches Python's calculate_angle(ls, lh, la)).
+    // Phases: lying (90°) → lifting (140°) → top (170°, 2s hold) → lowering (120°)
+    // ───────────────────────────────────────────────────────────
+    GLUTE_BRIDGE_SUPINE: {
+      name: 'Glute Bridge',
+      bodyOrientation: 'supine',
+      cameraPosition: { view: 'side', instruction: 'Place camera to your side at floor level. It must see your full body from head to feet while you lie on your back.' },
+      setupCues: [
+        'Lie on your back. Knees bent at about ninety degrees.',
+        'Feet flat on the floor, hip-width apart, close to your hips.',
+        'Arms by your sides, palms down for stability.',
+        'Drive through your heels to lift your hips toward the ceiling.',
+      ],
+      stanceCheck: null,
+      // Targets in degrees per glute_bridge_v2.py get_target_poses()
+      phases: [
+        { name: 'lying',    duration: 0,    joints: { hip: 90,  knee: 95,  bodyAlignment: 120 }, voice: 'Lie down — knees bent' },
+        { name: 'lifting',  duration: 1500, joints: { hip: 140, knee: 95,  bodyAlignment: 160 }, voice: 'Lift your hips' },
+        { name: 'top',      duration: 2000, joints: { hip: 170, knee: 100, bodyAlignment: 170 }, voice: 'Hold and squeeze' },
+        { name: 'lowering', duration: 1500, joints: { hip: 120, knee: 95,  bodyAlignment: 150 }, voice: 'Lower slowly' },
+      ],
+      checkAngles: function(lm) {
+        var ls = lm[LM.leftShoulder],  rs = lm[LM.rightShoulder];
+        var lh = lm[LM.leftHip],       rh = lm[LM.rightHip];
+        var lk = lm[LM.leftKnee],      rk = lm[LM.rightKnee];
+        var la = lm[LM.leftAnkle],     ra = lm[LM.rightAnkle];
+        // Hip extension = shoulder–hip–ANKLE (ground reference for supine).
+        var leftHip  = calcAngle(ls, lh, la);
+        var rightHip = calcAngle(rs, rh, ra);
+        var hip = (leftHip + rightHip) / 2;
+        var knee = (calcAngle(lh, lk, la) + calcAngle(rh, rk, ra)) / 2;
+        // Body alignment = shoulder_mid–hip_mid–knee_mid (line straightness at top).
+        var shoulderMid = { x: (ls.x + rs.x) / 2, y: (ls.y + rs.y) / 2 };
+        var hipMid      = { x: (lh.x + rh.x) / 2, y: (lh.y + rh.y) / 2 };
+        var kneeMid     = { x: (lk.x + rk.x) / 2, y: (lk.y + rk.y) / 2 };
+        var bodyAlignment = calcAngle(shoulderMid, hipMid, kneeMid);
+        // Hip symmetry — surfaced for the form-rule check (Python: hip_symmetry < 12 OK).
+        var hipSymmetry = Math.abs(leftHip - rightHip);
+        return { hip: hip, knee: knee, bodyAlignment: bodyAlignment, hipSymmetry: hipSymmetry };
+      },
+      cues: {
+        hip:           'Lift your hips higher — drive through your heels',
+        knee:          'Keep your knees bent at ninety degrees',
+        bodyAlignment: 'Straight line from shoulder to knee — do not arch',
+      },
+      forceArrows: [
+        { joint: 23, dir: { x: 0, y: -0.08 }, label: 'Drive your hips toward the ceiling' },
+      ],
+    },
+
+    // ───────────────────────────────────────────────────────────
+    // BSS (Bulgarian Split Squat) — ported from bulgarian_split_squats_v2.py
+    // Was routed to generic LUNGE which had no back-knee, no knee-over-toe,
+    // no upright-posture check, no hip-level check. Python checks all four.
+    // Front leg = foot on ground (lower ankle Y); back leg = elevated.
+    // Phases: standing (175°/140°) → descending (135°/110°) → bottom (90°/90°)
+    //         → ascending (135°/110°)
+    // ───────────────────────────────────────────────────────────
+    BSS: {
+      name: 'Bulgarian Split Squat',
+      bodyOrientation: 'standing',
+      cameraPosition: { view: 'side', instruction: 'Place camera to your side. Both legs and the bench behind you must be visible.' },
+      setupCues: [
+        'Place your back foot on a bench or step behind you. Top of foot down.',
+        'Front foot a long stride forward. Most of your weight on the front leg.',
+        'Chest tall, eyes forward. Slight forward lean from the hip — not the back.',
+        'Lower until your front thigh is parallel to the floor. Drive through the front heel.',
+      ],
+      stanceCheck: {
+        maxFootRotation: 0.20,
+        kneeOverAnkle: true,
+        label: 'Front foot flat, back foot on bench',
+      },
+      // Targets per bulgarian_split_squats_v2.py get_target_poses()
+      phases: [
+        { name: 'standing',   duration: 0,    joints: { frontKnee: 170, backKnee: 140, trunk: 165 }, voice: 'Stand tall in split stance' },
+        { name: 'descending', duration: 2500, joints: { frontKnee: 135, backKnee: 110, trunk: 165 }, voice: 'Lower slowly' },
+        { name: 'bottom',     duration: 600,  joints: { frontKnee: 90,  backKnee: 90,  trunk: 165 }, voice: 'Bottom — both knees at ninety' },
+        { name: 'ascending',  duration: 2000, joints: { frontKnee: 135, backKnee: 110, trunk: 165 }, voice: 'Drive through the front heel' },
+      ],
+      checkAngles: function(lm) {
+        var lh = lm[LM.leftHip],   rh = lm[LM.rightHip];
+        var lk = lm[LM.leftKnee],  rk = lm[LM.rightKnee];
+        var la = lm[LM.leftAnkle], ra = lm[LM.rightAnkle];
+        var ls = lm[LM.leftShoulder], rs = lm[LM.rightShoulder];
+        var leftKnee  = calcAngle(lh, lk, la);
+        var rightKnee = calcAngle(rh, rk, ra);
+        // Front leg = foot on ground = LARGER ankle Y (further down screen).
+        // Back leg = elevated = SMALLER ankle Y.
+        var frontKnee, backKnee, frontHipX, frontAnkleX;
+        if (ra.y > la.y) {
+          frontKnee = rightKnee; backKnee = leftKnee;
+          frontHipX = rh.x;      frontAnkleX = ra.x;
+        } else {
+          frontKnee = leftKnee;  backKnee = rightKnee;
+          frontHipX = lh.x;      frontAnkleX = la.x;
+        }
+        // Trunk uprightness — shoulder_mid–hip_mid–knee_mid. ~165° when slight lean,
+        // < 145° flagged by Python validate_form as "Too much forward lean".
+        var shoulderMid = { x: (ls.x + rs.x) / 2, y: (ls.y + rs.y) / 2 };
+        var hipMid      = { x: (lh.x + rh.x) / 2, y: (lh.y + rh.y) / 2 };
+        var kneeMid     = { x: (lk.x + rk.x) / 2, y: (lk.y + rk.y) / 2 };
+        var trunk = calcAngle(shoulderMid, hipMid, kneeMid);
+        // Knee-over-toe — Python: knee_forward > 100px when front_knee < 140°.
+        // Normalised equivalent: horizontal hip-to-ankle distance > 0.12 (~ a thigh width).
+        var kneeOverToe = (frontKnee < 140) && (Math.abs(frontAnkleX - frontHipX) > 0.12);
+        // Hip-level diff for asymmetry cue (some asymmetry expected — BSS is split stance).
+        var hipLevelDiff = Math.abs(lh.y - rh.y);
+        return {
+          frontKnee: frontKnee, backKnee: backKnee, trunk: trunk,
+          kneeOverToe: kneeOverToe ? 1 : 0, hipLevelDiff: hipLevelDiff,
+        };
+      },
+      cues: {
+        frontKnee: 'Lower until front thigh is parallel',
+        backKnee:  'Lower your back knee toward the floor',
+        trunk:     'Stay upright — chest tall',
+      },
+      forceArrows: [
+        { joint: 27, dir: { x: 0, y: 0.06 }, label: 'Drive through the front heel' },
+      ],
+    },
+
+    // ───────────────────────────────────────────────────────────
+    // ROW_BENT_OVER — ported from dumbell_rowing_v2.py (file typo intact)
+    // Was routed to generic ROW which: (a) measured min(L,R) elbow assuming
+    // unilateral, (b) had no back-rounding check. Python is BILATERAL
+    // (avg_elbow) and rejects back angles < 150° as critical.
+    // Phases: hanging (170°) → pulling (110°) → top (45°) → lowering (120°)
+    // ───────────────────────────────────────────────────────────
+    ROW_BENT_OVER: {
+      name: 'Dumbbell Bent-over Row',
+      bodyOrientation: 'standing',
+      cameraPosition: { view: 'side', instruction: 'Place camera to your side. Your full back, hips, and arms must be visible.' },
+      setupCues: [
+        'Feet hip-width. Push your hips back so your torso tips forward at about forty-five degrees.',
+        'Hold the weights with arms hanging straight down. Palms toward your body.',
+        'Brace your core. Back flat — chest out, no rounding.',
+        'Pull both elbows straight back along your ribs. Squeeze the shoulder blades.',
+      ],
+      stanceCheck: {
+        ankleToShoulderRatio: { min: 0.4, max: 1.2 },
+        maxFootRotation: 0.18,
+        label: 'Feet hip width, hinged at the hips',
+      },
+      // Targets per dumbell_rowing_v2.py get_target_poses()
+      phases: [
+        { name: 'hanging',  duration: 0,    joints: { elbow: 170, back: 160 }, voice: 'Arms extended — ready' },
+        { name: 'pulling',  duration: 1500, joints: { elbow: 110, back: 160 }, voice: 'Pull both elbows back' },
+        { name: 'top',      duration: 800,  joints: { elbow: 45,  back: 160 }, voice: 'Squeeze your shoulder blades' },
+        { name: 'lowering', duration: 1800, joints: { elbow: 120, back: 160 }, voice: 'Lower with control' },
+      ],
+      checkAngles: function(lm) {
+        // BILATERAL — average both elbows (Python: avg_elbow)
+        var elbow = (calcAngle(lm[LM.leftShoulder],  lm[LM.leftElbow],  lm[LM.leftWrist]) +
+                     calcAngle(lm[LM.rightShoulder], lm[LM.rightElbow], lm[LM.rightWrist])) / 2;
+        // Back angle — shoulder-hip-ankle: at correct hinge ≈ 160°.
+        // Python computes shoulder-hip-vertical line; we use the joint chain
+        // (works because ankle below hip while user is hinged forward).
+        var back = (calcAngle(lm[LM.leftShoulder],  lm[LM.leftHip],  lm[LM.leftAnkle]) +
+                    calcAngle(lm[LM.rightShoulder], lm[LM.rightHip], lm[LM.rightAnkle])) / 2;
+        return { elbow: elbow, back: back };
+      },
+      cues: {
+        elbow: 'Pull your elbows further back',
+        back:  'Keep your back flat — chest out, no rounding',
+      },
+      forceArrows: [
+        { joint: 11, dir: { x: 0, y: 0.05 }, label: 'Drive elbows toward your hips' },
+        { joint: 12, dir: { x: 0, y: 0.05 }, label: 'Drive elbows toward your hips' },
+      ],
+    },
+
+    // ───────────────────────────────────────────────────────────
+    // STEP_UPS — ported from step_ups_v2.py
+    // Was routed to generic LUNGE which had no hip-level / valgus check
+    // and no separate lead/trail knee tracking. Python flags hip-level
+    // diff > 35 as critical (hip hike) and knee valgus when lead knee
+    // < 120° with hip-level > 35.
+    // Phases: ground (lead 90°/trail 175°) → pushing (140°) → top (175°/175°)
+    //         → descending (150°)
+    // ───────────────────────────────────────────────────────────
+    STEP_UPS: {
+      name: 'Step-Ups',
+      bodyOrientation: 'standing',
+      cameraPosition: { view: 'front', instruction: 'Place camera in front of the step. Your full body and the step must be visible.' },
+      setupCues: [
+        'Place one foot flat on the step. Knee tracks over the second toe.',
+        'Drive through the heel of the lead foot — do not push off the back foot.',
+        'Stand fully tall on the step. Hips level, no hike.',
+        'Lower slowly — three seconds — to reverse the motion.',
+      ],
+      stanceCheck: {
+        maxFootRotation: 0.20,
+        kneeOverAnkle: true,
+        hipLevel: true,
+        label: 'Lead foot on step, knees track over toes',
+      },
+      phases: [
+        { name: 'ground',     duration: 0,    joints: { leadKnee: 95,  trailKnee: 170, trunk: 165 }, voice: 'Lead foot on the step' },
+        { name: 'pushing',    duration: 1500, joints: { leadKnee: 140, trailKnee: 165, trunk: 165 }, voice: 'Drive through the lead heel' },
+        { name: 'top',        duration: 800,  joints: { leadKnee: 175, trailKnee: 175, trunk: 170 }, voice: 'Stand fully tall' },
+        { name: 'descending', duration: 2500, joints: { leadKnee: 150, trailKnee: 170, trunk: 165 }, voice: 'Lower slowly — control it' },
+      ],
+      checkAngles: function(lm) {
+        var lh = lm[LM.leftHip],   rh = lm[LM.rightHip];
+        var lk = lm[LM.leftKnee],  rk = lm[LM.rightKnee];
+        var la = lm[LM.leftAnkle], ra = lm[LM.rightAnkle];
+        var ls = lm[LM.leftShoulder], rs = lm[LM.rightShoulder];
+        var leftKnee  = calcAngle(lh, lk, la);
+        var rightKnee = calcAngle(rh, rk, ra);
+        // Lead leg = foot HIGHER (smaller Y = closer to top of frame).
+        var leadKnee, trailKnee;
+        if (ra.y < la.y) { leadKnee = rightKnee; trailKnee = leftKnee; }
+        else             { leadKnee = leftKnee;  trailKnee = rightKnee; }
+        // Trunk uprightness — same construct as BSS.
+        var shoulderMid = { x: (ls.x + rs.x) / 2, y: (ls.y + rs.y) / 2 };
+        var hipMid      = { x: (lh.x + rh.x) / 2, y: (lh.y + rh.y) / 2 };
+        var kneeMid     = { x: (lk.x + rk.x) / 2, y: (lk.y + rk.y) / 2 };
+        var trunk = calcAngle(shoulderMid, hipMid, kneeMid);
+        var hipLevelDiff = Math.abs(lh.y - rh.y);
+        return { leadKnee: leadKnee, trailKnee: trailKnee, trunk: trunk, hipLevelDiff: hipLevelDiff };
+      },
+      cues: {
+        leadKnee:  'Drive through the lead leg — stand taller',
+        trailKnee: 'Straighten the trail leg at the top',
+        trunk:     'Stay upright — chest tall',
+      },
+      forceArrows: [
+        { joint: 27, dir: { x: 0, y: 0.06 }, label: 'Drive through the lead heel' },
+      ],
+    },
+
   };  // end EXERCISE_PHASES
 
   // ── Adjust target angles based on patient capability level ──
@@ -1339,7 +2036,7 @@ async function startCamera() {
   const EXERCISE_TEMPLATE_MAP = {
     // SQUAT_BILATERAL (25)
     'full_squats': 'SQUAT_BILATERAL', 'partial_squats': 'SQUAT_PARTIAL', 'box_squat': 'SQUAT_BILATERAL',
-    'goblet_squat': 'SQUAT_BILATERAL', 'sit_to_stand': 'SQUAT_BILATERAL', 'wall_sit': 'PLANK_FRONT',
+    'goblet_squat': 'GOBLET_SQUAT', 'sit_to_stand': 'SQUAT_BILATERAL', 'wall_sit': 'PLANK_FRONT',
     'heel_elevated_squat': 'SQUAT_BILATERAL', 'pause_squat': 'SQUAT_BILATERAL', 'prisoner_squat': 'SQUAT_BILATERAL',
     'sumo_squat': 'SQUAT_BILATERAL', 'tempo_squat': 'SQUAT_BILATERAL', 'squat_pulse': 'SQUAT_BILATERAL',
     'hindu_squat': 'SQUAT_BILATERAL', 'spanish_squat': 'SQUAT_BILATERAL', 'decline_squats': 'SQUAT_BILATERAL',
@@ -1350,17 +2047,24 @@ async function startCamera() {
 
     // SQUAT_SINGLE (5)
     'pistol_squat': 'SQUAT_SINGLE', 'single_leg_squats': 'SQUAT_SINGLE', 'single_leg_squat_to_box': 'SQUAT_SINGLE',
-    'skater_squat': 'SQUAT_SINGLE', 'bulgarian_split_squats': 'LUNGE_SPLIT',
+    'skater_squat': 'SQUAT_SINGLE', 'bulgarian_split_squats': 'BSS',
 
     // JUMP_LANDING (14)
-    'jump_squats': 'JUMP_LANDING', 'box_jumps': 'JUMP_LANDING', 'broad_jump': 'JUMP_LANDING',
-    'depth_jump': 'JUMP_LANDING', 'tuck_jumps': 'JUMP_LANDING', 'squat_jump_turn': 'JUMP_LANDING',
+    'jump_squats': 'JUMP_LANDING', 'box_jumps': 'JUMP_LANDING', 'broad_jump': 'PLYO_BROAD_JUMP',
+    'depth_jump': 'JUMP_LANDING', 'tuck_jumps': 'PLYO_TUCK_JUMPS', 'squat_jump_turn': 'JUMP_LANDING',
     'hurdle_hop': 'JUMP_LANDING', 'high_knees': 'JUMP_LANDING', 'jumping_jacks': 'JUMP_LANDING',
     'sprint_in_place': 'JUMP_LANDING', 'jumping_rope_simulation': 'JUMP_LANDING',
     'marching_on_spot': 'JUMP_LANDING', 'burpees': 'JUMP_LANDING', 'butt_kicks': 'JUMP_LANDING',
 
+    // PLYOMETRICS (6) — dedicated ghost coaches with landing valgus + absorption checks
+    'single_leg_hop_lateral':  'PLYO_SL_HOP_LATERAL',
+    'lateral_bound_stick':     'PLYO_LATERAL_BOUND_STICK',
+    'lateral_bound_and_stick': 'PLYO_LATERAL_BOUND_STICK',
+    'single_leg_hop_forward':  'PLYO_SL_HOP_FORWARD',
+    'single_leg_landing':      'PLYO_SL_LANDING',
+
     // PUSH_UP (28)
-    'push_ups': 'PUSH_UP', 'wall_push_up': 'PUSH_UP', 'knee_push_up': 'PUSH_UP',
+    'push_ups': 'PUSH_UP', 'wall_push_up': 'WALL_PUSH_UP', 'knee_push_up': 'PUSH_UP',
     'incline_push_up': 'PUSH_UP', 'decline_push_up': 'PUSH_UP', 'diamond_push_up': 'PUSH_UP',
     'close_grip_push_up': 'PUSH_UP', 'wide_grip_push_up': 'PUSH_UP', 'archer_push_up': 'PUSH_UP',
     'staggered_push_up': 'PUSH_UP', 'spiderman_push_up': 'PUSH_UP', 'shoulder_tap_push_up': 'PUSH_UP',
@@ -1383,21 +2087,21 @@ async function startCamera() {
     'copenhagen_plank': 'PLANK_SIDE', 'copenhagen_with_movement': 'PLANK_SIDE',
 
     // HINGE_BILATERAL (23)
-    'glute_bridge': 'HINGE_BILATERAL', 'hip_thrust_bodyweight': 'HINGE_BILATERAL',
+    'glute_bridge': 'GLUTE_BRIDGE_SUPINE', 'hip_thrust_bodyweight': 'HINGE_BILATERAL',
     'hip_thrust_banded': 'HINGE_BILATERAL', 'good_morning': 'HINGE_BILATERAL',
-    'deadlift_dumbbell': 'HINGE_BILATERAL', 'bodyweight_rdl': 'HINGE_BILATERAL',
+    'deadlift_dumbbell': 'HINGE_BILATERAL', 'bodyweight_rdl': 'BW_RDL',
     'banded_rdl': 'HINGE_BILATERAL', 'hip_hinge_wall': 'HINGE_BILATERAL',
     'prone_hip_extension': 'STRETCH_MOBILITY', 'reverse_hyperextension': 'HINGE_BILATERAL',
     'sliding_leg_curl': 'HINGE_BILATERAL', 'seated_hamstring_curl': 'HINGE_BILATERAL',
     'hamstring_curls_standing': 'HINGE_BILATERAL', 'nordic_hamstring_curl': 'HINGE_BILATERAL',
     'nordic_curl_weighted': 'HINGE_BILATERAL', 'medicine_ball_slam': 'HINGE_BILATERAL',
-    'straight_leg_raises': 'STRETCH_MOBILITY', 'clamshells': 'STRETCH_MOBILITY',
+    'straight_leg_raises': 'STRETCH_MOBILITY', 'clamshells': 'CLAMSHELL', 'banded_clamshells': 'CLAMSHELL',
     'hip_abduction_sideline': 'STRETCH_MOBILITY', 'hip_abduction_standing': 'HINGE_BILATERAL',
     'lateral_band_walks': 'HINGE_BILATERAL', 'heel_slides': 'STRETCH_MOBILITY',
     'seated_hip_flexion': 'STRETCH_MOBILITY',
 
     // HINGE_SINGLE (5)
-    'single_leg_rdl': 'HINGE_SINGLE', 'single_leg_glute_bridge': 'HINGE_SINGLE',
+    'single_leg_rdl': 'SL_RDL', 'single_leg_glute_bridge': 'HINGE_SINGLE',
     'single_leg_hip_thrust': 'HINGE_SINGLE', 'b_stance_rdl': 'HINGE_SINGLE',
     'single_leg_slider_curl': 'HINGE_SINGLE',
 
@@ -1405,7 +2109,7 @@ async function startCamera() {
     'split_squat_static': 'LUNGE_SPLIT', 'lunges': 'LUNGE_SPLIT', 'reverse_lunges': 'LUNGE_SPLIT',
     'walking_lunge': 'LUNGE_SPLIT', 'curtsy_lunge': 'LUNGE_SPLIT', 'slider_reverse_lunge': 'LUNGE_SPLIT',
     'deficit_reverse_lunge': 'LUNGE_SPLIT', 'clock_lunge': 'LUNGE_SPLIT', 'lateral_lunges': 'LUNGE_SPLIT',
-    'step_ups': 'LUNGE_SPLIT', 'step_up_with_knee_drive': 'LUNGE_SPLIT', 'step_downs': 'LUNGE_SPLIT',
+    'step_ups': 'STEP_UPS', 'step_up_with_knee_drive': 'LUNGE_SPLIT', 'step_downs': 'LUNGE_SPLIT',
     'side_step_ups': 'LUNGE_SPLIT', 'side_step_downs': 'LUNGE_SPLIT', 'lateral_step_down': 'LUNGE_SPLIT',
     'skipping_lunge': 'LUNGE_SPLIT', 'plyometric_lunge': 'LUNGE_SPLIT', 'split_squat_jump': 'LUNGE_SPLIT',
 
@@ -1425,12 +2129,12 @@ async function startCamera() {
     'supine_hip_abduction': 'STRETCH_MOBILITY',
 
     // PULL_HORIZONTAL — band pull-apart type (arm spread measurement)
-    'band_pull_apart': 'PULL_HORIZONTAL', 'face_pull_band': 'PULL_HORIZONTAL',
+    'band_pull_apart': 'BAND_PULL_APART', 'face_pull_band': 'PULL_HORIZONTAL',
     'prone_y_t_w': 'PULL_HORIZONTAL', 'prone_trap_raise': 'PULL_HORIZONTAL',
     'side_lying_external_rotation': 'PULL_HORIZONTAL', 'isometric_shoulder_er': 'PULL_HORIZONTAL',
 
     // ROW_HORIZONTAL — elbow pull-back type (elbow angle measurement)
-    'dumbbell_rowing': 'ROW_HORIZONTAL', 'renegade_row': 'ROW_HORIZONTAL',
+    'dumbbell_rowing': 'ROW_BENT_OVER', 'renegade_row': 'ROW_HORIZONTAL',
     'inverted_row': 'ROW_HORIZONTAL', 'ring_row': 'ROW_HORIZONTAL',
     'australian_row': 'ROW_HORIZONTAL', 'table_row': 'ROW_HORIZONTAL',
     'negative_table_row': 'ROW_HORIZONTAL', 'elevated_table_row': 'ROW_HORIZONTAL',
@@ -1502,17 +2206,24 @@ async function startCamera() {
 
     // SQUAT_SINGLE
     'single_leg_squats': 'SQUAT_SINGLE', 'single_leg_squat_to_box': 'SQUAT_SINGLE',
-    'bulgarian_split_squats': 'LUNGE_SPLIT',
+    'bulgarian_split_squats': 'BSS',
 
     // JUMP_LANDING
-    'box_jumps': 'JUMP_LANDING', 'broad_jump': 'JUMP_LANDING',
-    'tuck_jumps': 'JUMP_LANDING', 'squat_jump_turn': 'JUMP_LANDING',
+    'box_jumps': 'JUMP_LANDING', 'broad_jump': 'PLYO_BROAD_JUMP',
+    'tuck_jumps': 'PLYO_TUCK_JUMPS', 'squat_jump_turn': 'JUMP_LANDING',
     'high_knees': 'JUMP_LANDING', 'jumping_jacks': 'JUMP_LANDING',
     'jumping_rope_simulation': 'JUMP_LANDING', 'burpees': 'JUMP_LANDING',
     'butt_kicks': 'JUMP_LANDING',
 
+    // PLYOMETRICS (6) — dedicated ghost coaches
+    'single_leg_hop_lateral':  'PLYO_SL_HOP_LATERAL',
+    'lateral_bound_stick':     'PLYO_LATERAL_BOUND_STICK',
+    'lateral_bound_and_stick': 'PLYO_LATERAL_BOUND_STICK',
+    'single_leg_hop_forward':  'PLYO_SL_HOP_FORWARD',
+    'single_leg_landing':      'PLYO_SL_LANDING',
+
     // PUSH_UP
-    'wall_push_up': 'PUSH_UP', 'knee_push_up': 'PUSH_UP',
+    'wall_push_up': 'WALL_PUSH_UP', 'knee_push_up': 'PUSH_UP',
     'decline_push_up': 'PUSH_UP', 'diamond_push_up': 'PUSH_UP',
     'wide_grip_push_up': 'PUSH_UP', 'archer_push_up': 'PUSH_UP',
     'spiderman_push_up': 'PUSH_UP', 'shoulder_tap_push_up': 'PUSH_UP',
@@ -1534,14 +2245,14 @@ async function startCamera() {
 
     // HINGE_BILATERAL
     'hip_thrust_bodyweight': 'HINGE_BILATERAL', 'good_morning': 'HINGE_BILATERAL',
-    'bodyweight_rdl': 'HINGE_BILATERAL', 'hip_hinge_wall': 'HINGE_BILATERAL',
+    'bodyweight_rdl': 'BW_RDL', 'hip_hinge_wall': 'HINGE_BILATERAL',
     'reverse_hyperextension': 'HINGE_BILATERAL', 'seated_hamstring_curl': 'HINGE_BILATERAL',
     'nordic_hamstring_curl': 'HINGE_BILATERAL', 'medicine_ball_slam': 'HINGE_BILATERAL',
-    'clamshells': 'STRETCH_MOBILITY', 'hip_abduction_standing': 'HINGE_BILATERAL',
+    'clamshells': 'CLAMSHELL', 'banded_clamshells': 'CLAMSHELL', 'hip_abduction_standing': 'HINGE_BILATERAL',
     'heel_slides': 'STRETCH_MOBILITY',
 
-    // HINGE_SINGLE
-    'b_stance_rdl': 'HINGE_SINGLE', 'single_leg_glute_bridge': 'HINGE_SINGLE',
+    // HINGE_SINGLE / SL_RDL
+    'single_leg_rdl': 'SL_RDL', 'b_stance_rdl': 'HINGE_SINGLE', 'single_leg_glute_bridge': 'HINGE_SINGLE',
 
     // LUNGE_SPLIT
     'lunges': 'LUNGE_SPLIT', 'reverse_lunges': 'LUNGE_SPLIT',
@@ -1790,7 +2501,7 @@ async function startCamera() {
     var templateToType = {
       'SQUAT_BILATERAL': 'SQUAT',   'SQUAT_SINGLE': 'SQUAT_SINGLE',  'SQUAT_PARTIAL': 'SQUAT_PARTIAL',
       'PUSH_UP':         'PUSH_UP', 'PLANK_FRONT':  'PLANK', 'PLANK_SIDE': 'SIDE_PLANK',
-      'HINGE_BILATERAL': 'HINGE',   'HINGE_SINGLE': 'HINGE_SINGLE',
+      'HINGE_BILATERAL': 'HINGE',   'HINGE_SINGLE': 'HINGE_SINGLE',  'SL_RDL': 'SL_RDL',  'CLAMSHELL': 'CLAMSHELL',
       'LUNGE_SPLIT':     'LUNGE',   'DEAD_BUG':     'DEAD_BUG',
       'PULL_HORIZONTAL': 'PULL',    'HANG_PULL':    'HANG',
       'BALANCE_SINGLE':  'BALANCE', 'CARRY_UPRIGHT':'CARRY',
@@ -1803,6 +2514,23 @@ async function startCamera() {
       'SQUAT_HOLD':      'SQUAT_HOLD',
       'HINGE_HOLD':      'HINGE_HOLD',
       'LUNGE_HOLD':      'LUNGE_HOLD',
+      // Dedicated single-exercise templates
+      'GOBLET_SQUAT':    'GOBLET_SQUAT',
+      'BW_RDL':          'BW_RDL',
+      'WALL_PUSH_UP':    'WALL_PUSH_UP',
+      'BAND_PULL_APART': 'BAND_PULL_APART',
+      // PLYOMETRICS — one-to-one templateToType so each exercise has its own ghost coach
+      'PLYO_TUCK_JUMPS':         'PLYO_TUCK_JUMPS',
+      'PLYO_BROAD_JUMP':         'PLYO_BROAD_JUMP',
+      'PLYO_LATERAL_BOUND_STICK':'PLYO_LATERAL_BOUND_STICK',
+      'PLYO_SL_HOP_LATERAL':     'PLYO_SL_HOP_LATERAL',
+      'PLYO_SL_HOP_FORWARD':     'PLYO_SL_HOP_FORWARD',
+      'PLYO_SL_LANDING':         'PLYO_SL_LANDING',
+      // Dedicated V2 ports (orientation + form rules diverge from generic)
+      'GLUTE_BRIDGE_SUPINE':     'GLUTE_BRIDGE_SUPINE',
+      'BSS':                     'BSS',
+      'ROW_BENT_OVER':           'ROW_BENT_OVER',
+      'STEP_UPS':                'STEP_UPS',
     };
     for (var exId in EXERCISE_TEMPLATE_MAP) {
       var tmpl = EXERCISE_TEMPLATE_MAP[exId];
@@ -1849,6 +2577,8 @@ async function startCamera() {
     userHasMovedFromStart: false,
     setupCueIndex: 0,
     setupCueTime: 0,
+    restMode: false,
+    restModeUntil: 0,
   };
 
   function initGhostAnimator() {
@@ -2241,6 +2971,140 @@ async function startCamera() {
       }
 
       case 'USER_FOLLOWS': {
+        // Suspend rep detection entirely during rest periods
+        if (ghostState.restMode && Date.now() < ghostState.restModeUntil) {
+          ghostState.stallStartTime = null;
+          ghostState.stallBaseScore = null;
+          break;
+        }
+        if (ghostState.restMode && Date.now() >= ghostState.restModeUntil) {
+          ghostState.restMode = false;
+        }
+        // Orientation gate — if the template declares a non-standing orientation,
+        // ensure the patient is in that pose before advancing the rep machine.
+        // Fixes glute_bridge bug where standing instructions played while user lay supine.
+        if (ghostState.exerciseDef && ghostState.exerciseDef.bodyOrientation && lm) {
+          var _expectedOrient = ghostState.exerciseDef.bodyOrientation;
+          // Only enforce for the supine/prone/sidelying cases — standing is the default
+          // and sidelying_clamshell is handled by the CLAMSHELL state machine.
+          if (_expectedOrient === 'supine' || _expectedOrient === 'prone' || _expectedOrient === 'sidelying') {
+            var _detected = detectOrientation(lm);
+            var _matches = (_detected === _expectedOrient) ||
+                           (_expectedOrient === 'sidelying' && _detected === 'sidelying');
+            if (!_matches && _detected !== 'unknown') {
+              // Surface a visible nudge and suspend rep counting this frame.
+              var _orientCue = '';
+              if (_expectedOrient === 'supine')    _orientCue = 'Please lie on your back.';
+              else if (_expectedOrient === 'prone') _orientCue = 'Please lie face down.';
+              else                                   _orientCue = 'Please lie on your side.';
+              if (Date.now() - VoiceCoach.lastSpokenTime > 4000) {
+                VoiceCoach.speak(_orientCue, true);
+              }
+              var _orientEl = document.getElementById('alignmentCue');
+              if (_orientEl) {
+                _orientEl.textContent = '⚠️ ' + _orientCue;
+                _orientEl.style.color = '#fbbf24';
+              }
+              break;  // skip rep advancement until orientation matches
+            }
+          }
+        }
+        // GLUTE_BRIDGE_SUPINE — hip-symmetry + body-alignment safety checks
+        if (ghostState.exerciseType === 'GLUTE_BRIDGE_SUPINE' && lm) {
+          var _gbA = ghostState.exerciseDef.checkAngles(lm);
+          if (_gbA.hipSymmetry !== undefined && _gbA.hipSymmetry > 20) {
+            if (Date.now() - VoiceCoach.lastSpokenTime > 4000) {
+              VoiceCoach.speak('Even out your hips — keep them level.', false);
+            }
+          }
+          if (window.VYAYAM_DEBUG) {
+            var _gbT = getGhostCurrentTarget() || { joints: {} };
+            console.log('[GLUTE_BRIDGE]', {
+              orientation_detected: detectOrientation(lm),
+              orientation_expected: 'supine',
+              phase: _gbT.name,
+              hip:           _gbA.hip.toFixed(1),
+              hip_target:    _gbT.joints.hip,
+              knee:          _gbA.knee.toFixed(1),
+              knee_target:   _gbT.joints.knee,
+              bodyAlignment: _gbA.bodyAlignment.toFixed(1),
+              bodyAlignment_target: _gbT.joints.bodyAlignment,
+              hipSymmetry:   _gbA.hipSymmetry.toFixed(1),
+            });
+          }
+        }
+        // ROW_BENT_OVER — back-rounding safety check (Python rejects back < 150°)
+        if (ghostState.exerciseType === 'ROW_BENT_OVER' && lm) {
+          var _rbA = ghostState.exerciseDef.checkAngles(lm);
+          if (_rbA.back !== undefined && _rbA.back < 150) {
+            if (Date.now() - VoiceCoach.lastSpokenTime > 4000) {
+              VoiceCoach.speak('Keep your back flat — chest out, no rounding.', true);
+            }
+          }
+          if (window.VYAYAM_DEBUG) {
+            var _rbT = getGhostCurrentTarget() || { joints: {} };
+            console.log('[ROW_BENT_OVER]', {
+              orientation_detected: detectOrientation(lm),
+              orientation_expected: 'standing',
+              phase: _rbT.name,
+              elbow: _rbA.elbow.toFixed(1), elbow_target: _rbT.joints.elbow,
+              back:  _rbA.back.toFixed(1),  back_target:  _rbT.joints.back,
+            });
+          }
+        }
+        // BSS (Bulgarian Split Squat) — knee-over-toe + posture + hip-level
+        if (ghostState.exerciseType === 'BSS' && lm) {
+          var _bsA = ghostState.exerciseDef.checkAngles(lm);
+          if (_bsA.kneeOverToe) {
+            if (Date.now() - VoiceCoach.lastSpokenTime > 4000) {
+              VoiceCoach.speak('Step your front foot further forward.', true);
+            }
+          }
+          if (_bsA.trunk !== undefined && _bsA.trunk < 145) {
+            if (Date.now() - VoiceCoach.lastSpokenTime > 4000) {
+              VoiceCoach.speak('Stay upright — chest tall.', false);
+            }
+          }
+          if (window.VYAYAM_DEBUG) {
+            var _bsT = getGhostCurrentTarget() || { joints: {} };
+            console.log('[BSS]', {
+              orientation_detected: detectOrientation(lm),
+              orientation_expected: 'standing',
+              phase: _bsT.name,
+              frontKnee: _bsA.frontKnee.toFixed(1), frontKnee_target: _bsT.joints.frontKnee,
+              backKnee:  _bsA.backKnee.toFixed(1),  backKnee_target:  _bsT.joints.backKnee,
+              trunk:     _bsA.trunk.toFixed(1),     trunk_target:     _bsT.joints.trunk,
+              kneeOverToe: _bsA.kneeOverToe,
+            });
+          }
+        }
+        // STEP_UPS — hip-level (hip hike) safety check
+        if (ghostState.exerciseType === 'STEP_UPS' && lm) {
+          var _suA = ghostState.exerciseDef.checkAngles(lm);
+          // hipLevelDiff > 0.04 normalised ≈ 35px on 480p frame → matches Python threshold
+          if (_suA.hipLevelDiff !== undefined && _suA.hipLevelDiff > 0.04) {
+            if (Date.now() - VoiceCoach.lastSpokenTime > 4000) {
+              VoiceCoach.speak('Keep your hips level — do not hike.', true);
+            }
+          }
+          if (_suA.trunk !== undefined && _suA.trunk < 145) {
+            if (Date.now() - VoiceCoach.lastSpokenTime > 4000) {
+              VoiceCoach.speak('Stand tall on the step.', false);
+            }
+          }
+          if (window.VYAYAM_DEBUG) {
+            var _suT = getGhostCurrentTarget() || { joints: {} };
+            console.log('[STEP_UPS]', {
+              orientation_detected: detectOrientation(lm),
+              orientation_expected: 'standing',
+              phase: _suT.name,
+              leadKnee:  _suA.leadKnee.toFixed(1),  leadKnee_target:  _suT.joints.leadKnee,
+              trailKnee: _suA.trailKnee.toFixed(1), trailKnee_target: _suT.joints.trailKnee,
+              trunk:     _suA.trunk.toFixed(1),     trunk_target:     _suT.joints.trunk,
+              hipLevelDiff: _suA.hipLevelDiff.toFixed(3),
+            });
+          }
+        }
         // Mid-exercise knee valgus warning (Principle 8 — joint centration)
         if (ghostState.exerciseDef.stanceCheck && ghostState.exerciseDef.stanceCheck.kneeOverAnkle && lm) {
           var _shoulderW = Math.abs(lm[LM.leftShoulder].x - lm[LM.rightShoulder].x);
@@ -2252,6 +3116,138 @@ async function startCamera() {
               if (Date.now() - VoiceCoach.lastSpokenTime > 4000) {
                 VoiceCoach.speak('Push your knees out. Do not let them cave in.', true);
               }
+            }
+          }
+        }
+        // CLAMSHELL — threshold-based phase machine (mirrors clamshells_v2.py)
+        // Overrides the matchScore-based phase advancement used by other exercises.
+        if (ghostState.exerciseType === 'CLAMSHELL' && lm) {
+          var _cLK = lm[LM.leftKnee],  _cRK = lm[LM.rightKnee];
+          var _cLH = lm[LM.leftHip],   _cRH = lm[LM.rightHip];
+          var _cLA = lm[LM.leftAnkle], _cRA = lm[LM.rightAnkle];
+
+          // Feet-together check (keep ankles touching throughout)
+          if (_cLA && _cRA) {
+            var _cAnkleDist = Math.sqrt(
+              Math.pow(_cLA.x - _cRA.x, 2) + Math.pow(_cLA.y - _cRA.y, 2)
+            );
+            if (_cAnkleDist > 0.08 && Date.now() - VoiceCoach.lastSpokenTime > 4000) {
+              VoiceCoach.speak('Keep your feet together.', false);
+            }
+          }
+          // Hip-stacking check (from Python reference): if hips diverge in X, pelvis has rotated
+          if (_cLH && _cRH) {
+            var _cHipSep = Math.abs(_cLH.x - _cRH.x);
+            if (_cHipSep > 0.06 && Date.now() - VoiceCoach.lastSpokenTime > 4000) {
+              VoiceCoach.speak('Keep your hips stacked', false);
+            }
+          }
+
+          // Threshold-based state machine (knee separation in normalized × 100 units)
+          if (_cLK && _cRK) {
+            var _cKneeSep = Math.abs(_cLK.y - _cRK.y) * 100;
+            if (!ghostState.clamPhase) ghostState.clamPhase = 'closed';
+
+            if (ghostState.clamPhase === 'closed' && _cKneeSep > 20) {
+              ghostState.clamPhase = 'opening';
+              ghostState.currentPhaseIndex = 1;
+              VoiceCoach.speak('Lift knee', false);
+            } else if (ghostState.clamPhase === 'opening' && _cKneeSep >= 35) {
+              ghostState.clamPhase = 'open';
+              ghostState.currentPhaseIndex = 2;
+              VoiceCoach.speak('Hold', false);
+            } else if (ghostState.clamPhase === 'open' && _cKneeSep < 30) {
+              ghostState.clamPhase = 'closing';
+              ghostState.currentPhaseIndex = 3;
+              VoiceCoach.speak('Lower', false);
+            } else if (ghostState.clamPhase === 'closing' && _cKneeSep <= 15) {
+              // Rep complete — closing → closed
+              ghostState.clamPhase = 'closed';
+              ghostState.mode = 'REP_DONE';
+              ghostState.phaseStartTime = Date.now();
+              break;
+            }
+          }
+          // Skip the generic matchScore-based phase advancement below
+          break;
+        }
+        // PLYOMETRIC landing form checks — knee valgus + landing absorption
+        // Safety-critical: knees-caving-on-landing is the #1 ACL injury mechanism.
+        // Active only during the 'landing' phase of any PLYO_* template.
+        if (ghostState.exerciseType && ghostState.exerciseType.indexOf('PLYO_') === 0 && lm) {
+          var _pPhase = phases[ghostState.currentPhaseIndex] || {};
+          var _pPhaseName = _pPhase.name || '';
+          if (_pPhaseName === 'landing' || _pPhaseName === 'stick') {
+            var _pLK = lm[LM.leftKnee],  _pRK = lm[LM.rightKnee];
+            var _pLH = lm[LM.leftHip],   _pRH = lm[LM.rightHip];
+            var _pLA = lm[LM.leftAnkle], _pRA = lm[LM.rightAnkle];
+            // a) KNEE VALGUS — knees collapsing inward on landing
+            // Trigger: knee-to-knee distance < hip-to-hip distance × 0.8.
+            // Python references compare landing knee X to hip X; we normalise via hip width
+            // since JS landmarks are 0-1 normalised coords (no pixel shape parameter).
+            if (_pLK && _pRK && _pLH && _pRH) {
+              var _pKneeDist = Math.abs(_pLK.x - _pRK.x);
+              var _pHipDist  = Math.abs(_pLH.x - _pRH.x);
+              if (_pHipDist > 0.02 && _pKneeDist < _pHipDist * 0.8) {
+                if (Date.now() - VoiceCoach.lastSpokenTime > 4000) {
+                  VoiceCoach.speak('Knees out on landing! Do not let them cave in.', true);
+                }
+              }
+            }
+            // b) LANDING ABSORPTION — stiff-leg landing
+            // Trigger: knee angle stays > 160° during landing (no flexion / shock absorption)
+            if (_pLK && _pRK && _pLH && _pRH && _pLA && _pRA) {
+              var _pLKnee = calcAngle(_pLH, _pLK, _pLA);
+              var _pRKnee = calcAngle(_pRH, _pRK, _pRA);
+              var _pMinKnee = Math.min(_pLKnee, _pRKnee);
+              if (_pPhaseName === 'landing' && _pMinKnee > 160) {
+                if (Date.now() - VoiceCoach.lastSpokenTime > 4000) {
+                  VoiceCoach.speak('Bend your knees on landing — absorb the impact.', true);
+                }
+              }
+            }
+            // c) SINGLE-LEG ASYMMETRY — for single-leg variants, track loading-leg knee
+            // across reps; if avg differs from support side > 20° we flag at rep end.
+            if (ghostState.exerciseType === 'PLYO_SL_HOP_LATERAL' ||
+                ghostState.exerciseType === 'PLYO_SL_HOP_FORWARD' ||
+                ghostState.exerciseType === 'PLYO_SL_LANDING' ||
+                ghostState.exerciseType === 'PLYO_LATERAL_BOUND_STICK') {
+              if (_pLK && _pRK && _pLH && _pRH && _pLA && _pRA) {
+                var _pL = calcAngle(_pLH, _pLK, _pLA);
+                var _pR = calcAngle(_pRH, _pRK, _pRA);
+                if (!ghostState._plyoLeftMin)  ghostState._plyoLeftMin  = _pL;
+                if (!ghostState._plyoRightMin) ghostState._plyoRightMin = _pR;
+                ghostState._plyoLeftMin  = Math.min(ghostState._plyoLeftMin,  _pL);
+                ghostState._plyoRightMin = Math.min(ghostState._plyoRightMin, _pR);
+              }
+            }
+          }
+        }
+        // SL_RDL form checks — balance stability and shoulder square
+        if (ghostState.exerciseType === 'SL_RDL' && lm) {
+          // a) Balance: supporting-side ankle Y should stay planted.
+          //    Reads ghostState.exerciseDef.supportingSide so this template family
+          //    works for either leg (defaults to 'left' to preserve existing behaviour).
+          var _slSide      = (ghostState.exerciseDef && ghostState.exerciseDef.supportingSide === 'right') ? 'right' : 'left';
+          var _slAnkleIdx  = (_slSide === 'right') ? LM.rightAnkle : LM.leftAnkle;
+          var _slFootLabel = (_slSide === 'right') ? 'right' : 'left';
+          if (ghostState._slRdlAnkleBaseY === undefined) {
+            ghostState._slRdlAnkleBaseY = lm[_slAnkleIdx] ? lm[_slAnkleIdx].y : null;
+          }
+          if (ghostState._slRdlAnkleBaseY !== null && lm[_slAnkleIdx] &&
+              Math.abs(lm[_slAnkleIdx].y - ghostState._slRdlAnkleBaseY) > 0.04) {
+            if (Date.now() - VoiceCoach.lastSpokenTime > 4000) {
+              VoiceCoach.speak('Stay grounded. Keep your ' + _slFootLabel + ' foot planted.', true);
+            }
+          }
+          // b) Trunk rotation: shoulder x-delta should not drift from baseline
+          if (ghostState._slRdlShoulderBaseX === undefined && lm[LM.leftShoulder] && lm[LM.rightShoulder]) {
+            ghostState._slRdlShoulderBaseX = lm[LM.leftShoulder].x - lm[LM.rightShoulder].x;
+          }
+          if (ghostState._slRdlShoulderBaseX !== undefined && lm[LM.leftShoulder] && lm[LM.rightShoulder]) {
+            var _slShoulderDelta = Math.abs((lm[LM.leftShoulder].x - lm[LM.rightShoulder].x) - ghostState._slRdlShoulderBaseX);
+            if (_slShoulderDelta > 0.05 && Date.now() - VoiceCoach.lastSpokenTime > 4000) {
+              VoiceCoach.speak('Keep your shoulders square.', false);
             }
           }
         }
@@ -2335,6 +3331,10 @@ async function startCamera() {
           ghostState.ghostAnimProgress = 0;
           ghostState.lastRepPartial = false;
           ghostState.userHasMovedFromStart = false;
+          ghostState.restMode = true;
+          ghostState.restModeUntil = Date.now() + 3000;
+          ghostState.stallStartTime = null;
+          ghostState.stallBaseScore = null;
           VoiceCoach.speak('Again. ' + (phases.length > 1 ? phases[1].voice : phases[0].voice), false);
         }
         break;
@@ -2387,6 +3387,12 @@ async function startCamera() {
       }
 
       case 'SET_DONE':
+        if (!ghostState.restMode) {
+          ghostState.restMode = true;
+          ghostState.restModeUntil = Date.now() + (REST_SECS * 1000);
+          ghostState.stallStartTime = null;
+          ghostState.stallBaseScore = null;
+        }
         break;
     }
   }
@@ -2438,6 +3444,46 @@ async function startCamera() {
     let angle = Math.abs(rad * 180 / Math.PI);
     if (angle > 180) angle = 360 - angle;
     return angle;
+  }
+
+  // ════════════════════════════════════════════════════════
+  // Orientation detection — body posture from landmark geometry.
+  // Returns one of: 'standing' | 'supine' | 'prone' | 'sidelying' | 'unknown'.
+  // Used by USER_FOLLOWS handler to verify the patient is in the expected
+  // position before counting reps (fixes glute-bridge bug where the
+  // template assumed standing while the exercise needs supine).
+  // ════════════════════════════════════════════════════════
+  function detectOrientation(lm) {
+    if (!lm || !lm[LM.leftShoulder] || !lm[LM.rightShoulder] || !lm[LM.leftHip] || !lm[LM.rightHip]) return 'unknown';
+    var lsY = lm[LM.leftShoulder].y, rsY = lm[LM.rightShoulder].y;
+    var lhY = lm[LM.leftHip].y,      rhY = lm[LM.rightHip].y;
+    var shoulderMidY = (lsY + rsY) / 2;
+    var hipMidY      = (lhY + rhY) / 2;
+    var shoulderToHip = hipMidY - shoulderMidY;  // positive when shoulders above hips
+
+    // Sidelying: shoulders are spread horizontally (one above the other)
+    // by more than half the hip-vertical-spread plus a clear baseline.
+    var shoulderSpreadY = Math.abs(lsY - rsY);
+    if (shoulderSpreadY > 0.15) return 'sidelying';
+
+    // Standing: shoulders clearly above hips (head-up posture).
+    if (shoulderToHip > 0.15) return 'standing';
+
+    // Supine vs prone — body roughly horizontal in frame.
+    // Supine: face up (nose visible, above shoulders by camera POV).
+    // Prone: face down (nose below shoulders).
+    if (Math.abs(shoulderToHip) < 0.10) {
+      var nose = lm[LM.nose];
+      if (nose && nose.visibility !== undefined && nose.visibility > 0.4) {
+        return (nose.y < shoulderMidY) ? 'supine' : 'prone';
+      }
+      return 'supine';  // default to supine when ambiguous and horizontal
+    }
+
+    // Inverted: hips above shoulders (handstand or rare).
+    if (shoulderToHip < -0.10) return 'prone';
+
+    return 'unknown';
   }
 
   function onRepCounted(count) {
@@ -2574,6 +3620,35 @@ async function startCamera() {
       body[31] = { x: cx - 0.01, y: ankleY + 0.02, z: 0, visibility: 1 };
       body[32] = { x: cx + 0.01, y: ankleY + 0.02, z: 0, visibility: 1 };
 
+    } else if (orientation === 'sidelying_clamshell') {
+      // Clamshell: patient on RIGHT side, LEFT leg on top (SL_SIDE='left'), front camera view
+      // Knees bent 90°: thigh horizontal (forward/left), shin vertical (down)
+      var headY  = 0.12;
+      var shoulderY = 0.22;
+      var hipY   = 0.52;
+      var kneeX  = cx - 0.14;  // knees extend forward (left in screen)
+      var ankleX = cx - 0.14;  // ankles directly below knees
+
+      body[0]  = { x: cx,          y: headY,          z: 0, visibility: 1 };
+      body[7]  = { x: cx - 0.03,   y: headY - 0.02,   z: 0, visibility: 1 };
+      body[8]  = { x: cx + 0.03,   y: headY - 0.02,   z: 0, visibility: 1 };
+      body[11] = { x: cx - 0.025,  y: shoulderY,      z: 0, visibility: 1 };  // left (top) shoulder
+      body[12] = { x: cx + 0.025,  y: shoulderY,      z: 0, visibility: 1 };  // right (bottom) shoulder
+      body[13] = { x: cx - 0.06,   y: shoulderY + 0.08, z: 0, visibility: 1 };
+      body[14] = { x: cx + 0.06,   y: shoulderY + 0.05, z: 0, visibility: 1 };
+      body[15] = { x: cx - 0.09,   y: shoulderY + 0.12, z: 0, visibility: 1 };
+      body[16] = { x: cx + 0.09,   y: shoulderY + 0.03, z: 0, visibility: 1 };
+      body[23] = { x: cx - 0.025,  y: hipY,            z: 0, visibility: 1 };  // left (top) hip
+      body[24] = { x: cx + 0.025,  y: hipY + 0.02,     z: 0, visibility: 1 };  // right (bottom) hip
+      body[25] = { x: kneeX,       y: hipY,             z: 0, visibility: 1 };  // left knee — thigh horizontal
+      body[26] = { x: kneeX + 0.02,y: hipY + 0.03,      z: 0, visibility: 1 };  // right knee
+      body[27] = { x: ankleX,      y: hipY + 0.15,      z: 0, visibility: 1 };  // left ankle — shin vertical
+      body[28] = { x: ankleX + 0.02,y: hipY + 0.17,     z: 0, visibility: 1 };  // right ankle (stacked below left)
+      body[29] = { x: ankleX - 0.02,y: hipY + 0.17,     z: 0, visibility: 1 };
+      body[30] = { x: ankleX,       y: hipY + 0.17,     z: 0, visibility: 1 };
+      body[31] = { x: ankleX - 0.01,y: hipY + 0.18,     z: 0, visibility: 1 };
+      body[32] = { x: ankleX + 0.01,y: hipY + 0.18,     z: 0, visibility: 1 };
+
     } else if (orientation === 'hanging') {
       // Hanging from bar — FRONT VIEW, arms overhead
       var wristY  = 0.08;
@@ -2645,11 +3720,12 @@ async function startCamera() {
 
   // Build all orientation bodies once at startup
   var STANDARD_BODIES = {
-    standing:  buildBody('standing'),
-    prone:     buildBody('prone'),
-    supine:    buildBody('supine'),
-    sidelying: buildBody('sidelying'),
-    hanging:   buildBody('hanging'),
+    standing:           buildBody('standing'),
+    prone:              buildBody('prone'),
+    supine:             buildBody('supine'),
+    sidelying:          buildBody('sidelying'),
+    sidelying_clamshell: buildBody('sidelying_clamshell'),
+    hanging:            buildBody('hanging'),
   };
   // Backward compatibility
   var STANDARD_BODY = STANDARD_BODIES.standing;
@@ -2881,6 +3957,23 @@ async function startCamera() {
       ghost[LM.rightElbow].y -= hipDropFactor * 0.04;
     }
 
+    // Clamshell: working knee lifts (hip abduction), ankle stays planted
+    if (targetJoints.working_hip_abd !== undefined) {
+      var sl = ghostState.exerciseDef && ghostState.exerciseDef.sl_side ? ghostState.exerciseDef.sl_side : 'left';
+      var wKneeLM  = sl === 'left' ? LM.leftKnee  : LM.rightKnee;
+      var targetAbd = targetJoints.working_hip_abd;
+      if ((ghostState.mode === 'DEMO' || ghostState.mode === 'GHOST_LEADS') && progress !== undefined) {
+        var prevPhaseCA = ghostState.currentPhaseIndex > 0 ?
+          ghostState.exerciseDef.phases[ghostState.currentPhaseIndex - 1] : ghostState.exerciseDef.phases[0];
+        var prevAbd = (prevPhaseCA.joints && prevPhaseCA.joints.working_hip_abd != null) ? prevPhaseCA.joints.working_hip_abd : 5;
+        targetAbd = prevAbd + (targetAbd - prevAbd) * progress;
+      }
+      // abdFactor: 0 = knees stacked (target≈5), 1 = full lift (target≈40); units are kneeSep × 100
+      var abdFactor = Math.max(0, Math.min(1, (targetAbd - 5) / 35));
+      ghost[wKneeLM].y -= abdFactor * 0.14;  // knee lifts ~14% of frame height at full abduction
+      // ankle stays stationary (feet together rule)
+    }
+
     // Single leg hinge: hip flexion on one side
     if (targetJoints.workingHip !== undefined && targetJoints.hip === undefined) {
       var targetHip = targetJoints.workingHip;
@@ -2924,7 +4017,9 @@ async function startCamera() {
     workingKnee:   [['leftHip','leftKnee'], ['leftKnee','leftAnkle'], ['rightHip','rightKnee'], ['rightKnee','rightAnkle']],
     workingHip:    [['leftShoulder','leftHip'], ['rightShoulder','rightHip'], ['leftHip','leftKnee'], ['rightHip','rightKnee']],
     liftedKnee:    [['leftHip','leftKnee'], ['rightHip','rightKnee']],
-    plankLevel:    [['leftShoulder','leftHip'], ['rightShoulder','rightHip'], ['leftHip','leftAnkle'], ['rightHip','rightAnkle']],
+    plankLevel:       [['leftShoulder','leftHip'], ['rightShoulder','rightHip'], ['leftHip','leftAnkle'], ['rightHip','rightAnkle']],
+    working_hip_abd:  [['leftHip','leftKnee'], ['rightHip','rightKnee']],
+    knee_flex:        [['leftHip','leftKnee'], ['leftKnee','leftAnkle'], ['rightHip','rightKnee'], ['rightKnee','rightAnkle']],
   };
 
   var JOINT_TO_NODES = {
@@ -2943,7 +4038,9 @@ async function startCamera() {
     workingKnee:   [LM.leftKnee, LM.rightKnee, LM.leftAnkle, LM.rightAnkle],
     workingHip:    [LM.leftHip, LM.rightHip],
     liftedKnee:    [LM.leftKnee, LM.rightKnee],
-    plankLevel:    [LM.leftShoulder, LM.rightShoulder, LM.leftAnkle, LM.rightAnkle],
+    plankLevel:      [LM.leftShoulder, LM.rightShoulder, LM.leftAnkle, LM.rightAnkle],
+    working_hip_abd: [LM.leftKnee, LM.rightKnee],
+    knee_flex:       [LM.leftKnee, LM.leftAnkle, LM.rightKnee, LM.rightAnkle],
   };
 
   // Build LM index → name lookup once
@@ -3419,7 +4516,9 @@ async function startCamera() {
     ctx.textAlign   = 'center';
     var phases = ghostState.exerciseDef ? ghostState.exerciseDef.phases : [];
     var label  = '';
-    if (ghostState.mode === 'DEMO')             label = '\uD83D\uDC40 WATCH \u2014 ' + (targetPhase.voice || 'Demonstrating');
+    if (ghostState.restMode && ghostState.mode !== 'SET_DONE') {
+      label = '\u23F8 REST \u2014 ' + Math.max(0, Math.ceil((ghostState.restModeUntil - Date.now()) / 1000)) + 's';
+    } else if (ghostState.mode === 'DEMO')             label = '\uD83D\uDC40 WATCH \u2014 ' + (targetPhase.voice || 'Demonstrating');
     else if (ghostState.mode === 'CALIBRATING') label = '\uD83D\uDCF7 Step into frame';
     else if (ghostState.mode === 'SETUP') {
       var sc    = ghostState.exerciseDef && ghostState.exerciseDef.setupCues;
@@ -3731,6 +4830,16 @@ async function startCamera() {
           var userAngles = ghostState.exerciseDef.checkAngles(lm);
           var target     = getGhostCurrentTarget();
           var matchScore = target ? computeMatchScore(userAngles, target.joints || {}) : 50;
+          if (window.VYAYAM_DEBUG && ghostState.exerciseType === 'CLAMSHELL') {
+            console.log('[CLAM]', {
+              phase: target ? target.name : '?',
+              computed_hip_abd: userAngles.working_hip_abd !== undefined ? userAngles.working_hip_abd.toFixed(1) : '?',
+              target_hip_abd: target && target.joints ? target.joints.working_hip_abd : '?',
+              computed_knee_flex: userAngles.knee_flex !== undefined ? userAngles.knee_flex.toFixed(1) : '?',
+              target_knee_flex: target && target.joints ? target.joints.knee_flex : '?',
+              matchScore: matchScore,
+            });
+          }
           ghostState._lastMatchScore = matchScore;
           updateGhostState(userAngles, matchScore, lm);
           target = getGhostCurrentTarget();
