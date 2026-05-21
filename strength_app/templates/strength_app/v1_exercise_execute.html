@@ -4755,6 +4755,32 @@ async function startCamera() {
         // Path matches strength_app/static/strength_app/videos/<EXERCISE_ID>.mp4.
         _vrPlayer.src = "{% load static %}" + "{% static 'strength_app/videos/' %}" + EXERCISE_ID + ".mp4";
         _vrPip.style.display = 'block';
+
+        // ── Sync video playback to therapist-prescribed tempo ──
+        //    repTotalSec = sum(TEMPO_PARTS) — full rep cycle in seconds.
+        //    playbackRate = nativeDuration / repTotalSec.
+        //      > 1.0 speeds the video up (tempo shorter than native clip)
+        //      < 1.0 slows it down (tempo longer than native clip)
+        //    Runs on loadedmetadata so duration is available. If duration
+        //    is unknown or tempo is zero, fall back to native 1.0× playback.
+        _vrPlayer.addEventListener('loadedmetadata', function() {
+          var repTotalSec = 0;
+          for (var _i = 0; _i < TEMPO_PARTS.length; _i++) {
+            repTotalSec += Number(TEMPO_PARTS[_i]) || 0;
+          }
+          var nativeDur = _vrPlayer.duration;
+          if (repTotalSec > 0 && nativeDur > 0 && isFinite(nativeDur)) {
+            // Clamp to a sane range so misconfigured tempos don't make
+            // the clip unwatchable (e.g. 0.1s tempo would 30× speed it).
+            var rate = nativeDur / repTotalSec;
+            rate = Math.max(0.25, Math.min(4.0, rate));
+            _vrPlayer.playbackRate = rate;
+            console.log('[VIDEO_MODE] playbackRate =', rate.toFixed(3),
+                        '(native', nativeDur.toFixed(2) + 's,',
+                        'tempo', repTotalSec + 's)');
+          }
+        });
+
         // Some mobile browsers ignore autoplay until first user gesture; force-play after camera start.
         _vrPlayer.play().catch(function(){ /* will retry on user interaction */ });
       }
