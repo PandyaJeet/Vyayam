@@ -2995,6 +2995,14 @@ async function startCamera() {
           ghostState.stallStartTime = Date.now();
           ghostState.stallBaseScore = matchScore;
           ghostState.matchFrames = 0;
+          // VIDEO_MODE: tempo voice begins exactly when the user enters
+          // the actual exercise phase. Guarded by _vmTempoStartedForSet
+          // so it fires only once per set, not every time we re-enter
+          // USER_FOLLOWS between reps.
+          if (window.VIDEO_MODE && !ghostState._vmTempoStartedForSet) {
+            ghostState._vmTempoStartedForSet = true;
+            if (typeof startTempoVoice === 'function') startTempoVoice();
+          }
         }
         break;
       }
@@ -3350,6 +3358,7 @@ async function startCamera() {
         if (repEl) repEl.textContent = ghostState.repCount + ' / ' + ghostState.targetReps;
         if (ghostState.repCount >= ghostState.targetReps) {
           ghostState.mode = 'SET_DONE';
+          ghostState._vmTempoStartedForSet = false;  // re-arm tempo trigger for the next set
           VoiceCoach.speak('Set complete! Well done.', true);
           var doneBtn = document.getElementById('completeSetBtn');
           if (doneBtn) doneBtn.style.display = 'block';
@@ -4125,6 +4134,11 @@ async function startCamera() {
   }
 
   function drawGhostTarget(ctx, targetPhase, matchScore, W, H, userLm) {
+    // In VIDEO_MODE the demonstration visual is the reference video PiP,
+    // not the ghost figure. Skip drawing entirely. updateGhostState() is
+    // still called from the main render loop, so voice cues and state
+    // transitions continue uninterrupted.
+    if (window.VIDEO_MODE) return;
     if (!targetPhase || !userLm) return;
 
     var elapsed  = Date.now() - ghostState.phaseStartTime;
@@ -4746,7 +4760,10 @@ async function startCamera() {
     var VIDEO_MODE = VIDEO_MODE_EXERCISES.indexOf(EXERCISE_ID) !== -1;
     window.VIDEO_MODE = VIDEO_MODE;  // expose to startRest/skipRest gates below
     if (VIDEO_MODE) {
-      hasGhost = false;  // disable ghost rendering + rep counting entirely
+      // NOTE: hasGhost stays TRUE — we keep the ghost coach's voice flow
+      // and state machine alive. Only the visual ghost figure is hidden
+      // (see drawGhostTarget early-return below). The reference video
+      // PiP becomes the demonstration visual.
       var _vrPip    = document.getElementById('videoRefPip');
       var _vrPlayer = document.getElementById('videoRefPlayer');
       var _vrBadge  = document.getElementById('videoRefBadge');
@@ -4785,11 +4802,10 @@ async function startCamera() {
         _vrPlayer.play().catch(function(){ /* will retry on user interaction */ });
       }
       if (_vrBadge) _vrBadge.style.display = 'block';
-      // Begin tempo voice pacing immediately. Loops "Down... 2... 1... Hold...
-      // Up... 2... 1..." for the duration of the set. stopTempoVoice()
-      // is already called from completeSet() (line ~4994).
-      // Small delay to let SpeechSynthesis voices load on first call.
-      setTimeout(function(){ if (typeof startTempoVoice === 'function') startTempoVoice(); }, 800);
+      // Tempo voice is no longer auto-started here. It's triggered when
+      // the ghost state machine first enters USER_FOLLOWS for this set
+      // (see CHANGE 3 below). That keeps tempo in sync with the
+      // calibration → setup → demo voice flow.
     }
 
     if (hasGhost) { initGhostAnimator(); }
@@ -5019,7 +5035,9 @@ async function startCamera() {
               cueEl.style.color = '#22c55e';
             }
           }
-        } else {
+        }
+
+        if (window.VIDEO_MODE && EXERCISE_ID === 'full_squats') {
           // ── VIDEO_MODE form feedback: color-coded skeleton + voice cues.
           //    Ported from the validate_form() pattern in
           //    exercise_system/exercises/full_squats_v2.py — absolute
