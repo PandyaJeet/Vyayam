@@ -54,27 +54,21 @@
   .start-cam-btn { padding: 10px 24px; background: linear-gradient(135deg,#0c6c3f,#6bbf8a);
     border: none; border-radius: 10px; color: #fff; font-weight: 700; cursor: pointer; font-size: .9rem; }
 
-  /* Reference-video side panel — left ~38% of the camera frame, full
-     height. Visible only during DEMO and on Watch Demo Again click;
-     paused (frozen first frame) at all other times. */
-  .video-ref-pip { position: absolute; top: 0; left: 0; height: 100%;
-    width: 38%; z-index: 30; border-radius: 0 14px 14px 0;
-    overflow: hidden; border-right: 2px solid rgba(56,189,248,.85);
-    background: #000; box-shadow: 4px 0 18px rgba(0,0,0,.4);
-    display: none; }
+  /* Reference-video panel — appears beside the patient ONLY during the
+     demo phase (and on Watch Demo Again), then hides. Semi-transparent,
+     vertically centered on the left ~30% of the camera frame, like a
+     coach standing next to you. Toggled by videoModeDemoPlay/Pause(). */
+  .video-ref-pip { position: absolute; top: 50%; left: 2%;
+    transform: translateY(-50%); height: 84%; width: 30%; z-index: 30;
+    border-radius: 14px; overflow: hidden;
+    border: 2px solid rgba(56,189,248,.55); background: rgba(0,0,0,.5);
+    box-shadow: 0 8px 24px rgba(0,0,0,.5); opacity: .88; display: none; }
   .video-ref-pip video { width: 100%; height: 100%; object-fit: contain;
     display: block; }
   .video-ref-pip .vrp-label { position: absolute; bottom: 8px; left: 8px;
-    font-size: .7rem; font-weight: 800; letter-spacing: .5px;
+    font-size: .65rem; font-weight: 800; letter-spacing: .5px;
     color: #38bdf8; text-shadow: 0 1px 2px rgba(0,0,0,.9);
     text-transform: uppercase; }
-  .watch-demo-again-btn { position: absolute; bottom: 12px; right: 12px;
-    z-index: 31; background: rgba(56,189,248,.15);
-    border: 1px solid rgba(56,189,248,.6); color: #38bdf8;
-    border-radius: 8px; padding: 6px 12px; font-size: .7rem;
-    font-weight: 700; letter-spacing: .3px; text-transform: uppercase;
-    cursor: pointer; display: none; }
-  .watch-demo-again-btn:hover { background: rgba(56,189,248,.25); }
   .video-ref-mode-badge { position: absolute; top: 12px; left: 12px;
     z-index: 31; background: rgba(56,189,248,.15);
     border: 1px solid rgba(56,189,248,.5); color: #38bdf8;
@@ -203,7 +197,6 @@
       <div class="video-ref-pip" id="videoRefPip">
         <video id="videoRefPlayer" muted playsinline></video>
         <div class="vrp-label">Reference</div>
-        <button type="button" class="watch-demo-again-btn" id="watchDemoAgainBtn">Watch Demo Again</button>
       </div>
       <div class="video-ref-mode-badge" id="videoRefBadge">📹 Video Mode</div>
 
@@ -293,7 +286,7 @@
           background:rgba(12,108,63,.1);margin-top:8px;transition:color .3s;">
           Start camera to activate ghost guide
         </div>
-        <button onclick="ghostState.mode='DEMO';ghostState.currentPhaseIndex=0;ghostState.phaseStartTime=Date.now();ghostState.demoRepsDone=0;VoiceCoach.speak('Watch me first.',true);" class="btn btn-sm btn-outline-primary mt-2 w-100"
+        <button onclick="ghostState.mode='DEMO';ghostState.currentPhaseIndex=0;ghostState.phaseStartTime=Date.now();ghostState.demoRepsDone=0;VoiceCoach.speak('Watch me first.',true);if(window.videoModeDemoPlay)window.videoModeDemoPlay();" class="btn btn-sm btn-outline-primary mt-2 w-100"
           style="font-size:.75rem;border-radius:8px;">
           <i class="fas fa-redo me-1"></i>Watch Demo Again
         </button>
@@ -4769,7 +4762,7 @@ async function startCamera() {
         // Hash-stable URL via Django staticfiles manifest (WhiteNoise compressed storage).
         // Path matches strength_app/static/strength_app/videos/<EXERCISE_ID>.mp4.
         _vrPlayer.src = "{% load static %}" + "{% static 'strength_app/videos/' %}" + EXERCISE_ID + ".mp4";
-        _vrPip.style.display = 'block';
+        _vrPip.style.display = 'none';
 
         // ── Sync video playback to therapist-prescribed tempo ──
         //    repTotalSec = sum(TEMPO_PARTS) — full rep cycle in seconds.
@@ -4788,7 +4781,7 @@ async function startCamera() {
             // Clamp to a sane range so misconfigured tempos don't make
             // the clip unwatchable (e.g. 0.1s tempo would 30× speed it).
             var rate = nativeDur / repTotalSec;
-            rate = Math.max(0.25, Math.min(4.0, rate));
+            rate = Math.max(0.5, Math.min(1.75, rate));
             _vrPlayer.playbackRate = rate;
             console.log('[VIDEO_MODE] playbackRate =', rate.toFixed(3),
                         '(native', nativeDur.toFixed(2) + 's,',
@@ -4796,39 +4789,28 @@ async function startCamera() {
           }
         });
       }
-      if (_vrBadge) _vrBadge.style.display = 'block';
-
-      // Watch Demo Again button — replays the demo video once.
-      var _vrButton = document.getElementById('watchDemoAgainBtn');
-      if (_vrButton) {
-        _vrButton.style.display = 'block';
-        _vrButton.addEventListener('click', function() {
-          var vr = document.getElementById('videoRefPlayer');
-          if (!vr) return;
-          try { vr.currentTime = 0; vr.play(); } catch(e) {}
-          // Pause after one rep duration (TEMPO_PARTS sums to rep seconds).
-          var repSec = 0;
-          if (typeof TEMPO_PARTS !== 'undefined' && TEMPO_PARTS.length) {
-            for (var i = 0; i < TEMPO_PARTS.length; i++) repSec += TEMPO_PARTS[i];
-          }
-          if (repSec <= 0) repSec = 4;  // fallback
-          setTimeout(function() { try { vr.pause(); } catch(e) {} }, repSec * 1000);
-        });
-      }
+      if (_vrBadge) _vrBadge.style.display = 'none';
     }
 
     // VIDEO_MODE demo play/pause helpers — driven by ghost state machine.
     window.videoModeDemoPlay = function() {
       if (!window.VIDEO_MODE) return;
-      var vr = document.getElementById('videoRefPlayer');
+      var vr  = document.getElementById('videoRefPlayer');
+      var pip = document.getElementById('videoRefPip');
+      var bdg = document.getElementById('videoRefBadge');
+      if (pip) pip.style.display = 'block';
+      if (bdg) bdg.style.display = 'block';
       if (!vr) return;
       try { vr.currentTime = 0; vr.play(); } catch(e) {}
     };
     window.videoModeDemoPause = function() {
       if (!window.VIDEO_MODE) return;
-      var vr = document.getElementById('videoRefPlayer');
-      if (!vr) return;
-      try { vr.pause(); } catch(e) {}
+      var vr  = document.getElementById('videoRefPlayer');
+      var pip = document.getElementById('videoRefPip');
+      var bdg = document.getElementById('videoRefBadge');
+      if (vr) { try { vr.pause(); } catch(e) {} }
+      if (pip) pip.style.display = 'none';
+      if (bdg) bdg.style.display = 'none';
     };
 
     if (hasGhost) { initGhostAnimator(); }
@@ -5054,7 +5036,7 @@ async function startCamera() {
 
   function updateFormDisplay(score) {
     const el = document.getElementById('formScore');
-    el.textContent = score + '%';
+    el.textContent = Math.round(score) + '%';
     el.style.color = score >= 85 ? '#22c55e' : score >= 70 ? '#f59e0b' : '#ef4444';
   }
 
