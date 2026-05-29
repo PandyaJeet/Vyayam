@@ -54,20 +54,29 @@
   .start-cam-btn { padding: 10px 24px; background: linear-gradient(135deg,#0c6c3f,#6bbf8a);
     border: none; border-radius: 10px; color: #fff; font-weight: 700; cursor: pointer; font-size: .9rem; }
 
-  /* Video-reference PiP — MVP test for full_squats. Sits top-left over
-     the camera feed, autoplays muted, loops. Patient mirrors the demo
-     while looking at their own camera in the rest of the frame. */
-  .video-ref-pip { position: absolute; top: 12px; left: 12px; z-index: 30;
-    width: 130px; max-width: 35%; border-radius: 10px; overflow: hidden;
-    border: 2px solid rgba(56,189,248,.85); background: #000;
-    box-shadow: 0 6px 18px rgba(0,0,0,.5); display: none; }
-  .video-ref-pip video { width: 100%; display: block; }
-  .video-ref-pip .vrp-label { position: absolute; bottom: 4px; left: 6px;
-    font-size: .58rem; font-weight: 800; letter-spacing: .5px;
+  /* Reference-video side panel — left ~38% of the camera frame, full
+     height. Visible only during DEMO and on Watch Demo Again click;
+     paused (frozen first frame) at all other times. */
+  .video-ref-pip { position: absolute; top: 0; left: 0; height: 100%;
+    width: 38%; z-index: 30; border-radius: 0 14px 14px 0;
+    overflow: hidden; border-right: 2px solid rgba(56,189,248,.85);
+    background: #000; box-shadow: 4px 0 18px rgba(0,0,0,.4);
+    display: none; }
+  .video-ref-pip video { width: 100%; height: 100%; object-fit: contain;
+    display: block; }
+  .video-ref-pip .vrp-label { position: absolute; bottom: 8px; left: 8px;
+    font-size: .7rem; font-weight: 800; letter-spacing: .5px;
     color: #38bdf8; text-shadow: 0 1px 2px rgba(0,0,0,.9);
     text-transform: uppercase; }
-  .video-ref-mode-badge { position: absolute; top: 12px; left: 150px;
-    z-index: 30; background: rgba(56,189,248,.15);
+  .watch-demo-again-btn { position: absolute; bottom: 12px; right: 12px;
+    z-index: 31; background: rgba(56,189,248,.15);
+    border: 1px solid rgba(56,189,248,.6); color: #38bdf8;
+    border-radius: 8px; padding: 6px 12px; font-size: .7rem;
+    font-weight: 700; letter-spacing: .3px; text-transform: uppercase;
+    cursor: pointer; display: none; }
+  .watch-demo-again-btn:hover { background: rgba(56,189,248,.25); }
+  .video-ref-mode-badge { position: absolute; top: 12px; left: 12px;
+    z-index: 31; background: rgba(56,189,248,.15);
     border: 1px solid rgba(56,189,248,.5); color: #38bdf8;
     border-radius: 8px; padding: 4px 10px; font-size: .65rem;
     font-weight: 800; letter-spacing: .5px; text-transform: uppercase;
@@ -192,8 +201,9 @@
            EXERCISE_ID matches the VIDEO_MODE allowlist (full_squats only
            for the MVP). The <video>'s src is set dynamically. -->
       <div class="video-ref-pip" id="videoRefPip">
-        <video id="videoRefPlayer" autoplay muted loop playsinline></video>
+        <video id="videoRefPlayer" muted playsinline></video>
         <div class="vrp-label">Reference</div>
+        <button type="button" class="watch-demo-again-btn" id="watchDemoAgainBtn">Watch Demo Again</button>
       </div>
       <div class="video-ref-mode-badge" id="videoRefBadge">📹 Video Mode</div>
 
@@ -2855,6 +2865,7 @@ async function startCamera() {
           ghostState.currentPhaseIndex = 0;
           ghostState.demoRepsDone = 0;
           VoiceCoach.speak('Watch me. I will show you the movement.', true);
+          if (typeof window.videoModeDemoPlay === 'function') window.videoModeDemoPlay();
           break;
         }
         // Camera cue at index -1, exercise cues at 0+
@@ -2867,6 +2878,7 @@ async function startCamera() {
             ghostState.currentPhaseIndex = 0;
             ghostState.demoRepsDone = 0;
             VoiceCoach.speak('Watch me. I will show you the movement.', true);
+            if (typeof window.videoModeDemoPlay === 'function') window.videoModeDemoPlay();
           } else {
             ghostState.setupCueTime = Date.now();
             VoiceCoach.speak(cues[ghostState.setupCueIndex], true);
@@ -2894,6 +2906,7 @@ async function startCamera() {
               ghostState.phaseStartTime = Date.now();
               ghostState.matchFrames = 0;
               VoiceCoach.speak('Now you try. Step into me.', true);
+              if (typeof window.videoModeDemoPause === 'function') window.videoModeDemoPause();
             }
           }
         }
@@ -4125,6 +4138,9 @@ async function startCamera() {
   }
 
   function drawGhostTarget(ctx, targetPhase, matchScore, W, H, userLm) {
+    // VIDEO_MODE: video is the demo, so suppress ghost figure during DEMO only.
+    // During USER_FOLLOWS / GHOST_LEADS / etc. the ghost figure draws normally.
+    if (window.VIDEO_MODE && ghostState.mode === 'DEMO') return;
     if (!targetPhase || !userLm) return;
 
     var elapsed  = Date.now() - ghostState.phaseStartTime;
@@ -4779,12 +4795,41 @@ async function startCamera() {
                         'tempo', repTotalSec + 's)');
           }
         });
-
-        // Some mobile browsers ignore autoplay until first user gesture; force-play after camera start.
-        _vrPlayer.play().catch(function(){ /* will retry on user interaction */ });
       }
       if (_vrBadge) _vrBadge.style.display = 'block';
+
+      // Watch Demo Again button — replays the demo video once.
+      var _vrButton = document.getElementById('watchDemoAgainBtn');
+      if (_vrButton) {
+        _vrButton.style.display = 'block';
+        _vrButton.addEventListener('click', function() {
+          var vr = document.getElementById('videoRefPlayer');
+          if (!vr) return;
+          try { vr.currentTime = 0; vr.play(); } catch(e) {}
+          // Pause after one rep duration (TEMPO_PARTS sums to rep seconds).
+          var repSec = 0;
+          if (typeof TEMPO_PARTS !== 'undefined' && TEMPO_PARTS.length) {
+            for (var i = 0; i < TEMPO_PARTS.length; i++) repSec += TEMPO_PARTS[i];
+          }
+          if (repSec <= 0) repSec = 4;  // fallback
+          setTimeout(function() { try { vr.pause(); } catch(e) {} }, repSec * 1000);
+        });
+      }
     }
+
+    // VIDEO_MODE demo play/pause helpers — driven by ghost state machine.
+    window.videoModeDemoPlay = function() {
+      if (!window.VIDEO_MODE) return;
+      var vr = document.getElementById('videoRefPlayer');
+      if (!vr) return;
+      try { vr.currentTime = 0; vr.play(); } catch(e) {}
+    };
+    window.videoModeDemoPause = function() {
+      if (!window.VIDEO_MODE) return;
+      var vr = document.getElementById('videoRefPlayer');
+      if (!vr) return;
+      try { vr.pause(); } catch(e) {}
+    };
 
     if (hasGhost) { initGhostAnimator(); }
 
