@@ -54,15 +54,14 @@
   .start-cam-btn { padding: 10px 24px; background: linear-gradient(135deg,#0c6c3f,#6bbf8a);
     border: none; border-radius: 10px; color: #fff; font-weight: 700; cursor: pointer; font-size: .9rem; }
 
-  /* Reference-video panel — appears beside the patient ONLY during the
-     demo phase (and on Watch Demo Again), then hides. Semi-transparent,
-     vertically centered on the left ~30% of the camera frame, like a
-     coach standing next to you. Toggled by videoModeDemoPlay/Pause(). */
-  .video-ref-pip { position: absolute; top: 50%; left: 2%;
-    transform: translateY(-50%); height: 84%; width: 30%; z-index: 30;
-    border-radius: 14px; overflow: hidden;
-    border: 2px solid rgba(56,189,248,.55); background: rgba(0,0,0,.5);
-    box-shadow: 0 8px 24px rgba(0,0,0,.5); opacity: .88; display: none; }
+  /* Reference-video panel — full-height strip flush to the left edge so
+     the demo figure stands beside the patient like the ghost coach.
+     Mildly translucent; shown ONLY during DEMO (and Watch Demo Again),
+     toggled by videoModeDemoPlay/Pause(). */
+  .video-ref-pip { position: absolute; top: 0; left: 0; height: 100%;
+    width: 32%; z-index: 30; overflow: hidden;
+    border-right: 1px solid rgba(56,189,248,.35);
+    background: rgba(0,0,0,.25); opacity: .92; display: none; }
   .video-ref-pip video { width: 100%; height: 100%; object-fit: contain;
     display: block; }
   .video-ref-pip .vrp-label { position: absolute; bottom: 8px; left: 8px;
@@ -4801,6 +4800,7 @@ async function startCamera() {
       if (pip) pip.style.display = 'block';
       if (bdg) bdg.style.display = 'block';
       if (!vr) return;
+      vr.loop = true;  // loop through the whole demo window so it never freezes on a frame
       try { vr.currentTime = 0; vr.play(); } catch(e) {}
     };
     window.videoModeDemoPause = function() {
@@ -4808,7 +4808,7 @@ async function startCamera() {
       var vr  = document.getElementById('videoRefPlayer');
       var pip = document.getElementById('videoRefPip');
       var bdg = document.getElementById('videoRefBadge');
-      if (vr) { try { vr.pause(); } catch(e) {} }
+      if (vr) { try { vr.loop = false; vr.pause(); } catch(e) {} }
       if (pip) pip.style.display = 'none';
       if (bdg) bdg.style.display = 'none';
     };
