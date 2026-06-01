@@ -110,7 +110,11 @@
       "Read(//Users/pawandangarwala/Desktop/**)",
       "Bash(git ls-remote *)",
       "Bash(git pull *)",
-      "Bash(git cherry-pick *)"
+      "Bash(git cherry-pick *)",
+      "Bash(git rm *)",
+      "Bash(echo '*.log')",
+      "Bash(echo '=6.0')",
+      "Bash(DJANGO_SECRET_KEY=test-key DJANGO_DEBUG=True python *)"
     ]
   }
 }

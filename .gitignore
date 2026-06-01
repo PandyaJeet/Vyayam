@@ -30,3 +30,5 @@ Thumbs.db
 # Secrets — never commit these
 *.pem
 *.key
+*.log
+=6.0
