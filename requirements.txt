@@ -3,4 +3,5 @@ Django==4.2
 gunicorn==25.3.0
 mediapipe==0.10.33
 psycopg2-binary==2.9.11
+reportlab==4.4.4
 whitenoise==6.12.0

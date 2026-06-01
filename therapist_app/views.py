@@ -8,6 +8,7 @@ URLs, so the Back button + analytics see one canonical patient URL.
 import json
 import logging
 import re
+import secrets
 from datetime import timedelta
 
 from django.contrib import messages as flash
@@ -24,6 +25,8 @@ from django.utils.html import escape
 from django.utils.safestring import mark_safe
 from django.views.decorators.http import require_POST
 
+from strength_app.rate_limiter import rate_limit
+
 from .exercise_catalog import EXERCISES, EXERCISES_BY_ID, PATTERNS
 from .models import (
     Prescription,
@@ -38,10 +41,19 @@ from .models import (
 from .permissions import get_linked_patient_or_404, therapist_required
 
 
+def _safe_int(value, default, lo, hi):
+    try:
+        v = int(value)
+    except (TypeError, ValueError):
+        return default
+    return max(lo, min(hi, v))
+
+
 # ---------------------------------------------------------------------------
 # Auth
 # ---------------------------------------------------------------------------
 
+@rate_limit(max_attempts=5, window_seconds=300, key_prefix='therapist_login')
 def therapist_login(request):
     """Therapist login form. Distinct from the patient PWA login (phone-based)."""
     if request.user.is_authenticated and hasattr(request.user, 'therapist'):
@@ -53,6 +65,7 @@ def therapist_login(request):
         password = request.POST.get('password', '')
         user = authenticate(request, username=username, password=password)
         if user is not None and hasattr(user, 'therapist'):
+            request.session.flush()
             login(request, user)
             return redirect('therapist_dashboard')
         if user is not None and not hasattr(user, 'therapist'):
@@ -191,6 +204,83 @@ def _link_card(link):
         'last_session': last_session,
         'status_tone': tone,
         'next_session': seed.get('next_session', '—'),
+    }
+
+
+def _build_progress_charts(link):
+    """Builds the three Progress-tab datasets (last 14 days):
+       1. Pain trend — one point per day with at least one logged pain reading
+       2. Compliance — distinct days completed vs window size for 3 periods
+       3. Difficulty distribution — counts across SessionLogItem.difficulty
+    """
+    today = timezone.now().date()
+    window_days = 14
+    window_start = today - timedelta(days=window_days - 1)
+
+    logs_14d = list(
+        link.session_logs
+        .filter(started_at__date__gte=window_start)
+        .prefetch_related('items')
+    )
+
+    # --- Chart 1: pain trend
+    pain_by_day = {}
+    for log in logs_14d:
+        if log.overall_pain is None:
+            continue
+        d = log.started_at.date()
+        pain_by_day.setdefault(d, []).append(log.overall_pain)
+
+    pain_labels = []
+    pain_values = []
+    for offset in range(window_days):
+        d = window_start + timedelta(days=offset)
+        pain_labels.append(d.strftime('%b %-d'))
+        if d in pain_by_day:
+            vals = pain_by_day[d]
+            pain_values.append(round(sum(vals) / len(vals), 1))
+        else:
+            pain_values.append(None)
+
+    # --- Chart 2: compliance buckets
+    logs_30d = list(
+        link.session_logs
+        .filter(started_at__date__gte=today - timedelta(days=29))
+        .only('started_at', 'completed_at')
+    )
+
+    def _days_done(start, end):
+        return len({
+            l.started_at.date()
+            for l in logs_30d
+            if l.completed_at is not None and start <= l.started_at.date() <= end
+        })
+
+    this_week = _days_done(today - timedelta(days=6), today)
+    last_week = _days_done(today - timedelta(days=13), today - timedelta(days=7))
+    this_month = _days_done(today - timedelta(days=29), today)
+
+    compliance = [
+        {'label': 'This week', 'completed': this_week, 'total': 7},
+        {'label': 'Last week', 'completed': last_week, 'total': 7},
+        {'label': 'This month', 'completed': this_month, 'total': 30},
+    ]
+    for row in compliance:
+        row['pct'] = int(round(100.0 * row['completed'] / row['total'])) if row['total'] else 0
+
+    # --- Chart 3: difficulty distribution
+    difficulty_counts = {'easy': 0, 'right': 0, 'hard': 0, 'too_hard': 0}
+    for log in logs_14d:
+        for item in log.items.all():
+            if item.difficulty in difficulty_counts:
+                difficulty_counts[item.difficulty] += 1
+    total_items = sum(difficulty_counts.values())
+
+    return {
+        'has_data': bool(logs_14d),
+        'pain': {'labels': pain_labels, 'values': pain_values},
+        'compliance': compliance,
+        'difficulty': {'counts': difficulty_counts, 'total': total_items},
     }
 
 
@@ -392,7 +482,9 @@ def simulate_accept_invite(request, link_id):
         link.program_start = timezone.now().date()
     link.save()
 
-    link.patient.set_password('patient')
+    generated_password = secrets.token_urlsafe(6)[:8]
+
+    link.patient.set_password(generated_password)
     link.patient.save()
 
     # Resolve login phone — use stored phone or fall back to synthetic number
@@ -410,7 +502,7 @@ def simulate_accept_invite(request, link_id):
             defaults={
                 'patient_id': patient_id,
                 'phone': login_phone,
-                'password': make_password('patient'),
+                'password': make_password(generated_password),
                 'name': link.full_name or 'Patient',
                 'age': link.age or 30,
                 'goals': 'Rehabilitation and recovery',
@@ -422,7 +514,7 @@ def simulate_accept_invite(request, link_id):
         if not created:
             PatientProfile.objects.filter(user_id=link.patient.id).update(
                 phone=login_phone,
-                password=make_password('patient'),
+                password=make_password(generated_password),
                 name=link.full_name or profile.name,
                 therapist_managed=True,
                 gate_test_completed=True,
@@ -434,11 +526,11 @@ def simulate_accept_invite(request, link_id):
     flash.success(
         request,
         mark_safe(
-            f"<strong>{escape(link.display_name)} activated.</strong>"
-            f"<br>Patient login credentials:"
-            f"<br>&nbsp;&nbsp;Phone:&nbsp;<code style='background:#d1fae5;padding:1px 6px;border-radius:4px;'>{escape(login_phone)}</code>"
-            f"<br>&nbsp;&nbsp;Password:&nbsp;<code style='background:#d1fae5;padding:1px 6px;border-radius:4px;'>patient</code>"
-            f"<br><span style='opacity:.75;font-size:.85em;'>Share with the patient — they can sign in at /login/ on any device.</span>"
+            f"<strong>Patient activated for {escape(link.display_name)}.</strong>"
+            f"<br>Login phone:&nbsp;<code style='background:#d1fae5;padding:1px 6px;border-radius:4px;'>{escape(login_phone)}</code>"
+            f"<br>Password:&nbsp;<code style='background:#fde68a;padding:1px 6px;border-radius:4px;font-weight:600;'>{escape(generated_password)}</code>"
+            f"<br><strong style='color:#b91c1c;'>Save these now — they will not be shown again.</strong>"
+            f"<br><span style='opacity:.75;font-size:.85em;'>Therapist must communicate these credentials to the patient through a secure channel.</span>"
         ),
     )
     return redirect('therapist_dashboard')
@@ -503,6 +595,10 @@ def patient_detail(request, link_id):
     )
     last_completed_log = next((s for s in session_logs if s.completed_at is not None), None)
 
+    progress_charts = None
+    if tab == 'progress':
+        progress_charts = _build_progress_charts(link)
+
     patient_profile = None
     try:
         from strength_app.models import PatientProfile
@@ -545,6 +641,7 @@ def patient_detail(request, link_id):
         'patient_profile': patient_profile,
         'session_logs': session_logs,
         'last_completed_log': last_completed_log,
+        'progress_charts': progress_charts,
     }
     return render(request, 'therapist_app/patient_detail.html', ctx)
 
@@ -682,7 +779,7 @@ def save_program(request, link_id):
     except json.JSONDecodeError:
         return HttpResponseBadRequest("Invalid JSON.")
 
-    week_number = int(payload.get('week_number') or max(1, link.current_week))
+    week_number = _safe_int(payload.get('week_number'), max(1, link.current_week), 1, 200)
     items_raw = payload.get('items') or []
     publish = bool(payload.get('publish'))
     notes = payload.get('notes_for_patient', '') or ''
@@ -707,10 +804,10 @@ def save_program(request, link_id):
                     exercise_id=ex_id,
                     exercise_name=item.get('exercise_name') or catalog_entry.get('name', ex_id),
                     movement_pattern=catalog_entry.get('movement_pattern', ''),
-                    sets=int(item.get('sets') or 3),
-                    reps=int(item.get('reps') or 10),
+                    sets=_safe_int(item.get('sets'), 3, 1, 10),
+                    reps=_safe_int(item.get('reps'), 10, 1, 100),
                     load=str(item.get('load') or 'BW'),
-                    rest_seconds=int(item.get('rest_seconds') or item.get('rest') or 60),
+                    rest_seconds=_safe_int(item.get('rest_seconds') or item.get('rest'), 60, 0, 600),
                     tempo=str(item.get('tempo') or ''),
                     notes=str(item.get('notes') or ''),
                 )
@@ -741,18 +838,32 @@ def send_message(request, link_id):
 @therapist_required
 @require_POST
 def generate_report(request, link_id):
-    """Stubbed: creates a ProgressReport row with status='ready' but no PDF."""
+    """Generate a 1-2 page PDF progress report for the most recent 7-day window."""
     therapist = request.user.therapist
     link = get_linked_patient_or_404(therapist, link_id)
-    today = timezone.now().date()
+    today = timezone.localdate()
+    week_start = today - timedelta(days=6)
+    week_end = today
     week = max(1, link.current_week)
-    ProgressReport.objects.create(
+
+    report = ProgressReport.objects.create(
         link=link,
         title=f"Week {week} Progress Report",
-        period_start=today - timedelta(days=7),
-        period_end=today,
-        status='ready',
+        period_start=week_start,
+        period_end=week_end,
+        status='draft',
         generated_by='therapist',
     )
-    flash.success(request, "Report generated. PDF rendering will land in the follow-up.")
+
+    try:
+        from .pdf_generator import generate_patient_pdf
+        pdf_file = generate_patient_pdf(link, week_start, week_end)
+        report.pdf.save(pdf_file.name, pdf_file, save=False)
+        report.status = 'ready'
+        report.save()
+        flash.success(request, "Report generated.")
+    except Exception:
+        logger.exception("Failed to render PDF for report %s", report.id)
+        flash.error(request, "Report row created but PDF rendering failed.")
+
     return redirect(f"/therapist/patient/{link.id}/?tab=reports")

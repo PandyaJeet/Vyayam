@@ -202,61 +202,187 @@
 
 {# ---- PROGRESS TAB ---- #}
 {% if tab == 'progress' %}
+{% if not progress_charts.has_data %}
+<div class="t-card t-progress-empty">
+  <i class="fas fa-chart-line" style="font-size:2rem; color:var(--muted); opacity:.4;"></i>
+  <div class="t-progress-empty__title">No session data yet</div>
+  <div class="t-progress-empty__sub">Charts will appear after the patient completes their first session.</div>
+</div>
+{% else %}
 <div class="t-grid-progress">
-  <div class="t-card">
-    <div class="t-card-title">Compliance · 8 weeks</div>
-    <div class="t-chart-placeholder">Charts spec'd in follow-up</div>
-    <div style="display:flex; justify-content:space-between; margin-top:10px; font-size:.78rem;">
-      <div><div style="color:var(--muted); font-size:.72rem;">Avg</div><strong>{{ card.compliance }}%</strong></div>
-      <div><div style="color:var(--muted); font-size:.72rem;">Best week</div><strong>—</strong></div>
-      <div><div style="color:var(--muted); font-size:.72rem;">Streak</div><strong>—</strong></div>
-    </div>
+  <div class="t-card t-chart-card">
+    <div class="t-card-title">Pain trend · 14 days</div>
+    <div class="t-chart-wrap"><canvas id="painChart"></canvas></div>
+    <p class="t-chart-caption">Lower is better. Reported by patient at end of each session.</p>
   </div>
-  <div class="t-card">
-    <div class="t-card-title">Pain trend · 8 weeks</div>
-    <div class="t-chart-placeholder">Charts spec'd in follow-up</div>
-    <div style="margin-top:10px; font-size:.82rem; color:var(--muted); line-height:1.5;">
-      8-week aggregation of <code>SessionFeedback.pain_severity</code> will land here.
-    </div>
+  <div class="t-card t-chart-card">
+    <div class="t-card-title">Compliance</div>
+    <div class="t-chart-wrap"><canvas id="complianceChart"></canvas></div>
+    <p class="t-chart-caption">Days with a completed session vs. window size.</p>
   </div>
-  <div class="t-card">
-    <div class="t-card-title">Strength gates</div>
-    <div class="t-gate">
-      <i class="fas fa-check-circle" style="color:var(--green); font-size:1.05rem;"></i>
-      <div style="flex:1;">
-        <div class="t-gate__name">Single-leg balance · 30s</div>
-        <div class="t-gate__sub">Passed · manual mark</div>
+  <div class="t-card t-chart-card">
+    <div class="t-card-title">Difficulty mix · 14 days</div>
+    <div class="t-chart-wrap t-chart-wrap--donut">
+      <canvas id="difficultyChart"></canvas>
+      <div class="t-donut-center">
+        <strong>{{ progress_charts.difficulty.total }}</strong>
+        <span>logged sets</span>
       </div>
     </div>
-    <div class="t-gate">
-      <i class="fas fa-clock" style="color:var(--warn); font-size:1.05rem;"></i>
-      <div style="flex:1;">
-        <div class="t-gate__name">Goblet squat · BW</div>
-        <div class="t-gate__sub">In progress</div>
-      </div>
-    </div>
-    <div class="t-gate">
-      <i class="fas fa-lock" style="color:#9ca3af; font-size:1.05rem;"></i>
-      <div style="flex:1;">
-        <div class="t-gate__name">Single-leg hop test</div>
-        <div class="t-gate__sub">Locked · Wk 12</div>
-      </div>
-    </div>
-    <p style="font-size:.74rem; color:var(--muted); margin-top:10px;">Auto-pass detection lands in follow-up — manual mark only for now.</p>
-  </div>
-  <div class="t-card">
-    <div class="t-card-title">Range of motion</div>
-    <div class="t-rom-bar">
-      <div class="t-rom-bar__head"><span>Knee flex</span><span><strong>132°</strong> <span style="color:var(--muted); opacity:.7;">/ target 140°</span></span></div>
-      <div class="t-rom-bar__track"><div class="t-rom-bar__fill" style="width:94%;"></div></div>
-    </div>
-    <div class="t-rom-bar">
-      <div class="t-rom-bar__head"><span>Hip IR</span><span><strong>28°</strong> <span style="color:var(--muted); opacity:.7;">/ target 35°</span></span></div>
-      <div class="t-rom-bar__track"><div class="t-rom-bar__fill" style="width:80%;"></div></div>
-    </div>
-    <p style="font-size:.74rem; color:var(--muted); margin-top:8px;">Manual entry only — goniometer photo lands in follow-up.</p>
+    <p class="t-chart-caption">Patient-reported difficulty per exercise.</p>
   </div>
 </div>
+{{ progress_charts|json_script:"progress-charts-data" }}
+<script>
+(function () {
+  var raw = document.getElementById('progress-charts-data');
+  if (!raw || typeof Chart === 'undefined') return;
+  var data = JSON.parse(raw.textContent);
+  if (!data || !data.has_data) return;
+
+  var sage = '#6bbf8a';
+  var sageDark = '#0c6c3f';
+  var sageSoft = 'rgba(107,191,138,0.18)';
+  var gray = 'rgba(26,28,28,0.10)';
+  var amber = '#d97706';
+  var red = '#ba1a1a';
+  var lightGreen = '#bef0c8';
+
+  // --- Pain trend
+  var painCanvas = document.getElementById('painChart');
+  if (painCanvas) {
+    new Chart(painCanvas, {
+      type: 'line',
+      data: {
+        labels: data.pain.labels,
+        datasets: [{
+          data: data.pain.values,
+          borderColor: sageDark,
+          backgroundColor: sageSoft,
+          pointBackgroundColor: sage,
+          pointBorderColor: sageDark,
+          pointRadius: 4,
+          pointHoverRadius: 6,
+          borderWidth: 2,
+          tension: 0.25,
+          spanGaps: true,
+          fill: true,
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          y: {
+            min: 0, max: 10,
+            ticks: { stepSize: 5, color: '#3d4f42', font: { size: 11 } },
+            grid: { color: 'rgba(26,28,28,0.06)' },
+          },
+          x: {
+            ticks: { color: '#3d4f42', font: { size: 10 }, maxRotation: 0, autoSkip: true, maxTicksLimit: 7 },
+            grid: { display: false },
+          }
+        }
+      }
+    });
+  }
+
+  // --- Compliance (stacked horizontal bar)
+  var complianceCanvas = document.getElementById('complianceChart');
+  if (complianceCanvas) {
+    var labels = data.compliance.map(function (r) { return r.label; });
+    var done = data.compliance.map(function (r) { return r.completed; });
+    var missed = data.compliance.map(function (r) { return Math.max(0, r.total - r.completed); });
+    var rightLabels = data.compliance.map(function (r) { return r.completed + '/' + r.total + ' · ' + r.pct + '%'; });
+    new Chart(complianceCanvas, {
+      type: 'bar',
+      data: {
+        labels: labels,
+        datasets: [
+          { label: 'Completed', data: done, backgroundColor: sage, borderRadius: 4, stack: 's' },
+          { label: 'Missed', data: missed, backgroundColor: gray, borderRadius: 4, stack: 's' },
+        ]
+      },
+      options: {
+        indexAxis: 'y',
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: function (ctx) {
+                var row = data.compliance[ctx.dataIndex];
+                return row.completed + ' of ' + row.total + ' days (' + row.pct + '%)';
+              }
+            }
+          }
+        },
+        scales: {
+          x: { stacked: true, display: false, beginAtZero: true },
+          y: { stacked: true, grid: { display: false }, ticks: { color: '#3d4f42', font: { size: 12, weight: '600' } } }
+        }
+      },
+      plugins: [{
+        id: 'complianceRightLabel',
+        afterDatasetsDraw: function (chart) {
+          var ctx = chart.ctx;
+          ctx.save();
+          ctx.font = '600 11px Plus Jakarta Sans, sans-serif';
+          ctx.fillStyle = '#1a1c1c';
+          ctx.textAlign = 'right';
+          ctx.textBaseline = 'middle';
+          var meta = chart.getDatasetMeta(0);
+          meta.data.forEach(function (bar, i) {
+            ctx.fillText(rightLabels[i], chart.chartArea.right, bar.y);
+          });
+          ctx.restore();
+        }
+      }]
+    });
+  }
+
+  // --- Difficulty donut
+  var difficultyCanvas = document.getElementById('difficultyChart');
+  if (difficultyCanvas) {
+    var c = data.difficulty.counts;
+    new Chart(difficultyCanvas, {
+      type: 'doughnut',
+      data: {
+        labels: ['Easy', 'Just right', 'Hard', 'Too hard'],
+        datasets: [{
+          data: [c.easy, c.right, c.hard, c.too_hard],
+          backgroundColor: [lightGreen, sage, amber, red],
+          borderColor: '#ffffff',
+          borderWidth: 2,
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: '62%',
+        plugins: {
+          legend: {
+            position: 'bottom',
+            labels: { color: '#3d4f42', font: { size: 11 }, boxWidth: 10, padding: 10 }
+          },
+          tooltip: {
+            callbacks: {
+              label: function (ctx) {
+                var total = data.difficulty.total || 1;
+                var pct = Math.round(100 * ctx.parsed / total);
+                return ctx.label + ': ' + ctx.parsed + ' (' + pct + '%)';
+              }
+            }
+          }
+        }
+      }
+    });
+  }
+})();
+</script>
+{% endif %}
 {% endif %}
 
 {# ---- HISTORY TAB ---- #}
@@ -383,7 +509,11 @@
       </div>
       <div class="t-report-row__actions">
         <span class="t-pill {% if r.status == 'flagged' %}t-pill--error{% else %}t-pill--green{% endif %}">{{ r.get_status_display }}</span>
-        <button type="button" class="t-btn t-btn--ghost t-btn--sm" title="PDF rendering lands in follow-up" disabled><i class="fas fa-download"></i> PDF</button>
+        {% if r.pdf and r.status == 'ready' %}
+          <a class="t-btn t-btn--ghost t-btn--sm" href="{{ r.pdf.url }}" target="_blank" rel="noopener" download><i class="fas fa-download"></i> Download PDF</a>
+        {% else %}
+          <button type="button" class="t-btn t-btn--ghost t-btn--sm" title="PDF unavailable" disabled><i class="fas fa-download"></i> PDF unavailable</button>
+        {% endif %}
       </div>
     </div>
   {% empty %}

@@ -9,6 +9,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.http import JsonResponse, HttpResponse, HttpRequest
 from django.contrib.auth.hashers import check_password
+from django.views.decorators.http import require_POST
 from .rate_limiter import rate_limit
 
 logger = logging.getLogger(__name__)
@@ -977,10 +978,12 @@ def get_or_create_analyzer(session_id):
 
 
 
+@require_POST
+@rate_limit(max_attempts=120, window_seconds=60, key_prefix='analyze_frame')
 def analyze_frame(request: HttpRequest):
     """
     Analyze video frame using REAL COMPUTER VISION
-    
+
     POST data:
     {
         "frame": "base64_encoded_image",
@@ -989,10 +992,10 @@ def analyze_frame(request: HttpRequest):
         "session_id": "patient_P0001_exercise_0"
     }
     """
-    
-    if request.method != 'POST':
-        return JsonResponse({'success': False, 'error': 'POST required'})
-    
+    patient_id = request.session.get('patient_id')
+    if not patient_id:
+        return JsonResponse({'error': 'Authentication required'}, status=401)
+
     if not CV_AVAILABLE:
         # Fallback to simulated mode
         return JsonResponse({

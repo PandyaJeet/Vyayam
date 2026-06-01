@@ -108,7 +108,10 @@ class PartialSquatsV2:
         left_knee = analyzer.calculate_angle(lh, lk, la)
         right_knee = analyzer.calculate_angle(rh, rk, ra)
         
-        # Calculate back angle (posture check)
+        # avg_back is hip flexion proxy, NOT spine position. MediaPipe Pose
+        # has no landmarks between shoulders and hips, so spinal alignment
+        # cannot be measured. Do not add cues claiming to measure spine
+        # without documenting the proxy.
         left_back = analyzer.calculate_angle(ls, lh, lk)
         right_back = analyzer.calculate_angle(rs, rh, rk)
         
@@ -200,23 +203,6 @@ class PartialSquatsV2:
                 status=FormStatus.INCORRECT,
                 angle=knee_angle,
                 message="Depth incorrect"
-            )
-        
-        # Check back angle (posture)
-        back_angle = angles.get('avg_back', 0)
-        back_target = targets.get('avg_back', 160)
-        
-        if back_angle < 150:
-            feedback['back'] = JointFeedback(
-                status=FormStatus.INCORRECT,
-                angle=back_angle,
-                message="Back rounded - straighten"
-            )
-        else:
-            feedback['back'] = JointFeedback(
-                status=FormStatus.CORRECT,
-                angle=back_angle,
-                message="Back straight"
             )
         
         return feedback

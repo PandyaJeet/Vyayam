@@ -18,6 +18,7 @@ from datetime import date
 from django.contrib.auth import authenticate, login, logout
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.views.decorators.http import require_POST
 from .rate_limiter import rate_limit
 
 from .models import (
@@ -100,6 +101,7 @@ def coach_login(request):
         password = request.POST.get('password', '')
         user = authenticate(request, username=username, password=password)
         if user and hasattr(user, 'therapistprofile'):
+            request.session.flush()
             login(request, user)
             return redirect('coach_squad')
         error = 'Invalid credentials or not a registered coach.'
@@ -308,29 +310,28 @@ def coach_override_prescription(request, patient_id):
     return render(request, 'strength_app/coach_override.html', context)
 
 
+@require_POST
 @coach_required
 def coach_flag_review(request, patient_id):
-    if request.method == 'POST':
-        link = get_object_or_404(
-            CoachPatientLink, coach=request.therapist, patient__patient_id=patient_id
-        )
-        note = request.POST.get('note', '').strip()
-        if note:
-            link.notes = (link.notes or '') + f"\n[FLAGGED {date.today()}] {note}"
-            link.save(update_fields=['notes'])
-        return JsonResponse({'status': 'ok'})
-    return JsonResponse({'error': 'POST required'}, status=405)
+    link = get_object_or_404(
+        CoachPatientLink, coach=request.therapist, patient__patient_id=patient_id
+    )
+    note = request.POST.get('note', '').strip()
+    if note:
+        link.notes = (link.notes or '') + f"\n[FLAGGED {date.today()}] {note}"
+        link.save(update_fields=['notes'])
+    return JsonResponse({'status': 'ok'})
 
 
+@require_POST
 @coach_required
 def coach_set_competition(request, patient_id):
-    if request.method == 'POST':
-        patient = get_object_or_404(PatientProfile, patient_id=patient_id)
-        get_object_or_404(CoachPatientLink, coach=request.therapist, patient=patient)
-        comp_date_str = request.POST.get('competition_date', '')
-        if comp_date_str:
-            patient.competition_date = comp_date_str
-            patient.save(update_fields=['competition_date'])
+    patient = get_object_or_404(PatientProfile, patient_id=patient_id)
+    get_object_or_404(CoachPatientLink, coach=request.therapist, patient=patient)
+    comp_date_str = request.POST.get('competition_date', '')
+    if comp_date_str:
+        patient.competition_date = comp_date_str
+        patient.save(update_fields=['competition_date'])
     return redirect('coach_athlete_detail', patient_id=patient_id)
 
 
@@ -355,14 +356,13 @@ def coach_add_athlete(request):
     })
 
 
+@require_POST
 @coach_required
 def coach_save_notes(request, patient_id):
     """AJAX endpoint to save coach notes on an athlete."""
-    if request.method == 'POST':
-        link = get_object_or_404(
-            CoachPatientLink, coach=request.therapist, patient__patient_id=patient_id
-        )
-        link.notes = request.POST.get('notes', link.notes)
-        link.save(update_fields=['notes'])
-        return JsonResponse({'status': 'ok'})
-    return JsonResponse({'error': 'POST required'}, status=405)
+    link = get_object_or_404(
+        CoachPatientLink, coach=request.therapist, patient__patient_id=patient_id
+    )
+    link.notes = request.POST.get('notes', link.notes)
+    link.save(update_fields=['notes'])
+    return JsonResponse({'status': 'ok'})
