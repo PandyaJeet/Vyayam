@@ -191,7 +191,7 @@ FOOTBALL_LEVELS = {
         'hsr_phase': 'hsr_phase_1',
         'posterior_anterior_ratio': 0.55,
         'training_focus': [
-            'HSR Phase 1: 3×8-10 at 55 % 1RM, 3-0-3 tempo',
+            'HSR Phase 1: 3×8-10 at 55 % 1RM, 6-0-6 tempo',
             'Slow eccentric training to build tendon tolerance',
             'Bilateral progressions before unilateral loading',
             'Pogo and skipping drills — low load only',
@@ -266,7 +266,7 @@ HSR_PHASES = {
         'weeks': 4,
         'sets': 3,
         'rep_range': '6-8',
-        'tempo': '3-0-3-0',
+        'tempo': '6-0-6-0',
         'frequency_per_week': 3,
         'exercises': [
             'heavy_calf_raise',
@@ -282,7 +282,7 @@ HSR_PHASES = {
         'weeks': 4,
         'sets': 4,
         'rep_range': '4-6',
-        'tempo': '4-0-4-0',
+        'tempo': '6-0-6-0',
         'frequency_per_week': 3,
         'exercises': [
             'heavy_calf_raise',
