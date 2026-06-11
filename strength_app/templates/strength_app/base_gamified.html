@@ -4,6 +4,10 @@
 <head>
   <meta charset="utf-8"/>
   <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <!-- DA-P6 (GROUP6 item 5 — was reported fixed but never shipped) -->
+  <meta name="theme-color" content="#0c6c3f">
+  {% load static %}
+  <link rel="manifest" href="{% static 'strength_app/manifest.json' %}">
   <title>{% block title %}VYAYAM{% endblock %}</title>
   <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
@@ -178,5 +182,13 @@
   {% endblock %}
 
   {% block extra_scripts %}{% endblock %}
+<script>
+  // DA-P6: service worker registration (GROUP6 item 5)
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function() {
+      navigator.serviceWorker.register('/sw.js').catch(function() {});
+    });
+  }
+</script>
 </body>
 </html>

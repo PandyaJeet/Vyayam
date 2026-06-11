@@ -1719,6 +1719,7 @@ def stretch_download_pdf(request: HttpRequest, session_id: int):
     response['Content-Disposition'] = f'attachment; filename="{filename}"'
     return response
 
+@rate_limit(max_attempts=5, window_seconds=300, key_prefix='change_password')
 def change_password(request):
     """Lets a logged-in patient change their own password (current + new + confirm)."""
     from django.contrib.auth.hashers import make_password
@@ -1743,5 +1744,9 @@ def change_password(request):
         else:
             patient.password = make_password(new)
             patient.save(update_fields=['password'])
+            # DA-P6: rotate the session key after a credential change.
+            # (Cross-session invalidation is a known limitation — patient
+            # auth is session-based without a server-side token registry.)
+            request.session.cycle_key()
             success = True
     return render(request, 'strength_app/change_password.html', {'error': error, 'success': success})

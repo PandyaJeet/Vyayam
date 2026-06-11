@@ -223,7 +223,8 @@ def compute_achievements(patient, total_sessions, streak_days):
 
 # ── Session-complete XP ──────────────────────────────────────────────────
 
-MIN_FORM_SCORE_FOR_XP = 55    # Below this: 0 XP (unsafe form — injury risk)
+# DA-P6: tied to the canonical red band — keep in sync via v1_constants.
+from .v1_constants import FORM_SCORE_YELLOW as MIN_FORM_SCORE_FOR_XP  # noqa: N811 (=55)
 REDUCED_FORM_THRESHOLD = 70   # Below this: base XP only (no bonus)
 MAX_SESSION_XP = 200          # sanity ceiling — no single session exceeds this
 

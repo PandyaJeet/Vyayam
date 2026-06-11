@@ -174,6 +174,18 @@ DOSAGE_UNILATERAL_STRENGTH = {
     5: {'sets': 3, 'reps': 12, 'tempo': '2-0-2-0', 'rest': 60},
 }
 
+# ── Canonical form-score bands (DA-P6) ──────────────────────────────────
+# One definition for what a form score MEANS, used by the session summary
+# and the XP gate. Clinical rationale: below 55 the movement was performed
+# unsafely (no reward, surfaced red); 55-79 is acceptable-but-imperfect
+# (counts, no quality bonus); 80+ is good movement (green, bonus).
+# NOTE: FormCalculator's AR overlay uses its own REAL-TIME display bands
+# (>=85 green / >=70 yellow) — those colour individual FRAMES during the
+# set and are deliberately stricter than these per-EXERCISE bands.
+FORM_SCORE_GREEN = 80    # >= green
+FORM_SCORE_YELLOW = 55   # >= yellow, below green
+                          # < 55 = red / unsafe (matches MIN_FORM_SCORE_FOR_XP)
+
 # Isometric / timed exercises (DA-P2 item 6): prescribed as a HOLD
 # (duration), never as reps. The engine previously only selected the
 # hold dosage table via the AA-phase override, so a wall sit prescribed

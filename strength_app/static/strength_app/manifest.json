@@ -1,13 +1,13 @@
 {
-  "name": "VYAYAM — Physiotherapy Strength Training",
+  "name": "VYAYAM \u2014 Physiotherapy Strength Training",
   "short_name": "VYAYAM",
   "description": "AI-guided physiotherapy strength training with camera overlay coaching",
   "start_url": "/v1/dashboard/",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#0a0e27",
-  "theme_color": "#667eea",
+  "background_color": "#f6faf7",
+  "theme_color": "#0c6c3f",
   "icons": [
     {
       "src": "/static/strength_app/images/icon-192.png",

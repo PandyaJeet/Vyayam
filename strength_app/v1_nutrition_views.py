@@ -10,6 +10,7 @@ from django.db.models import Q
 from django.http import JsonResponse
 
 logger = logging.getLogger(__name__)
+from .rate_limiter import rate_limit
 from django.shortcuts import render, redirect
 from django.views.decorators.http import require_POST
 
@@ -206,6 +207,7 @@ def v1_food_search_api(request):
 # ── API: Quick Log ────────────────────────────────────────────────────────────
 
 @require_POST
+@rate_limit(max_attempts=60, window_seconds=60, key_prefix='quick_log')  # DA-P6
 def v1_quick_log_api(request):
     patient, err = _require_patient(request)
     if err:

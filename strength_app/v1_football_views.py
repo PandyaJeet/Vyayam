@@ -6,6 +6,7 @@ Sport selection, 6-test assessment battery, results & level assignment.
 import json
 
 from django.http import JsonResponse
+from .rate_limiter import rate_limit
 from django.shortcuts import render, redirect
 from django.urls import reverse
 from django.utils import timezone
@@ -124,6 +125,7 @@ def football_assessment_execute(request, test_index):
 # AJAX: SAVE FOOTBALL TEST RESULT
 # ============================================================================
 
+@rate_limit(max_attempts=60, window_seconds=60, key_prefix='football_save')  # DA-P6
 def football_save_test_result(request):
     # G4-2 fix: reject anonymous writes before touching the session.
     if not request.session.get('patient_id'):

@@ -1033,9 +1033,10 @@ def v1_session_complete(request):
     exe_summary = []
     for res in exercise_results:
         score = float(res.get('form_score', 75))
-        if score >= 80:
+        from .v1_constants import FORM_SCORE_GREEN, FORM_SCORE_YELLOW  # DA-P6
+        if score >= FORM_SCORE_GREEN:
             tl = 'green'
-        elif score >= 60:
+        elif score >= FORM_SCORE_YELLOW:
             tl = 'yellow'
         else:
             tl = 'red'

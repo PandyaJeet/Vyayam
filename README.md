@@ -2,6 +2,25 @@
 
 Professional AI-Powered Physiotherapy & Strength Training Platform with Real-Time Form Tracking
 
+## ⚡ Current Architecture (2026-06 — read this first)
+
+The sections below describe the ORIGINAL legacy 8-dimension flow, kept
+for history. The live product is the **V1 engine + athlete tier +
+B2B2C therapist console**:
+
+| Layer | Files | Notes |
+|---|---|---|
+| V1 prescription engine | `strength_app/v1_prescription_engine.py`, `v1_safety_logic.py`, `v1_constants.py` | `generate_v1_session(patient)` is the single entry point. 20 physio principles, periodisation, red-flag filtering, hormonal/sex/age modifiers, pain follow-through (DA-F3). |
+| Self-serve patient flow | `v1_onboarding_views.py` (10-screen assessment), `v1_session_views.py`, `v1_progress_views.py`, `v1_nutrition_*` | Client-side MediaPipe scoring lives in `templates/strength_app/v1_exercise_execute.html`. |
+| Athlete tier (football) | `v1_football_views.py`, `v1_football_constants.py`, `v1_coach_views.py` | Coach squad dashboard + override; framing is training-readiness, never clinical (rule R1). ACWR formally excluded (rule R2). |
+| B2B2C therapist console | `therapist_app/` | Therapist-managed patients, prescriptions, session logs, PDF reports. Legitimately clinical language. |
+| Exercise data layers | `v1_progression_chains.py` (V1 chains), `exercise_content*.py`, `equipment_routing.py`, `red_flag_map.py`, `warmup_library.py` | `exercise_tags.py` serves ONLY the legacy gate-test dosage path. |
+| CV exercise modules | `exercise_system/exercises/*.py` (264), `exercise_system/core/` | Driven by the desktop headless runner; web flow uses client-side JS. Ideal-trajectory harness: `tests/clinical_audit/generators/trajectory_generator.py`. |
+| Legacy engine | `strength_app/backend/` (in-memory), `utils.py` bridge, gate-test routes in `views.py` | Pre-V1 system, still reachable through the legacy gate-test flow. |
+
+Audit history: `AUDIT_FIXES_CHANGELOG.md`, `GROUP1..6_AUDIT.md`,
+`DEEP_AUDIT_REPORT.md` (2026-06), `DECISIONS_NEEDED.md`.
+
 ## 📋 Overview
 
 VYAYAM is a complete Django-based strength training system that combines:
