@@ -75,6 +75,15 @@
     <div class="bg-surface-container-lowest rounded-lg p-5 shadow-[0_4px_20px_rgba(26,28,28,0.04)]">
       <div class="font-bold text-sm text-on-surface mb-1">3. Did you experience any pain or discomfort?</div>
       <div class="text-xs text-on-secondary-container mb-3">Sharp, unexpected, or joint pain — not normal muscle burn</div>
+      <!-- DA-F4: soreness-vs-pain education -->
+      <details class="mb-3">
+        <summary class="text-xs text-primary font-semibold cursor-pointer">Soreness or pain — what's the difference?</summary>
+        <p class="text-xs text-on-secondary-container mt-1 leading-relaxed">
+          Dull muscle soreness 24–48 hours after training is normal.
+          Sharp pain, joint pain, or pain during the movement is not —
+          tell us about that here.
+        </p>
+      </details>
       <div class="grid grid-cols-2 gap-2.5">
         <label class="opt-btn" id="pain_none"><input type="radio" name="pain_reported" value="none" onchange="sel('pain','none');hidePain()">✅ None</label>
         <label class="opt-btn" id="pain_mild"><input type="radio" name="pain_reported" value="mild" onchange="sel('pain','mild');showPain()">😐 Mild</label>

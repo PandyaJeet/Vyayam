@@ -11,6 +11,7 @@ from datetime import date, timedelta
 
 from django.shortcuts import render
 from django.http import JsonResponse
+from django.utils import timezone
 
 from .models import (
     PatientProfile, StrengthProfile, WorkoutSession, SessionFeedback,
@@ -167,6 +168,17 @@ def v1_progress_dashboard(request):
     radar_path = compute_radar_path(movement_patterns)
     asymmetry = compute_asymmetry(current_profile)
 
+    # ── DA-F1: pain by exercise (last 4 weeks) ────────────────────────────
+    from .models import ExerciseExecution
+    from datetime import timedelta as _td
+    pain_rows = list(
+        ExerciseExecution.objects.filter(
+            session__patient=patient,
+            pain_reported=True,
+            session__session_date__gte=timezone.now() - _td(weeks=4),
+        ).select_related('session').order_by('-session__session_date')[:10]
+    )
+
     context = {
         'patient': patient,
         'profiles': profiles,
@@ -185,6 +197,7 @@ def v1_progress_dashboard(request):
         'movement_patterns': movement_patterns,
         'radar_path': radar_path,
         'asymmetry': asymmetry,
+        'pain_rows': pain_rows,
     }
     return render(request, 'strength_app/v1_progress.html', context)
 

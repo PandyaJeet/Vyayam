@@ -690,6 +690,19 @@ class ExerciseExecution(models.Model):
         max_length=10, choices=REP_QUALITY_SOURCE_CHOICES, default='derived',
     )
 
+    # DA-F1: per-exercise pain (self-serve flow parity with B2B2C's
+    # SessionLogItem.pain). The execute UI collects this; it was
+    # previously dropped at feedback time.
+    pain_reported = models.BooleanField(default=False)
+    pain_type = models.CharField(max_length=30, blank=True, default='')
+    pain_location = models.CharField(max_length=100, blank=True, default='')
+    pain_severity = models.IntegerField(
+        default=0, validators=[MinValueValidator(0), MaxValueValidator(10)]
+    )
+    pain_action = models.CharField(max_length=30, blank=True, default='')
+    skipped = models.BooleanField(default=False)
+    skip_reason = models.CharField(max_length=30, blank=True, default='')
+
     # Metrics
     overall_form_score = models.FloatField(default=0.0)
     completion_percentage = models.FloatField(default=0.0)

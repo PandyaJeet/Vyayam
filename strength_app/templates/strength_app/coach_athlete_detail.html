@@ -288,6 +288,16 @@
               {% endwith %}
             </td>
           </tr>
+          {# DA-F1: per-exercise pain expansion #}
+          {% for ex in s.exercises.all %}{% if ex.pain_reported %}
+          <tr>
+            <td colspan="4" style="font-size:.72rem;color:#8c1414;padding:2px 8px 6px;">
+              ⚠ {{ ex.exercise_name }}: {{ ex.pain_type|default:"pain" }}
+              {{ ex.pain_severity }}/10{% if ex.pain_location %} ({{ ex.pain_location }}){% endif %}
+              {% if ex.pain_action %} — {{ ex.pain_action }}{% endif %}
+            </td>
+          </tr>
+          {% endif %}{% endfor %}
           {% endfor %}
         </tbody>
       </table>

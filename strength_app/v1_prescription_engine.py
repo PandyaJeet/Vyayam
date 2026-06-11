@@ -49,6 +49,7 @@ from .v1_safety_logic import (
     build_patient_context,
     filter_exercises_for_patient,
     get_alternative_for_excluded,
+    get_pain_pattern_escalation,
     limit_new_exercises,
     apply_female_acl_prevention,
     get_asymmetry_rules,
@@ -1089,6 +1090,45 @@ def _advance_hsr_phase(patient, fp):
 # MAIN PUBLIC FUNCTION
 # ============================================================================
 
+def _freeze_advancement_for_patterns(patient, patterns):
+    """DA-F3: pain follow-through — block ladder advancement for the
+    implicated families until sessions are pain-free."""
+    try:
+        from .models import PatientFamilyCapability
+        family_ids = [f'{p}_family' for p in patterns]
+        PatientFamilyCapability.objects.filter(
+            patient=patient, family_id__in=family_ids
+        ).update(ready_to_advance=False)
+    except Exception:
+        logging.getLogger(__name__).warning(
+            'could not freeze advancement for %s', patterns, exc_info=True)
+
+
+def _note_pain_pause_to_professionals(patient, patterns):
+    """DA-F3: tell the linked coach/therapist when a pattern is paused."""
+    stamp = (
+        f"\n[FLAGGED {date.today()}] Pattern(s) paused after pain in 3 "
+        f"consecutive sessions: {', '.join(sorted(patterns))}. Patient "
+        f"advised to consider physiotherapy review."
+    )
+    try:
+        from .models import CoachPatientLink
+        for link in CoachPatientLink.objects.filter(patient=patient, is_active=True):
+            if stamp.strip() not in (link.notes or ''):
+                link.notes = (link.notes or '') + stamp
+                link.save(update_fields=['notes'])
+        if patient.user_id:
+            from therapist_app.models import TherapistPatientLink
+            for tlink in TherapistPatientLink.objects.filter(
+                    patient=patient.user, status='active'):
+                if stamp.strip() not in (tlink.notes or ''):
+                    tlink.notes = (tlink.notes or '') + stamp
+                    tlink.save(update_fields=['notes'])
+    except Exception:
+        logging.getLogger(__name__).warning(
+            'pain pause note failed', exc_info=True)
+
+
 def generate_v1_session(patient):
     """
     Generate a complete V1 training session for a patient.
@@ -1246,11 +1286,42 @@ def generate_v1_session(patient):
     known_exercises = _get_patient_known_exercises(patient)
     goal_config, goal_type = _get_blended_goal_config(patient)
 
+    # ── 10b. Pain-pattern follow-through (DA-F3) ──────────────────────────
+    # Same pain location in 2 consecutive sessions → regress the implicated
+    # pattern one capability level and freeze advancement; 3 consecutive →
+    # pause the pattern entirely and suggest a physiotherapist.
+    pain_escalation = {'regress': set(), 'pause': set()}
+    try:
+        pain_escalation = get_pain_pattern_escalation(patient)
+    except Exception:
+        logging.getLogger(__name__).warning(
+            'pain escalation check failed', exc_info=True)
+    if pain_escalation['regress'] or pain_escalation['pause']:
+        _freeze_advancement_for_patterns(
+            patient, pain_escalation['regress'] | pain_escalation['pause'])
+    if pain_escalation['pause']:
+        _note_pain_pause_to_professionals(patient, pain_escalation['pause'])
+
     # ── 11. Build working sets ────────────────────────────────────────────
     raw_working_sets = []
     for pattern in patterns_today:
         capability = min(score_map.get(pattern, 2), age_limits.get('max_capability', 5))
         priority = priority_map.get(pattern, 'standard')
+
+        if pattern in pain_escalation['pause']:
+            modifier_notes.append(
+                f'{pattern.title()} work paused — you have reported pain '
+                f'there in 3 sessions in a row. Please consider seeing a '
+                f'physiotherapist before loading it again.'
+            )
+            continue
+        if pattern in pain_escalation['regress']:
+            capability = max(1, capability - 1)
+            modifier_notes.append(
+                f'{pattern.title()} eased back a level — pain reported in '
+                f'2 sessions in a row. It will rebuild once sessions are '
+                f'pain-free.'
+            )
 
         exercise_ids = _select_exercises_for_pattern(pattern, capability, patient, age_limits)
         if not exercise_ids:

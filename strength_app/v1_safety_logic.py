@@ -389,7 +389,24 @@ def compute_traffic_light(session_feedback):
     fb = session_feedback
     severity = getattr(fb, 'pain_severity', 0) or 0
 
+    # DA-F1: per-exercise pain reports from the session override a mild
+    # post-session answer — a 'sharp' report or 7+/10 during ANY exercise
+    # makes the session red regardless of the check-in form.
+    per_ex_sharp = False
+    per_ex_max_severity = 0
+    try:
+        for ex in fb.session.exercises.all():
+            if getattr(ex, 'pain_type', '') == 'sharp':
+                per_ex_sharp = True
+            per_ex_max_severity = max(
+                per_ex_max_severity, getattr(ex, 'pain_severity', 0) or 0
+            )
+    except Exception:
+        pass  # feedback not yet attached to a session (unit tests)
+
     # --- RED ---
+    if per_ex_sharp or per_ex_max_severity >= 7:
+        return 'red'
     if fb.pain_reported == 'severe':
         return 'red'
     # DA-P4 (Phase 4 row 8): the numeric severity scale must triage too —
@@ -408,12 +425,99 @@ def compute_traffic_light(session_feedback):
         return 'yellow'
     if 4 <= severity <= 6:
         return 'yellow'
+    if 4 <= per_ex_max_severity <= 6:  # DA-F1
+        return 'yellow'
     if fb.sleep_last_night in ('under_5', '5_to_6'):
         return 'yellow'
     if fb.energy_level == 'low':
         return 'yellow'
 
     return 'green'
+
+
+# ============================================================================
+# 11b. PAIN-PATTERN FOLLOW-THROUGH (DA-F3)
+# ============================================================================
+
+def get_pain_pattern_escalation(patient):
+    """Escalate repeated pain in the same location across sessions.
+
+    Looks at the patient's most recent completed sessions (newest first)
+    and counts the CONSECUTIVE streak of sessions reporting pain in the
+    same location (per-exercise reports from DA-F1, falling back to the
+    post-session check-in location). A pain-free session resets the
+    streak.
+
+    Returns {'regress': set(patterns), 'pause': set(patterns)}:
+      streak == 2  → regress the implicated pattern one capability level
+      streak >= 3  → pause the pattern entirely this session
+    """
+    from .models import WorkoutSession
+
+    def _patterns_for_location(session, location):
+        patterns = set()
+        for ex in session.exercises.filter(pain_reported=True):
+            if (ex.pain_location or '').strip().lower() == location:
+                pattern = _pattern_for_exercise_id(ex.exercise_id)
+                if pattern:
+                    patterns.add(pattern)
+        return patterns
+
+    sessions = list(
+        WorkoutSession.objects.filter(patient=patient)
+        .order_by('-session_date')[:4]
+        .prefetch_related('exercises', 'feedback')
+    )
+    if not sessions:
+        return {'regress': set(), 'pause': set()}
+
+    def _locations(session):
+        locs = {
+            (ex.pain_location or '').strip().lower()
+            for ex in session.exercises.filter(pain_reported=True)
+            if (ex.pain_location or '').strip()
+        }
+        try:
+            fb = session.feedback
+            if fb.pain_reported not in ('', 'none') and fb.pain_location:
+                locs.add(fb.pain_location.strip().lower())
+        except Exception:
+            pass
+        return locs
+
+    newest_locs = _locations(sessions[0])
+    if not newest_locs:
+        return {'regress': set(), 'pause': set()}  # pain-free → streak reset
+
+    regress, pause = set(), set()
+    for location in newest_locs:
+        streak = 1
+        for older in sessions[1:]:
+            if location in _locations(older):
+                streak += 1
+            else:
+                break
+        if streak < 2:
+            continue
+        patterns = set()
+        for s in sessions[:streak]:
+            patterns |= _patterns_for_location(s, location)
+        if not patterns:
+            continue
+        if streak >= 3:
+            pause |= patterns
+        else:
+            regress |= patterns
+    return {'regress': regress, 'pause': pause}
+
+
+def _pattern_for_exercise_id(exercise_id):
+    """Movement pattern for an exercise ID via the registry metadata."""
+    try:
+        from .exercise_system.exercise_registry_v2 import EXERCISE_METADATA
+        return EXERCISE_METADATA.get(exercise_id, {}).get('movement_pattern', '')
+    except Exception:
+        return ''
 
 
 # ============================================================================

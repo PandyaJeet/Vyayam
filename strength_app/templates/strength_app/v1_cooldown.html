@@ -20,6 +20,13 @@
 {% block content %}
 <div class="max-w-xl mx-auto px-4 pt-4 pb-8 space-y-4">
 
+  {% if pain_skip_banner %}
+  <!-- DA-F2: server-side pain skip notice -->
+  <div class="bg-error-container/40 border border-error/40 text-error rounded-lg px-4 py-3 text-sm font-semibold">
+    We've removed the remaining {{ pain_skip_banner.pattern }} work today because of the pain you reported.
+  </div>
+  {% endif %}
+
   <!-- Top bar -->
   <div class="bg-surface-container-lowest rounded-lg px-5 py-4 shadow-[0_4px_20px_rgba(26,28,28,0.05)] flex items-center justify-between">
     <div>

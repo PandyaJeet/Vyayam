@@ -158,6 +158,12 @@
 
 {% block content %}
 <div class="ex-wrap">
+  {% if pain_skip_banner %}
+  <!-- DA-F2: server-side pain skip notice -->
+  <div style="background:#fdecea;border:1px solid #ba1a1a55;color:#8c1414;border-radius:12px;padding:12px 14px;margin-bottom:12px;font-size:.9rem;font-weight:600;">
+    We've removed the remaining {{ pain_skip_banner.pattern }} work today because of the pain you reported.
+  </div>
+  {% endif %}
   <!-- Top bar -->
   <div class="top-bar">
     <div>

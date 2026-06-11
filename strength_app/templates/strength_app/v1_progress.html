@@ -225,5 +225,29 @@ Context variables expected:
   </section>
   {% endif %}
 
+  <!-- DA-F1: pain by exercise (last 4 weeks) -->
+  {% if pain_rows %}
+  <section>
+    <div class="px-4 py-3.5 bg-error-container/20 border border-error/20 rounded-[16px]">
+      <div class="text-xs font-extrabold text-error mb-2">Pain reported in the last 4 weeks</div>
+      {% for row in pain_rows %}
+      <div class="flex items-center justify-between py-1.5 {% if not forloop.last %}border-b border-error/10{% endif %}">
+        <div>
+          <div class="text-xs font-bold text-on-surface">{{ row.exercise_name }}</div>
+          <div class="text-[10px] text-on-secondary-container">
+            {{ row.session.session_date|date:"d M" }} ·
+            {{ row.pain_type|default:"pain" }}{% if row.pain_location %} · {{ row.pain_location }}{% endif %}
+          </div>
+        </div>
+        <span class="text-xs font-extrabold {% if row.pain_severity >= 7 %}text-error{% else %}text-on-secondary-container{% endif %}">{{ row.pain_severity }}/10</span>
+      </div>
+      {% endfor %}
+      <div class="text-[10px] text-on-secondary-container mt-2">
+        Repeated pain in the same spot automatically eases that movement pattern back — if it persists, consider seeing a physiotherapist.
+      </div>
+    </div>
+  </section>
+  {% endif %}
+
 </main>
 {% endblock %}

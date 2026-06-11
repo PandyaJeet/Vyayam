@@ -411,6 +411,173 @@ class TestDAC13InputValidation(TestCase):
         self.assertIsNone(self.patient.competition_date)
 
 
+class TestDAF1PerExercisePain(TestCase):
+    """F1 — per-exercise pain persists and feeds the traffic light."""
+
+    def _run_session_with_pain(self, patient, pain_type='sharp', severity=8):
+        from django.urls import reverse
+        session = self.client.session
+        session['patient_id'] = patient.patient_id
+        session['v1_exercise_results'] = [{
+            'exercise_id': 'full_squats', 'exercise_name': 'Full Squats',
+            'movement_pattern': 'squat', 'prescribed_sets': 3,
+            'prescribed_reps': 10, 'completed_sets': 3,
+            'completed_reps_per_set': [10, 10, 10], 'form_score': 85,
+            'pain_reported': True, 'pain_type': pain_type,
+            'pain_location': 'knee', 'pain_severity': severity,
+            'pain_action': 'continue',
+        }]
+        session.save()
+        return self.client.post(reverse('v1_post_session_feedback'), data={
+            'perceived_difficulty': 'just_right', 'pain_reported': 'mild',
+            'session_rpe': '5',
+        })
+
+    def test_da_f1_pain_persisted_to_execution(self):
+        from strength_app.models import ExerciseExecution
+        patient = _make_patient(pid='DAF101', phone='9000009951')
+        self._run_session_with_pain(patient)
+        ex = ExerciseExecution.objects.get(session__patient=patient)
+        self.assertTrue(ex.pain_reported)
+        self.assertEqual(ex.pain_type, 'sharp')
+        self.assertEqual(ex.pain_location, 'knee')
+        self.assertEqual(ex.pain_severity, 8)
+
+    def test_da_f1_sharp_per_exercise_pain_overrides_mild_checkin(self):
+        from strength_app.models import SessionFeedback
+        patient = _make_patient(pid='DAF102', phone='9000009952')
+        self._run_session_with_pain(patient)
+        fb = SessionFeedback.objects.get(patient=patient)
+        # Post-session said 'mild', but a sharp 8/10 during an exercise
+        # must make the session red.
+        self.assertEqual(fb.traffic_light, 'red')
+
+
+class TestDAF2ServerSidePainResponse(TestCase):
+    """F2 — the server removes same-pattern work after sharp pain."""
+
+    def setUp(self):
+        self.patient = _make_patient(pid='DAF201', phone='9000009953')
+        session = self.client.session
+        session['patient_id'] = self.patient.patient_id
+        session['v1_session'] = {'working_sets': [
+            {'exercise_id': 'partial_squats', 'exercise_name': 'Partial Squats',
+             'movement_pattern': 'squat', 'sets': 3, 'reps': 10},
+            {'exercise_id': 'full_squats', 'exercise_name': 'Full Squats',
+             'movement_pattern': 'squat', 'sets': 3, 'reps': 8},
+            {'exercise_id': 'push_ups', 'exercise_name': 'Push Ups',
+             'movement_pattern': 'push', 'sets': 3, 'reps': 10},
+        ]}
+        session.save()
+
+    def _post_result(self, **overrides):
+        import json as _json
+        from django.urls import reverse
+        payload = {
+            'exercise_index': 0, 'exercise_id': 'partial_squats',
+            'exercise_name': 'Partial Squats', 'movement_pattern': 'squat',
+            'prescribed_sets': 3, 'prescribed_reps': 10,
+            'completed_sets': 1, 'reps_per_set': [10], 'form_score': 80,
+        }
+        payload.update(overrides)
+        return self.client.post(
+            reverse('v1_save_exercise_result'),
+            data=_json.dumps(payload), content_type='application/json',
+        )
+
+    def test_da_f2_sharp_pain_skips_same_pattern(self):
+        resp = self._post_result(
+            pain_reported=True, pain_type='sharp',
+            pain_location='knee', pain_severity=7, pain_action='continue',
+        )
+        data = resp.json()
+        # full_squats (same pattern) skipped → next is push_ups (index 2)
+        self.assertIn('/exercise/2/', data['next_url'])
+        results = self.client.session['v1_exercise_results']
+        skipped = [r for r in results if r.get('skipped')]
+        self.assertEqual(len(skipped), 1)
+        self.assertEqual(skipped[0]['exercise_id'], 'full_squats')
+        self.assertEqual(skipped[0]['skip_reason'], 'pain')
+        self.assertIn('pattern', self.client.session['v1_pain_skip_banner'])
+
+    def test_da_f2_severe_stop_routes_to_pain_stop(self):
+        resp = self._post_result(
+            pain_reported=True, pain_type='sharp',
+            pain_location='knee', pain_severity=9, pain_action='stop',
+        )
+        self.assertIn('pain-stop', resp.json()['next_url'])
+
+    def test_da_f2_sharp_pain_notes_linked_coach(self):
+        from django.contrib.auth.models import User
+        from strength_app.models import CoachPatientLink, TherapistProfile
+        coach_user = User.objects.create_user('daf2coach', password='x')
+        coach = TherapistProfile.objects.create(
+            user=coach_user, therapist_id='DAF2T', name='Coach F2',
+            license_number='LIC-F2', email='f2@x.com',
+        )
+        link = CoachPatientLink.objects.create(coach=coach, patient=self.patient)
+        self._post_result(
+            pain_reported=True, pain_type='sharp',
+            pain_location='knee', pain_severity=8, pain_action='continue',
+        )
+        link.refresh_from_db()
+        self.assertIn('Pain during session', link.notes)
+
+    def test_da_f2_mild_pain_does_not_skip(self):
+        resp = self._post_result(
+            pain_reported=True, pain_type='dull',
+            pain_location='quad', pain_severity=3, pain_action='continue',
+        )
+        self.assertIn('/exercise/1/', resp.json()['next_url'])
+
+
+class TestDAF3PainFollowThrough(TestCase):
+    """F3 — repeated same-location pain regresses, then pauses, a pattern."""
+
+    def _make_session_with_pain(self, patient, days_ago, location='knee'):
+        from datetime import timedelta as _td
+        from django.utils import timezone as _tz
+        from strength_app.models import ExerciseExecution, WorkoutSession
+        ws = WorkoutSession.objects.create(patient=patient)
+        # session_date is auto_now_add — backdate explicitly
+        WorkoutSession.objects.filter(pk=ws.pk).update(
+            session_date=_tz.now() - _td(days=days_ago))
+        ExerciseExecution.objects.create(
+            session=ws, exercise_id='full_squats', exercise_name='Full Squats',
+            category='lower_body', prescribed_sets=3, prescribed_reps=10,
+            pain_reported=bool(location), pain_type='sharp' if location else '',
+            pain_location=location or '', pain_severity=6 if location else 0,
+        )
+        return ws
+
+    def test_da_f3_two_consecutive_regress(self):
+        from strength_app.v1_safety_logic import get_pain_pattern_escalation
+        patient = _make_patient(pid='DAF301', phone='9000009961')
+        self._make_session_with_pain(patient, days_ago=4)
+        self._make_session_with_pain(patient, days_ago=1)
+        esc = get_pain_pattern_escalation(patient)
+        self.assertIn('squat', esc['regress'])
+        self.assertEqual(esc['pause'], set())
+
+    def test_da_f3_three_consecutive_pause(self):
+        from strength_app.v1_safety_logic import get_pain_pattern_escalation
+        patient = _make_patient(pid='DAF302', phone='9000009962')
+        for d in (7, 4, 1):
+            self._make_session_with_pain(patient, days_ago=d)
+        esc = get_pain_pattern_escalation(patient)
+        self.assertIn('squat', esc['pause'])
+
+    def test_da_f3_pain_free_session_resets(self):
+        from strength_app.v1_safety_logic import get_pain_pattern_escalation
+        patient = _make_patient(pid='DAF303', phone='9000009963')
+        self._make_session_with_pain(patient, days_ago=7)
+        self._make_session_with_pain(patient, days_ago=4)
+        self._make_session_with_pain(patient, days_ago=1, location='')  # pain-free
+        esc = get_pain_pattern_escalation(patient)
+        self.assertEqual(esc['regress'], set())
+        self.assertEqual(esc['pause'], set())
+
+
 class TestDAP4RouteSmoke(TestCase):
     """Phase 4 row 12 — every no-arg patient GET route renders non-500."""
 

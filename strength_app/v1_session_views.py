@@ -161,6 +161,51 @@ def _pattern_to_category(pattern):
     return mapping.get(pattern, 'lower_body')
 
 
+def _notify_linked_professionals_of_pain(patient, result):
+    """DA-F2: append a flag note to active coach/therapist links when a
+    sharp / high-severity pain report comes in mid-session."""
+    stamp = (
+        f"\n[FLAGGED {date.today()}] Pain during session: "
+        f"{result.get('exercise_name', 'exercise')} — "
+        f"{result.get('pain_type', 'pain')} {result.get('pain_severity', 0)}/10 "
+        f"({result.get('pain_location', 'unspecified location')})."
+    )
+    try:
+        from .models import CoachPatientLink
+        for link in CoachPatientLink.objects.filter(patient=patient, is_active=True):
+            link.notes = (link.notes or '') + stamp
+            link.save(update_fields=['notes'])
+        if patient.user_id:
+            from therapist_app.models import TherapistPatientLink
+            for tlink in TherapistPatientLink.objects.filter(
+                    patient=patient.user, status='active'):
+                tlink.notes = (tlink.notes or '') + stamp
+                tlink.save(update_fields=['notes'])
+    except Exception:
+        logger.warning('pain flag note failed for %s', patient.patient_id,
+                       exc_info=True)
+
+
+def v1_pain_stop(request):
+    """DA-F2: severity 8+ with action 'stop' ends the session here.
+
+    Copy follows R4: calm, non-alarmist, no diagnosis named.
+    """
+    patient, err = _require_patient(request)
+    if err:
+        return err
+    return render(request, 'strength_app/v1_stopped.html', {
+        'patient': patient,
+        'pain_stop': True,
+        'stop_reason': (
+            "We've ended today's session because of the pain you reported. "
+            "Rest today — gentle movement like walking is fine if it doesn't "
+            "hurt. If the pain is still strong tomorrow, or it gets worse, "
+            "please contact your doctor or physiotherapist."
+        ),
+    })
+
+
 def _add_tempo_parts(exercise):
     """Add tempo_parts list to an exercise dict (mutates a copy)."""
     ex = dict(exercise)
@@ -506,6 +551,11 @@ def v1_execute_exercise(request, exercise_index):
     exercise = _add_tempo_parts(working_sets[exercise_index])
     is_last  = (exercise_index >= len(working_sets) - 1)
 
+    # DA-F2: one-shot banner after a server-side pain skip
+    pain_skip_banner = request.session.pop('v1_pain_skip_banner', None)
+    if pain_skip_banner:
+        request.session.modified = True
+
     # Build scoring items for self-report form score
     context = {
         'patient':         patient,
@@ -515,6 +565,7 @@ def v1_execute_exercise(request, exercise_index):
         'is_last_exercise': is_last,
         'next_exercise_index': exercise_index + 1,
         'has_strength_profile': True,
+        'pain_skip_banner': pain_skip_banner,
     }
     return render(request, 'strength_app/v1_exercise_execute.html', context)
 
@@ -592,6 +643,54 @@ def v1_save_exercise_result(request):
             next_url = reverse('v1_execute_exercise', args=[0])
     else:
         next_index = exercise_index + 1
+
+        # ── DA-F2: server-side sharp-pain response ────────────────────
+        # The client shows guidance text, but the SERVER must also act:
+        # sharp pain or 7+/10 removes the remaining same-pattern work
+        # this session; 8+/10 with action 'stop' ends the session.
+        sharp_pain = (
+            result['pain_reported']
+            and (result['pain_type'] == 'sharp' or result['pain_severity'] >= 7)
+        )
+        if sharp_pain:
+            _notify_linked_professionals_of_pain(patient, result)
+
+        if (result['pain_severity'] >= 8 and result['pain_action'] == 'stop'):
+            request.session['v1_pain_stop'] = True
+            request.session.modified = True
+            return JsonResponse({'status': 'saved',
+                                 'next_url': reverse('v1_pain_stop')})
+
+        if sharp_pain and result['movement_pattern']:
+            pattern = result['movement_pattern']
+            skipped_names = []
+            while next_index < total:
+                nxt = working_sets[next_index]
+                if nxt.get('movement_pattern') != pattern:
+                    break
+                skipped_names.append(nxt.get('exercise_name', ''))
+                results.append({
+                    'exercise_id': nxt.get('exercise_id', ''),
+                    'exercise_name': nxt.get('exercise_name', ''),
+                    'movement_pattern': pattern,
+                    'prescribed_sets': nxt.get('sets', 0),
+                    'prescribed_reps': nxt.get('reps', 0),
+                    'completed_sets': 0,
+                    'completed_reps_per_set': [],
+                    'form_score': 0,
+                    'pain_reported': False,
+                    'skipped': True,
+                    'skip_reason': 'pain',
+                })
+                next_index += 1
+            if skipped_names:
+                request.session['v1_exercise_results'] = results
+                request.session['v1_pain_skip_banner'] = {
+                    'pattern': pattern,
+                    'count': len(skipped_names),
+                }
+                request.session.modified = True
+
         if next_index >= total:
             next_url = reverse('v1_cooldown')
         else:
@@ -613,8 +712,13 @@ def v1_cooldown(request):
     cooldown = session_data.get('cooldown', {})
     phases   = cooldown.get('phases', {})
 
+    pain_skip_banner = request.session.pop('v1_pain_skip_banner', None)  # DA-F2
+    if pain_skip_banner:
+        request.session.modified = True
+
     context = {
         'patient':       patient,
+        'pain_skip_banner': pain_skip_banner,
         'cooldown':      cooldown,
         'light_movement': phases.get('light_movement', []),
         'static_stretch': phases.get('static_stretch', []),
@@ -763,6 +867,15 @@ def v1_post_session_feedback(request):
                 rep_quality_source='derived',
                 overall_form_score=form_score,
                 completion_percentage=completion_pct,
+                # DA-F1: per-exercise pain was collected by the execute UI
+                # and previously dropped here.
+                pain_reported=bool(res.get('pain_reported')),
+                pain_type=res.get('pain_type', '') or '',
+                pain_location=res.get('pain_location', '') or '',
+                pain_severity=res.get('pain_severity', 0) or 0,
+                pain_action=res.get('pain_action', '') or '',
+                skipped=bool(res.get('skipped')),
+                skip_reason=res.get('skip_reason', '') or '',
             )
 
         # --- Create SessionFeedback (traffic light auto-computed by save()) ---

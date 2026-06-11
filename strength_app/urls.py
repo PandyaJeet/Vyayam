@@ -69,6 +69,7 @@ urlpatterns = [
     path('v1/session/conditioning/',                        views_session.v1_conditioning_session,  name='v1_conditioning_session'),
     path('v1/session/feedback/',                            views_session.v1_post_session_feedback, name='v1_post_session_feedback'),
     path('v1/session/complete/',                            views_session.v1_session_complete,      name='v1_session_complete'),
+    path('v1/session/pain-stop/',                           views_session.v1_pain_stop,             name='v1_pain_stop'),  # DA-F2
     path('v1/progress/',                                    views_progress.v1_progress_dashboard,   name='v1_progress'),
     path('v1/progress/api/',                                views_progress.v1_progress_api,         name='v1_progress_api'),
     path('v1/profile/',                                     views_progress.v1_profile,              name='v1_profile'),

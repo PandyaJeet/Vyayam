@@ -379,7 +379,12 @@ def coach_athlete_detail(request, patient_id):
     ).order_by('match_date')[:8]
 
     # 7 — Adherence + form quality (last 12 sessions of WorkoutSession + SessionFeedback).
-    recent_sessions = WorkoutSession.objects.filter(patient=patient).order_by('-session_date')[:12]
+    recent_sessions = (
+        WorkoutSession.objects.filter(patient=patient)
+        .order_by('-session_date')[:12]
+        # DA-F1: per-session pain expansion in the athlete detail view
+        .prefetch_related('exercises')
+    )
     recent_feedback = SessionFeedback.objects.filter(patient=patient).order_by('-created_at')[:10]
 
     avg_form = None
