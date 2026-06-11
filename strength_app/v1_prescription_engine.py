@@ -122,36 +122,10 @@ def _get_base_dosage_key(exercise_id, is_unilateral, goal_emphasis, phase):
 # ============================================================================
 
 def _resolve_hormonal_modifiers(patient, hormonal_phase):
-    """
-    Handle the nested HORMONAL_PHASE_MODIFIERS['menstruation'] structure.
-    Returns a flat modifier dict.
-    """
-    if hormonal_phase is None:
-        return {'volume_modifier': 1.0, 'rest_modifier': 0, 'plyometric_clearance': True}
-
-    phase_data = HORMONAL_PHASE_MODIFIERS.get(hormonal_phase, {})
-
-    if hormonal_phase == 'menstruation':
-        pain = patient.menstrual_pain_level or 'minimal'
-        sub = phase_data.get(pain, phase_data.get('minimal', {}))
-        if sub.get('volume_modifier', 1.0) == 0.0:
-            return {
-                'volume_modifier': 0.0, 'rest_modifier': 0,
-                'plyometric_clearance': False, 'mobility_only': True,
-            }
-        return {
-            'volume_modifier': sub.get('volume_modifier', 1.0),
-            'rest_modifier': sub.get('rest_modifier', 0),
-            'plyometric_clearance': True, 'mobility_only': False,
-        }
-
-    return {
-        'volume_modifier': phase_data.get('volume_modifier', 1.0),
-        'rest_modifier': phase_data.get('rest_modifier', 0),
-        'plyometric_clearance': phase_data.get('plyometric_clearance', True),
-        'warmup_extended': phase_data.get('warmup_extended', False),
-        'mobility_only': False,
-    }
+    """Delegates to v1_safety_logic.get_hormonal_modifiers — the single
+    source of truth for hormonal modifiers (DA-C15). Kept as a thin alias
+    so existing engine call sites are untouched."""
+    return get_hormonal_modifiers(hormonal_phase, patient=patient)
 
 
 # ============================================================================

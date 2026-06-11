@@ -411,6 +411,65 @@ class TestDAC13InputValidation(TestCase):
         self.assertIsNone(self.patient.competition_date)
 
 
+class TestDAC15HormonalModifierConvention(TestCase):
+    """C15 — one key convention, complete dict for every phase value."""
+
+    EXPECTED_KEYS = {
+        'volume_modifier', 'rest_modifier', 'plyometric_clearance',
+        'warmup_extended', 'mobility_only', 'notes',
+    }
+    ALL_PHASES = [None, 'stable', 'unknown', 'follicular', 'ovulation',
+                  'luteal', 'menstruation']
+
+    def test_da_c15_identical_shape_for_all_phases(self):
+        from strength_app.v1_safety_logic import get_hormonal_modifiers
+        for phase in self.ALL_PHASES:
+            with self.subTest(phase=phase):
+                mods = get_hormonal_modifiers(phase)
+                self.assertEqual(set(mods.keys()), self.EXPECTED_KEYS)
+                self.assertNotIn('volume_multiplier', mods)
+
+    def test_da_c15_engine_resolver_delegates(self):
+        from strength_app.v1_prescription_engine import _resolve_hormonal_modifiers
+        from strength_app.v1_safety_logic import get_hormonal_modifiers
+
+        patient = _make_patient(pid='DAC1501', phone='9000009921')
+        for phase in self.ALL_PHASES:
+            self.assertEqual(
+                _resolve_hormonal_modifiers(patient, phase),
+                get_hormonal_modifiers(phase, patient=patient),
+            )
+
+    def test_da_c15_severe_menstruation_mobility_only(self):
+        from strength_app.v1_prescription_engine import generate_v1_session
+        from strength_app.models import StrengthProfile
+
+        patient = PatientProfile.objects.create(
+            patient_id='DAC1502', name='Cycle Patient', phone='9000009922',
+            age=28, goals='Strength', biological_sex='female',
+            cycle_tracking_enabled=True,
+            last_period_start=date.today() - timedelta(days=1),
+            cycle_length_days=28,
+            menstrual_pain_level='severe',
+        )
+        StrengthProfile.objects.create(
+            patient=patient, assessment_number=1,
+            squat_score=3, hinge_score=3, push_score=3,
+            pull_score=3, core_score=3, rotate_score=3, lunge_score=3,
+        )
+        data = generate_v1_session(patient)
+        self.assertEqual(data.get('status'), 'mobility_only')
+
+    def test_da_c15_known_phase_values(self):
+        from strength_app.v1_safety_logic import get_hormonal_modifiers
+        luteal = get_hormonal_modifiers('luteal')
+        self.assertEqual(luteal['volume_modifier'], 0.85)
+        self.assertEqual(luteal['rest_modifier'], 20)
+        ovulation = get_hormonal_modifiers('ovulation')
+        self.assertFalse(ovulation['plyometric_clearance'])
+        self.assertTrue(ovulation['warmup_extended'])
+
+
 class TestDAC14RedFlagMapIntegrity(TestCase):
     """C14 — test_red_flag_map_integrity: replacements must be usable."""
 

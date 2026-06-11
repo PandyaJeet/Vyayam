@@ -63,24 +63,68 @@ def calculate_hormonal_phase(patient):
 # 3. HORMONAL PHASE MODIFIERS
 # ============================================================================
 
-def get_hormonal_modifiers(hormonal_phase):
+def get_hormonal_modifiers(hormonal_phase, patient=None):
     """
-    Return load/intensity modifier dict for a given hormonal phase.
+    Single source of truth for hormonal-phase training modifiers (DA-C15).
 
-    Keys: volume_multiplier, intensity_multiplier, rest_multiplier, notes
+    Returns a COMPLETE flat dict in the engine's key convention for every
+    phase value (None, 'stable', 'unknown', 'follicular', 'ovulation',
+    'luteal', 'menstruation'):
+
+        volume_modifier (float)      multiply set counts
+        rest_modifier (int seconds)  add to rest periods
+        plyometric_clearance (bool)  False blocks plyo/power work
+        warmup_extended (bool)       longer warm-up (e.g. ovulation/ACL risk)
+        mobility_only (bool)         severe menstruation → mobility session
+        notes (str)
+
+    'menstruation' resolves the patient's menstrual_pain_level; with no
+    patient supplied it defaults to 'minimal' (most-permissive sub-phase,
+    matching the old engine behaviour).
+
+    History: this function previously returned 'volume_multiplier'-style
+    keys (with the raw nested menstruation dict unresolved) while the
+    engine kept a parallel '_resolve_hormonal_modifiers' using
+    'volume_modifier' keys. The engine convention won; the engine resolver
+    now delegates here.
     """
     from .v1_constants import HORMONAL_PHASE_MODIFIERS
-    if hormonal_phase is None:
-        return {'volume_multiplier': 1.0, 'intensity_multiplier': 1.0, 'rest_multiplier': 1.0, 'notes': ''}
-    if hormonal_phase == 'stable':
-        return {'volume_modifier': 1.0, 'rest_modifier': 0, 'plyometric_clearance': True,
-                'volume_multiplier': 1.0, 'intensity_multiplier': 1.0, 'rest_multiplier': 1.0, 'notes': ''}
-    if hormonal_phase == 'unknown':
-        return {'volume_modifier': 1.0, 'rest_modifier': 0, 'plyometric_clearance': True,
-                'volume_multiplier': 1.0, 'intensity_multiplier': 1.0, 'rest_multiplier': 1.0, 'notes': ''}
-    return HORMONAL_PHASE_MODIFIERS.get(hormonal_phase, {
-        'volume_multiplier': 1.0, 'intensity_multiplier': 1.0, 'rest_multiplier': 1.0, 'notes': ''
-    })
+
+    neutral = {
+        'volume_modifier': 1.0,
+        'rest_modifier': 0,
+        'plyometric_clearance': True,
+        'warmup_extended': False,
+        'mobility_only': False,
+        'notes': '',
+    }
+
+    if hormonal_phase in (None, 'stable', 'unknown'):
+        return dict(neutral)
+
+    phase_data = HORMONAL_PHASE_MODIFIERS.get(hormonal_phase, {})
+
+    if hormonal_phase == 'menstruation':
+        pain = 'minimal'
+        if patient is not None:
+            pain = getattr(patient, 'menstrual_pain_level', None) or 'minimal'
+        sub = phase_data.get(pain, phase_data.get('minimal', {}))
+        out = dict(neutral)
+        out['volume_modifier'] = sub.get('volume_modifier', 1.0)
+        out['rest_modifier'] = sub.get('rest_modifier', 0)
+        out['notes'] = sub.get('notes', '')
+        if out['volume_modifier'] == 0.0:
+            out['plyometric_clearance'] = False
+            out['mobility_only'] = True
+        return out
+
+    out = dict(neutral)
+    out['volume_modifier'] = phase_data.get('volume_modifier', 1.0)
+    out['rest_modifier'] = phase_data.get('rest_modifier', 0)
+    out['plyometric_clearance'] = phase_data.get('plyometric_clearance', True)
+    out['warmup_extended'] = phase_data.get('warmup_extended', False)
+    out['notes'] = phase_data.get('notes', '')
+    return out
 
 
 # ============================================================================
@@ -530,7 +574,7 @@ def build_patient_context(patient):
         return {'absolute_stop': True}
 
     hormonal_phase = calculate_hormonal_phase(patient)
-    hormonal_modifiers = get_hormonal_modifiers(hormonal_phase)
+    hormonal_modifiers = get_hormonal_modifiers(hormonal_phase, patient=patient)
     sex_adjustments = get_sex_adjustments(patient)
     _, acl_notes = apply_female_acl_prevention(patient, [])
     age_limits = get_age_limits(patient)
