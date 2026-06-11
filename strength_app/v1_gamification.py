@@ -225,18 +225,25 @@ def compute_achievements(patient, total_sessions, streak_days):
 
 MIN_FORM_SCORE_FOR_XP = 55    # Below this: 0 XP (unsafe form — injury risk)
 REDUCED_FORM_THRESHOLD = 70   # Below this: base XP only (no bonus)
+MAX_SESSION_XP = 200          # sanity ceiling — no single session exceeds this
 
 
 def compute_session_xp(exercise_results):
     """Compute XP earned from a single session's exercise results.
 
     Form gate:
-      avg_form < 55  → 0 XP (exercise was performed unsafely)
-      avg_form 55-69 → base XP only (no quality bonus)
-      avg_form ≥ 70  → base + quality bonus (existing behaviour)
+      avg_form < 55  → 0 XP for that exercise (performed unsafely)
+      avg_form 55-79 → base XP only (no quality bonus)
+      avg_form ≥ 80  → base + quality bonus
+
+    If results exist but NO exercise passed the gate, the session earns
+    0 XP — the safety gate must never be floored back up to base XP
+    (that would reward unsafe movement, the exact loop the gate exists
+    to break). The XP_PER_SESSION fallback applies only to legacy
+    sessions with no per-exercise results at all.
     """
     if not exercise_results:
-        return XP_PER_SESSION  # fallback
+        return XP_PER_SESSION  # legacy fallback: no per-exercise data
 
     total_xp = 0
     for r in exercise_results:
@@ -248,7 +255,7 @@ def compute_session_xp(exercise_results):
             ex_base += 5  # quality bonus
         total_xp += ex_base
 
-    return max(XP_PER_SESSION, total_xp)
+    return min(total_xp, MAX_SESSION_XP)
 
 
 # ── Phase display helper ─────────────────────────────────────────────────
