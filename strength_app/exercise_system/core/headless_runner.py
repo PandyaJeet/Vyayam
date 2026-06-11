@@ -62,10 +62,8 @@ class HeadlessExerciseRunner:
                     angles, self.exercise.phase
                 )
 
-                primary_angle = self._get_primary_angle(angles)
-
-                rep_done, phase, warnings = self.exercise.update_rep_counter(
-                    primary_angle, feedback, self.voice
+                rep_done, phase, warnings = self._update_rep_counter(
+                    angles, feedback
                 )
 
                 joints = angles.get("joints_coords", {})
@@ -111,3 +109,22 @@ class HeadlessExerciseRunner:
             if isinstance(v, (int, float)):
                 return v
         return 0
+
+    def _update_rep_counter(self, angles, feedback):
+        """Dispatch across the two update_rep_counter conventions.
+
+        ~190 modules take a scalar primary angle; ~30 take the full
+        angles dict (DA-EX-core: passing the scalar to those crashed with
+        \"'float' object has no attribute 'get'\" on every frame).
+        """
+        import inspect
+        try:
+            params = list(inspect.signature(
+                self.exercise.update_rep_counter).parameters)
+        except (TypeError, ValueError):
+            params = []
+        wants_dict = bool(params) and params[0] in ('angles', 'angle_dict')
+        first_arg = angles if wants_dict else self._get_primary_angle(angles)
+        if len(params) >= 3:
+            return self.exercise.update_rep_counter(first_arg, feedback, self.voice)
+        return self.exercise.update_rep_counter(first_arg, feedback)

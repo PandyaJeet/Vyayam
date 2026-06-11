@@ -432,10 +432,21 @@ class TempoDetector:
             'holding': None            # No time limit for static holds
         }
     
+    def get_phase_duration(self) -> float:
+        """Seconds elapsed in the current phase (0.0 before any phase).
+
+        DA-EX-core: 13 modules call this; it did not exist — AttributeError
+        on every rep of those exercises.
+        """
+        import time
+        if self.phase_start_time is None:
+            return 0.0
+        return time.time() - self.phase_start_time
+
     def start_phase(self, phase_name: str):
         """
         Mark start of new phase
-        
+
         Args:
             phase_name: Phase name ('descending', 'bottom', 'ascending', 'holding')
         """

@@ -10,6 +10,11 @@ class FormStatus(Enum):
     CORRECT = "correct"
     NEEDS_ADJUSTMENT = "adjustment"
     INCORRECT = "incorrect"
+    # Aliases (DA-EX-core): 63 modules reference FormStatus.WARNING and 13
+    # FormStatus.GOOD — both crashed with AttributeError at runtime. Enum
+    # aliasing keeps the value space unchanged for downstream comparisons.
+    GOOD = "correct"
+    WARNING = "adjustment"
 
 
 @dataclass

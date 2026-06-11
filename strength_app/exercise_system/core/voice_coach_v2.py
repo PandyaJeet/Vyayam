@@ -108,6 +108,11 @@ class VoiceCoachV2:
             except Exception as e:
                 print(f"⚠️  Speech worker error: {e}")
     
+    def say(self, message, priority=False):
+        """Alias for speak() — 40 modules call voice.say(), which crashed
+        with AttributeError (DA-EX-core)."""
+        return self.speak(message, priority=priority)
+
     def speak(self, message, priority=False):
         """Queue a message for speech (silent if voice disabled).
         priority=True mirrors the old API — clears the queue first so this
