@@ -64,12 +64,33 @@
         <div class="flex flex-col gap-2">
           {% for val, label in absolute_stop_options %}
           <label class="flex items-center gap-3 p-3 rounded-lg border border-error/30 bg-error-container/20 cursor-pointer">
-            <input type="checkbox" name="absolute_stop_conditions" value="{{ val }}" class="flex-shrink-0" style="accent-color:#ba1a1a;">
+            <input type="checkbox" name="absolute_stop_conditions" value="{{ val }}" class="flex-shrink-0" style="accent-color:#ba1a1a;"
+              {% if val in patient.absolute_stop_reason %}checked{% endif %}>
             <span class="text-sm font-medium text-error">{{ label }}</span>
           </label>
           {% endfor %}
         </div>
       </div>
+
+      {% if clear_confirmation_required %}
+      <!-- DA-C5: clearing an absolute stop needs explicit confirmation -->
+      <div class="bg-error-container/40 border-2 border-error rounded-lg p-4">
+        <p class="text-sm font-bold text-error mb-2">
+          <i class="fas fa-exclamation-triangle me-1"></i>You are removing a safety stop
+        </p>
+        <p class="text-sm text-on-surface mb-3">
+          You previously reported a condition that required medical clearance before training.
+          To remove it, please confirm below. This change is recorded, and your
+          coach or therapist (if you have one) will be notified.
+        </p>
+        <label class="flex items-start gap-3 cursor-pointer">
+          <input type="checkbox" name="confirm_stop_clear" value="1" class="mt-0.5 flex-shrink-0" style="accent-color:#ba1a1a;">
+          <span class="text-sm font-medium text-on-surface">
+            I confirm my situation has changed / I have medical clearance to train.
+          </span>
+        </label>
+      </div>
+      {% endif %}
 
       <!-- Surgical history -->
       <div>

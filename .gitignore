@@ -32,3 +32,4 @@ Thumbs.db
 *.key
 *.log
 =6.0
+.venv/

@@ -10,8 +10,25 @@ from .models import (
     ExerciseProgressionState, ProgressReport, StretchSession,
     StrengthProfile, PeriodisationState, SessionFeedback, AnonymisedSessionLog,
     CoachPatientLink, NutritionProfile, FoodItem, DailyFoodLog, MessEntry,
-    FootballProfile,
+    FootballProfile, RedFlagEvent,
 )
+
+
+@admin.register(RedFlagEvent)
+class RedFlagEventAdmin(admin.ModelAdmin):
+    """DA-C5 audit trail — read-only: audit records must never be edited."""
+    list_display = ['patient', 'change_type', 'source', 'old_stop', 'new_stop', 'changed_at']
+    list_filter = ['change_type', 'source']
+    search_fields = ['patient__name', 'patient__patient_id']
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
 
 
 @admin.register(PatientProfile)

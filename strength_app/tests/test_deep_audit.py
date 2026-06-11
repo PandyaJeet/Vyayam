@@ -92,6 +92,80 @@ class TestDAC2DeloadFallback(TestCase):
         self.assertTrue(needed)
 
 
+class TestDAC5RedFlagAuditTrail(TestCase):
+    """C5 — red-flag changes are audited; stop-clearing needs confirmation."""
+
+    def setUp(self):
+        self.patient = _make_patient(pid='DAC501', phone='9000009501')
+        session = self.client.session
+        session['patient_id'] = self.patient.patient_id
+        session.save()
+
+    def _post(self, data):
+        from django.urls import reverse
+        base = {'surgical_history': '', 'medications': ''}
+        base.update(data)
+        return self.client.post(reverse('onboarding_red_flags'), data=base)
+
+    def test_da_c5_setting_stop_creates_event(self):
+        from strength_app.models import RedFlagEvent
+        resp = self._post({'absolute_stop_conditions': ['acute_fracture']})
+        self.assertEqual(resp.status_code, 200)  # stopped screen
+        self.patient.refresh_from_db()
+        self.assertTrue(self.patient.absolute_stop)
+        event = RedFlagEvent.objects.get(patient=self.patient)
+        self.assertEqual(event.change_type, 'absolute_stop_set')
+        self.assertTrue(event.new_stop)
+
+    def test_da_c5_clear_without_confirmation_blocked(self):
+        from strength_app.models import RedFlagEvent
+        self._post({'absolute_stop_conditions': ['acute_fracture']})
+        RedFlagEvent.objects.all().delete()
+
+        resp = self._post({})  # uncheck everything, no confirmation
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, 'confirm_stop_clear')
+        self.patient.refresh_from_db()
+        self.assertTrue(self.patient.absolute_stop)  # NOT cleared
+        self.assertEqual(RedFlagEvent.objects.count(), 0)
+
+    def test_da_c5_clear_with_confirmation_audited_and_noted(self):
+        from strength_app.models import (
+            CoachPatientLink, RedFlagEvent, TherapistProfile,
+        )
+        from django.contrib.auth.models import User
+
+        coach_user = User.objects.create_user('dacoach', password='x')
+        coach = TherapistProfile.objects.create(
+            user=coach_user, name='Coach DA', email='c@x.com',
+        )
+        link = CoachPatientLink.objects.create(
+            coach=coach, patient=self.patient, is_active=True,
+        )
+
+        self._post({'absolute_stop_conditions': ['acute_fracture']})
+        resp = self._post({'confirm_stop_clear': '1'})
+        self.assertEqual(resp.status_code, 302)  # continues to lifestyle
+
+        self.patient.refresh_from_db()
+        self.assertFalse(self.patient.absolute_stop)
+        event = RedFlagEvent.objects.filter(
+            patient=self.patient, change_type='absolute_stop_cleared',
+        ).get()
+        self.assertTrue(event.old_stop)
+        self.assertFalse(event.new_stop)
+        link.refresh_from_db()
+        self.assertIn('cleared absolute stop', link.notes)
+
+    def test_da_c5_flag_update_creates_event(self):
+        from strength_app.models import RedFlagEvent
+        resp = self._post({'red_flags': ['hernia']})
+        self.assertEqual(resp.status_code, 302)
+        event = RedFlagEvent.objects.get(patient=self.patient)
+        self.assertEqual(event.change_type, 'flags_updated')
+        self.assertEqual(event.new_flags, ['hernia'])
+
+
 class TestDAC4AcwrRemoved(TestCase):
     """C4 — ACWR (discredited metric, standing decision R2) fully removed."""
 

@@ -20,6 +20,7 @@ Screens:
 import uuid
 import re
 import json
+import logging
 from datetime import date, datetime
 
 from django.shortcuts import render, redirect
@@ -291,6 +292,10 @@ ABSOLUTE_STOP_OPTIONS = [
     ('uncontrolled_hypertension',  'Uncontrolled high blood pressure'),
     ('active_cancer_treatment',    'Currently undergoing cancer treatment'),
 ]
+
+# Stop options whose stopped-state copy must escalate to "seek urgent
+# medical care" (DA-C6). Populated with the emergency-screening additions.
+URGENT_STOP_IDS = set()
 
 # ============================================================================
 # HELPERS
@@ -990,6 +995,64 @@ def onboarding_hormonal(request):
 # SCREEN 10: RED FLAGS
 # ============================================================================
 
+def _log_red_flag_change(patient, old_flags, new_flags, old_stop, new_stop):
+    """DA-C5: audit every red-flag/absolute-stop change; notify linked pros.
+
+    Creates a RedFlagEvent when anything changed, and appends a note to any
+    active coach/therapist link when an absolute stop is cleared so the
+    professional sees it on their next visit.
+    """
+    from .models import RedFlagEvent, CoachPatientLink
+
+    flags_changed = sorted(old_flags) != sorted(new_flags)
+    stop_changed = old_stop != new_stop
+    if not flags_changed and not stop_changed:
+        return
+
+    if old_stop and not new_stop:
+        change_type = 'absolute_stop_cleared'
+        note = 'Patient confirmed their situation has changed / medical clearance to train.'
+    elif new_stop and not old_stop:
+        change_type = 'absolute_stop_set'
+        note = ''
+    else:
+        change_type = 'flags_updated'
+        note = ''
+
+    RedFlagEvent.objects.create(
+        patient=patient,
+        source='patient',
+        change_type=change_type,
+        old_flags=old_flags,
+        new_flags=new_flags,
+        old_stop=old_stop,
+        new_stop=new_stop,
+        note=note,
+    )
+
+    if change_type != 'absolute_stop_cleared':
+        return
+
+    # Surface the clear to linked professionals (best-effort enrichment —
+    # the audit event above is the durable record).
+    stamp = f"\n[FLAGGED {date.today()}] Patient cleared absolute stop on {date.today()} (self-service)."
+    try:
+        for link in CoachPatientLink.objects.filter(patient=patient, is_active=True):
+            link.notes = (link.notes or '') + stamp
+            link.save(update_fields=['notes'])
+        if patient.user_id:
+            from therapist_app.models import TherapistPatientLink
+            for tlink in TherapistPatientLink.objects.filter(
+                    patient=patient.user, status='active'):
+                tlink.notes = (tlink.notes or '') + stamp
+                tlink.save(update_fields=['notes'])
+    except Exception:
+        logging.getLogger(__name__).warning(
+            'Could not append stop-clear note to professional links for %s',
+            patient.patient_id, exc_info=True,
+        )
+
+
 def onboarding_red_flags(request):
     patient, err = _require_patient(request)
     if err:
@@ -1000,6 +1063,27 @@ def onboarding_red_flags(request):
         abs_stops    = request.POST.getlist('absolute_stop_conditions')
         surgical_raw = request.POST.get('surgical_history', '')
         meds_raw     = request.POST.get('medications', '')
+
+        # ── DA-C5: snapshot before mutating, gate stop-clearing ──────────
+        old_flags = list(patient.red_flags_json or [])
+        old_stop = patient.absolute_stop
+        new_stop = bool(abs_stops)
+
+        if old_stop and not new_stop:
+            # Clearing an absolute stop requires an explicit confirmation —
+            # a patient who was hard-stopped cannot silently uncheck it.
+            # Re-render the form (NOT the stop card) with the warning so the
+            # patient can tick the confirmation and resubmit.
+            if not request.POST.get('confirm_stop_clear'):
+                return render(request, 'strength_app/onboarding_red_flags.html', {
+                    'patient': patient,
+                    'red_flag_options': RED_FLAG_OPTIONS,
+                    'absolute_stop_options': ABSOLUTE_STOP_OPTIONS,
+                    'stopped': False,
+                    'clear_confirmation_required': True,
+                    'step': 8,
+                    'total': _total_steps(patient),
+                })
 
         patient.red_flags_json        = red_flags
         patient.surgical_history_json = [s.strip() for s in surgical_raw.split(',') if s.strip()]
@@ -1019,6 +1103,8 @@ def onboarding_red_flags(request):
             patient.data_consent_date = _tz.now()
 
         patient.save()
+
+        _log_red_flag_change(patient, old_flags, red_flags, old_stop, new_stop)
 
         if patient.absolute_stop:
             return render(request, 'strength_app/onboarding_red_flags.html', {

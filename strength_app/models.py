@@ -853,6 +853,48 @@ class ProgressReport(models.Model):
 
 
 # ============================================================================
+# RED FLAG AUDIT TRAIL (DA-C5)
+# ============================================================================
+
+class RedFlagEvent(models.Model):
+    """Immutable audit record of every change to a patient's red flags or
+    absolute-stop status.
+
+    Patients can update their own screening answers (their situation can
+    genuinely change), but every change — especially clearing an absolute
+    stop — must leave a trail that a linked therapist/coach can review.
+    """
+    SOURCE_CHOICES = [
+        ('patient', 'Patient'),
+        ('therapist', 'Therapist'),
+        ('system', 'System'),
+    ]
+    CHANGE_TYPE_CHOICES = [
+        ('flags_updated', 'Flags updated'),
+        ('absolute_stop_set', 'Absolute stop set'),
+        ('absolute_stop_cleared', 'Absolute stop cleared'),
+    ]
+
+    patient = models.ForeignKey(
+        PatientProfile, on_delete=models.CASCADE, related_name='red_flag_events'
+    )
+    changed_at = models.DateTimeField(auto_now_add=True)
+    source = models.CharField(max_length=10, choices=SOURCE_CHOICES, default='patient')
+    change_type = models.CharField(max_length=25, choices=CHANGE_TYPE_CHOICES)
+    old_flags = models.JSONField(default=list, blank=True)
+    new_flags = models.JSONField(default=list, blank=True)
+    old_stop = models.BooleanField(default=False)
+    new_stop = models.BooleanField(default=False)
+    note = models.TextField(blank=True, default='')
+
+    class Meta:
+        ordering = ['-changed_at']
+
+    def __str__(self):
+        return f"{self.patient.patient_id} {self.change_type} @ {self.changed_at:%Y-%m-%d %H:%M}"
+
+
+# ============================================================================
 # STRETCH SESSION
 # ============================================================================
 
