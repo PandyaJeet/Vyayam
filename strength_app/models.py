@@ -403,7 +403,7 @@ class GateTestResult(models.Model):
 
     # ── Performance at final level ───────────────────────────────────────────
     reps_completed = models.IntegerField(default=0)
-    depth_achieved = models.FloatField(default=0.0)   # For squats only
+    depth_achieved = models.FloatField(default=0.0, validators=[MinValueValidator(0)])   # For squats only (DA-P4 row 11)
     difficulty_reported = models.IntegerField(
         default=5,
         validators=[MinValueValidator(1), MaxValueValidator(10)]
@@ -548,7 +548,7 @@ class WorkoutSession(models.Model):
     overall_session_form_score = models.FloatField(default=0.0)
     
     # XP earned this session (persisted so total_xp reflects variable form-based scoring)
-    xp_earned = models.IntegerField(default=0)
+    xp_earned = models.IntegerField(default=0, validators=[MinValueValidator(0)])  # DA-P4 row 11
 
     # Daily Feedback
     patient_comfortable = models.BooleanField(default=True)
@@ -569,6 +569,9 @@ class WorkoutSession(models.Model):
     
     class Meta:
         ordering = ['-session_date']
+        indexes = [
+            models.Index(fields=['patient', 'session_date']),  # DA-P4 row 11
+        ]
     
     def __str__(self):
         return f"{self.patient.name} - Week {self.week_number} - {self.session_date.strftime('%Y-%m-%d')}"
@@ -665,8 +668,8 @@ class ExerciseExecution(models.Model):
     category = models.CharField(max_length=20, choices=CATEGORY_CHOICES)
     
     # Prescription
-    prescribed_sets = models.IntegerField()
-    prescribed_reps = models.IntegerField()
+    prescribed_sets = models.IntegerField(validators=[MinValueValidator(0)])  # DA-P4 row 11
+    prescribed_reps = models.IntegerField(validators=[MinValueValidator(0)])
     prescribed_hold_duration = models.FloatField(default=0.0)
     prescribed_rest = models.IntegerField(default=60)
     
@@ -1042,10 +1045,11 @@ class FoodItem(models.Model):
     category = models.CharField(max_length=20, choices=CATEGORY_CHOICES)
 
     # Per 100g values
-    calories_per_100g = models.FloatField()
-    protein_per_100g = models.FloatField(default=0)
-    carbs_per_100g = models.FloatField(default=0)
-    fat_per_100g = models.FloatField(default=0)
+    # DA-P4 row 11: macros can never be negative
+    calories_per_100g = models.FloatField(validators=[MinValueValidator(0)])
+    protein_per_100g = models.FloatField(default=0, validators=[MinValueValidator(0)])
+    carbs_per_100g = models.FloatField(default=0, validators=[MinValueValidator(0)])
+    fat_per_100g = models.FloatField(default=0, validators=[MinValueValidator(0)])
     fiber_per_100g = models.FloatField(default=0)
 
     # Typical serving size
@@ -1110,6 +1114,9 @@ class DailyFoodLog(models.Model):
 
     class Meta:
         ordering = ['log_date', 'meal_type', 'logged_at']
+        indexes = [
+            models.Index(fields=['patient', 'log_date']),  # DA-P4 row 11
+        ]
 
     def save(self, *args, **kwargs):
         factor = self.quantity_g / 100

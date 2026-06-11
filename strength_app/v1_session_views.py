@@ -13,6 +13,7 @@ Views:
 """
 
 import json
+import logging
 from datetime import date
 
 from django.shortcuts import render, redirect
@@ -24,6 +25,8 @@ from .models import (
 )
 from .v1_prescription_engine import generate_v1_session
 from .v1_safety_logic import compute_pattern_priorities, advance_periodisation
+
+logger = logging.getLogger(__name__)
 
 
 # ============================================================================
@@ -860,7 +863,13 @@ def v1_session_complete(request):
 
         # Re-read to get any updated phase from advance_periodisation
         state.refresh_from_db()
+    except PeriodisationState.DoesNotExist:
+        state = None  # new patient — no state yet
     except Exception:
+        # DA-H4: clinical path — periodisation/deload progression must
+        # never fail silently. Soft-fail the page, log loudly.
+        logger.error('periodisation update failed for %s',
+                      patient.patient_id, exc_info=True)
         state = None
 
     # --- Build exercise results list from session storage ---
@@ -896,6 +905,7 @@ def v1_session_complete(request):
         next_patterns, _ = _determine_todays_patterns(patient, priorities, spw)
         next_session_data = {'patterns': next_patterns}
     except Exception:
+        logger.warning('next-session preview failed', exc_info=True)  # DA-H4
         next_session_data = {'patterns': []}
 
     meta    = session_data.get('meta', {})
@@ -906,7 +916,7 @@ def v1_session_complete(request):
         from .v1_data_collector import log_session_data
         log_session_data(patient, session_data, feedback)
     except Exception:
-        pass
+        logger.warning('V2 data collection failed', exc_info=True)  # DA-H4
 
     # Milestone celebration — detect newly achieved milestones
     new_milestones = []
@@ -922,7 +932,7 @@ def v1_session_complete(request):
             all_now = _compute_milestones(patient, profiles)
             request.session['achieved_milestone_ids'] = [m['id'] for m in all_now if m['achieved']]
     except Exception:
-        pass
+        logger.warning('milestone check failed', exc_info=True)  # DA-H4
 
     # Clear session data
     for key in ('v1_session', 'v1_session_date', 'v1_exercise_results',
@@ -935,7 +945,7 @@ def v1_session_complete(request):
         from .v1_nutrition_engine import get_daily_nutrition_summary
         nutrition_summary = get_daily_nutrition_summary(patient, date.today())
     except Exception:
-        pass
+        logger.warning('nutrition summary failed', exc_info=True)  # DA-H4
 
     # ── Football post-session update (P21-P26) ────────────────────────────
     if hasattr(patient, 'athlete_tier_active') and patient.athlete_tier_active:
@@ -943,7 +953,9 @@ def v1_session_complete(request):
             from .v1_football_views import football_update_after_session
             football_update_after_session(patient)
         except Exception:
-            pass
+            # DA-H4: clinical for athletes (plyo gate / HSR progression)
+            logger.error('football post-session update failed for %s',
+                          patient.patient_id, exc_info=True)
 
     # ── Gamification context ────────────────────────────────────────────────
     from .v1_gamification import compute_session_xp, compute_streak_days

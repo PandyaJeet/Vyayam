@@ -411,6 +411,41 @@ class TestDAC13InputValidation(TestCase):
         self.assertIsNone(self.patient.competition_date)
 
 
+class TestDAP4RouteSmoke(TestCase):
+    """Phase 4 row 12 — every no-arg patient GET route renders non-500."""
+
+    PATIENT_GET_ROUTES = [
+        'v1_dashboard', 'v1_session_overview', 'v1_warmup', 'v1_cooldown',
+        'v1_post_session_feedback', 'v1_progress', 'v1_profile',
+        'v1_nutrition_dashboard', 'v1_food_log', 'v1_mess_mode',
+        'onboarding_start', 'onboarding_identity', 'onboarding_goals',
+        'onboarding_equipment', 'onboarding_red_flags',
+        'onboarding_lifestyle', 'exercise_library', 'generate_report',
+    ]
+
+    def test_da_p4_patient_routes_never_500(self):
+        from django.urls import reverse
+        from strength_app.models import StrengthProfile
+
+        patient = _make_patient(pid='DAP401', phone='9000009941')
+        StrengthProfile.objects.create(
+            patient=patient, assessment_number=1,
+            squat_score=3, hinge_score=3, push_score=3,
+            pull_score=3, core_score=3, rotate_score=3, lunge_score=3,
+        )
+        session = self.client.session
+        session['patient_id'] = patient.patient_id
+        session.save()
+
+        for name in self.PATIENT_GET_ROUTES:
+            with self.subTest(route=name):
+                resp = self.client.get(reverse(name), follow=True)
+                self.assertLess(
+                    resp.status_code, 500,
+                    f'{name} returned {resp.status_code}',
+                )
+
+
 class TestDAP3DataIntegrity(TestCase):
     """Phase 3 — content/equipment coverage for every prescribable ID."""
 
