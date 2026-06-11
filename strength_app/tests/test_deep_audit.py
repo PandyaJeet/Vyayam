@@ -319,6 +319,45 @@ class TestDAC7RealReportNumbers(TestCase):
         self.assertNotEqual(report.total_sessions_prescribed, 20)
 
 
+class TestDAC10NutritionSetupState(TestCase):
+    """C10 — missing nutrition targets is a setup state, not a red light."""
+
+    def test_da_c10_no_profile_returns_setup_not_red(self):
+        from strength_app.v1_nutrition_engine import get_daily_nutrition_summary
+
+        patient = _make_patient(pid='DAC1001', phone='9000009801')
+        summary = get_daily_nutrition_summary(patient)
+        self.assertTrue(summary['needs_setup'])
+        self.assertEqual(summary['traffic_light'], 'none')
+
+    def test_da_c10_dashboard_shows_setup_state(self):
+        from django.urls import reverse
+
+        patient = _make_patient(pid='DAC1002', phone='9000009802')
+        session = self.client.session
+        session['patient_id'] = patient.patient_id
+        session.save()
+
+        resp = self.client.get(reverse('v1_nutrition_dashboard'))
+        self.assertEqual(resp.status_code, 200)
+        # No profile → setup empty-state, and no red light anywhere
+        self.assertContains(resp, 'Set Up Nutrition')
+        self.assertNotContains(resp, 'bg-error')
+
+    def test_da_c10_with_profile_lights_work(self):
+        from strength_app.models import NutritionProfile
+        from strength_app.v1_nutrition_engine import get_daily_nutrition_summary
+
+        patient = _make_patient(pid='DAC1003', phone='9000009803')
+        NutritionProfile.objects.create(
+            patient=patient, target_calories=2000, target_protein_g=120,
+            target_carbs_g=250, target_fat_g=60,
+        )
+        summary = get_daily_nutrition_summary(patient)
+        self.assertFalse(summary['needs_setup'])
+        self.assertEqual(summary['traffic_light'], 'red')  # 0 logged of 2000
+
+
 class TestDAC3SquatFormScoring(TestCase):
     """C3 — correct deep squats must not be penalized by hip-flexion targets."""
 

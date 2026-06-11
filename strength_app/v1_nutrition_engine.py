@@ -193,6 +193,7 @@ def get_daily_nutrition_summary(patient, log_date: date = None) -> dict:
     total_carb = sum(l.carbs_logged    for l in logs)
     total_fat  = sum(l.fat_logged      for l in logs)
 
+    needs_setup = False
     try:
         np = patient.nutrition_profile
         target_cal  = np.target_calories
@@ -204,11 +205,17 @@ def get_daily_nutrition_summary(patient, log_date: date = None) -> dict:
 
     pct_cal = round(total_cal / target_cal * 100) if target_cal else 0
 
-    traffic_light = 'green'
-    if pct_cal < 60:
-        traffic_light = 'red'
-    elif pct_cal < 80:
-        traffic_light = 'yellow'
+    # DA-C10: no targets set is a SETUP state, not a red light — a brand
+    # new patient must not open the app to a red nutrition warning.
+    if not target_cal:
+        needs_setup = True
+        traffic_light = 'none'
+    else:
+        traffic_light = 'green'
+        if pct_cal < 60:
+            traffic_light = 'red'
+        elif pct_cal < 80:
+            traffic_light = 'yellow'
 
     # Group by meal
     by_meal = {}
@@ -237,6 +244,7 @@ def get_daily_nutrition_summary(patient, log_date: date = None) -> dict:
         'remaining_protein':  max(0, target_pro  - round(total_pro)),
         'pct_calories': pct_cal,
         'traffic_light': traffic_light,
+        'needs_setup': needs_setup,
         'by_meal': by_meal,
         'log_count': logs.count(),
     }
