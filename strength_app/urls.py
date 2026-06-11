@@ -126,6 +126,7 @@ urlpatterns = [
     path('terms/',          views.terms_of_service, name='terms_of_service'),
     path('disclaimer/',     views.disclaimer,        name='disclaimer'),
     path('delete-account/', views.delete_account,   name='delete_account'),
+    path('change-password/', views.change_password, name='change_password'),
 
     # ========================================================================
     # EXERCISE LIBRARY

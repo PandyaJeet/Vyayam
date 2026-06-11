@@ -1683,3 +1683,30 @@ def stretch_download_pdf(request: HttpRequest, session_id: int):
     response = HttpResponse(buffer, content_type='application/pdf')
     response['Content-Disposition'] = f'attachment; filename="{filename}"'
     return response
+
+def change_password(request):
+    """Lets a logged-in patient change their own password (current + new + confirm)."""
+    from django.contrib.auth.hashers import make_password
+    pid = request.session.get('patient_id')
+    if not pid:
+        return redirect('patient_login')
+    patient = PatientProfile.objects.filter(patient_id=pid).first()
+    if not patient:
+        return redirect('patient_login')
+    error = None
+    success = False
+    if request.method == 'POST':
+        old = request.POST.get('old_password', '')
+        new = request.POST.get('new_password', '')
+        confirm = request.POST.get('confirm_password', '')
+        if not check_password(old, patient.password):
+            error = 'Current password is incorrect.'
+        elif len(new) < 6:
+            error = 'New password must be at least 6 characters.'
+        elif new != confirm:
+            error = 'New passwords do not match.'
+        else:
+            patient.password = make_password(new)
+            patient.save(update_fields=['password'])
+            success = True
+    return render(request, 'strength_app/change_password.html', {'error': error, 'success': success})
