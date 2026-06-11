@@ -31,6 +31,26 @@ Context variables expected:
 {% block content %}
 <main class="px-6 pt-8 space-y-10">
 
+  {% if is_deload %}
+  <!-- DA-F5: deload week visibility (the live dashboard had no banner) -->
+  <section>
+    <div class="bg-tertiary-fixed/25 border border-tertiary/20 rounded-[16px] px-4 py-3 text-sm text-on-surface">
+      <strong>Recovery Week</strong> — loads are intentionally lighter so your body can adapt. Please don't add extra.
+    </div>
+  </section>
+  {% endif %}
+
+  {% if reassess_nudge %}
+  <!-- DA-F8: reassessment cadence nudge (no auto-changes) -->
+  <section>
+    <div class="bg-primary/[0.06] border border-primary/[0.15] rounded-[16px] px-4 py-3 text-sm text-on-surface">
+      <strong>Time for a quick re-test</strong> — it's been a while since we
+      measured {{ reassess_nudge.patterns|join:", " }}.
+      <a href="{% url 'onboarding_strength_test' %}" class="text-primary font-bold no-underline">Re-test now →</a>
+    </div>
+  </section>
+  {% endif %}
+
   <!-- Hero Greeting Section -->
   <section class="flex items-end justify-between">
     <div class="space-y-1">

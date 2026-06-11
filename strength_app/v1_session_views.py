@@ -318,6 +318,27 @@ def v1_dashboard(request):
     streak_days = compute_streak_days(patient)
     phase_ctx = compute_phase_context(state)
 
+    # DA-F8: reassessment nudge — last assessment > 6 weeks old or any
+    # family parked at its level for 6+ weeks. Nudge only, no auto-changes.
+    reassess_nudge = None
+    try:
+        from datetime import timedelta as _td
+        from django.utils import timezone as _tz
+        stale_profile = bool(
+            profile and profile.assessed_at < _tz.now() - _td(weeks=6)
+        )
+        stale_families = list(
+            patient.family_capabilities
+            .filter(weeks_at_current_level__gte=6)
+            .values_list('family_name', flat=True)
+        )
+        if stale_profile or stale_families:
+            reassess_nudge = {
+                'patterns': stale_families or ['your movement patterns'],
+            }
+    except Exception:
+        logger.warning('reassessment nudge failed', exc_info=True)
+
     # Today's session display
     session_name = meta.get('session_label', summary.get('session_type', 'Strength Session'))
     duration = summary.get('estimated_minutes', 45)
@@ -353,6 +374,7 @@ def v1_dashboard(request):
         'total_weeks': phase_ctx['total_weeks'],
         'phase_range': phase_ctx['phase_range'],
         'session_url': '/v1/session/',
+        'reassess_nudge': reassess_nudge,
     }
     return render(request, 'strength_app/v1_home_gamified.html', context)
 
@@ -550,6 +572,12 @@ def v1_execute_exercise(request, exercise_index):
 
     exercise = _add_tempo_parts(working_sets[exercise_index])
     is_last  = (exercise_index >= len(working_sets) - 1)
+
+    # DA-F10: stamp the real session start on the first exercise page
+    if exercise_index == 0 and not request.session.get('v1_session_started_at'):
+        from django.utils import timezone as _tz
+        request.session['v1_session_started_at'] = _tz.now().isoformat()
+        request.session.modified = True
 
     # DA-F2: one-shot banner after a server-side pain skip
     pain_skip_banner = request.session.pop('v1_pain_skip_banner', None)
@@ -821,6 +849,19 @@ def v1_post_session_feedback(request):
         total_exercises  = len([r for r in exercise_results if not r.get('skipped')])
         meta             = session_data.get('meta', {})
         duration_mins    = meta.get('estimated_duration_minutes', 45)
+        # DA-F10: prefer the REAL elapsed time (first exercise GET → now)
+        # over the engine estimate; fall back to the estimate if missing.
+        started_iso = request.session.get('v1_session_started_at')
+        if started_iso:
+            try:
+                from django.utils import timezone as _tz
+                from datetime import datetime as _dt
+                started = _dt.fromisoformat(started_iso)
+                elapsed_min = round((_tz.now() - started).total_seconds() / 60)
+                if 1 <= elapsed_min <= 360:
+                    duration_mins = elapsed_min
+            except (ValueError, TypeError):
+                pass
 
         difficulty_num_map = {'too_easy': 1, 'just_right': 3, 'hard': 4, 'too_hard': 5}
 
@@ -1049,7 +1090,7 @@ def v1_session_complete(request):
 
     # Clear session data
     for key in ('v1_session', 'v1_session_date', 'v1_exercise_results',
-                'v1_feedback_id', 'v1_workout_id'):
+                'v1_feedback_id', 'v1_workout_id', 'v1_session_started_at'):
         request.session.pop(key, None)
 
     # Nutrition summary for post-session card
