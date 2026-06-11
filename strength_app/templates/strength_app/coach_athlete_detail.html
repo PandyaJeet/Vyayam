@@ -329,6 +329,7 @@
       <div style="font-size:.85rem;color:#1a1c1c;">
         <div style="color:#3d4f42;opacity:.7;margin-bottom:8px;">Set {{ active_override.created_date|date:"d M Y" }} · {{ active_override.exercises_json|length }} exercise modifications</div>
         {% if active_override.clinical_reasoning %}
+        <div style="font-size:.75rem;font-weight:700;color:#3d4f42;opacity:.7;margin-bottom:2px;">Coaching rationale</div>
         <div style="font-style:italic;color:#3d4f42;">{{ active_override.clinical_reasoning }}</div>
         {% endif %}
       </div>
