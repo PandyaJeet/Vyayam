@@ -1301,31 +1301,40 @@ def generate_report(request: HttpRequest):
     patient = get_object_or_404(PatientProfile, patient_id=patient_id)
     
     try:
-        # Try to use the utility function
         from .utils import generate_progress_report as gen_report
-        report = gen_report(patient.patient_id, weeks=4)
+        # DA-C7: correct signature — was gen_report(patient.patient_id,
+        # weeks=4), whose TypeError silently routed EVERY report through a
+        # fallback with fabricated numbers (75% adherence, 20 prescribed).
+        report = gen_report(patient, weeks=4)
         messages.success(request, 'Progress report generated successfully!')
         return redirect('view_report', report_id=report.id)
-    except Exception as e:
-        # If utility fails, create a simple report
-        from datetime import datetime
+    except Exception:
+        logging.getLogger(__name__).exception(
+            'generate_progress_report failed for %s', patient.patient_id
+        )
+        # True-failure fallback: never invent numbers (DA-C7) — zeroes +
+        # insufficient-data copy only.
         report = ProgressReport.objects.create(
             patient=patient,
-            report_date=datetime.now(),
-            total_sessions_completed=WorkoutSession.objects.filter(patient=patient).count(),
-            total_sessions_prescribed=20,
-            overall_adherence_rate=75.0,
+            report_period='Last 4 weeks',
+            total_sessions_completed=0,
+            total_sessions_prescribed=0,
+            overall_adherence_rate=0.0,
             total_green_reps_period=0,
             average_form_score_period=0.0,
             form_improvement=0.0,
             continue_current_program=True,
-            recommended_next_steps="Continue current program",
+            patient_feedback_summary='Report generation failed — data unavailable.',
+            recommended_next_steps=(
+                'Insufficient data — the report could not be generated. '
+                'Please try again later.'
+            ),
         )
-        messages.success(request, 'Progress report generated!')
+        messages.warning(request, 'Report generated with limited data.')
         return redirect('view_report', report_id=report.id)
 
 
-def view_report(request: HttpRequest, report_id: str):
+def view_report(request: HttpRequest, report_id: int):
     """View a specific progress report"""
     patient_id = request.session.get('patient_id')
     if not patient_id:

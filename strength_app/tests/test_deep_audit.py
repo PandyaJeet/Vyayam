@@ -268,6 +268,57 @@ class TestDAC4AcwrRemoved(TestCase):
         self.assertNotIn('P31', notes)
 
 
+class TestDAC7RealReportNumbers(TestCase):
+    """C7 — progress reports compute real aggregates, never fabricate."""
+
+    def test_da_c7_report_matches_db_aggregates(self):
+        from strength_app.models import WorkoutSession
+        from strength_app.utils import generate_progress_report
+
+        patient = _make_patient(pid='DAC701', phone='9000009701')
+        patient.sessions_per_week = 3
+        patient.save(update_fields=['sessions_per_week'])
+        for score, greens in [(70.0, 10), (80.0, 12), (90.0, 15)]:
+            WorkoutSession.objects.create(
+                patient=patient,
+                total_green_reps_all=greens,
+                overall_session_form_score=score,
+            )
+
+        report = generate_progress_report(patient, weeks=4)
+        self.assertEqual(report.total_sessions_completed, 3)
+        self.assertEqual(report.total_sessions_prescribed, 12)  # 3/wk × 4
+        self.assertEqual(report.overall_adherence_rate, 25.0)
+        self.assertEqual(report.total_green_reps_period, 37)
+        self.assertEqual(report.average_form_score_period, 80.0)
+        self.assertEqual(report.form_improvement, 20.0)
+
+    def test_da_c7_zero_sessions_insufficient_data_not_75pct(self):
+        from strength_app.utils import generate_progress_report
+
+        patient = _make_patient(pid='DAC702', phone='9000009702')
+        report = generate_progress_report(patient, weeks=4)
+        self.assertEqual(report.total_sessions_completed, 0)
+        self.assertEqual(report.overall_adherence_rate, 0.0)
+        self.assertIn('Insufficient data', report.recommended_next_steps)
+
+    def test_da_c7_view_uses_real_generator(self):
+        from django.urls import reverse
+        from strength_app.models import ProgressReport
+
+        patient = _make_patient(pid='DAC703', phone='9000009703')
+        session = self.client.session
+        session['patient_id'] = patient.patient_id
+        session.save()
+
+        resp = self.client.get(reverse('generate_report'))
+        self.assertEqual(resp.status_code, 302)
+        report = ProgressReport.objects.get(patient=patient)
+        # The old broken path fabricated 75.0 adherence / 20 prescribed.
+        self.assertEqual(report.overall_adherence_rate, 0.0)
+        self.assertNotEqual(report.total_sessions_prescribed, 20)
+
+
 class TestDAC3SquatFormScoring(TestCase):
     """C3 — correct deep squats must not be penalized by hip-flexion targets."""
 

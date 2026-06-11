@@ -564,65 +564,96 @@ def execute_workout_session(patient, prescription_data):
 
 
 # ============================================================================
-# PROGRESS REPORT GENERATION (Using REAL Backend)
+# PROGRESS REPORT GENERATION (computed from real DB aggregates — DA-C7)
 # ============================================================================
 
-def generate_progress_report(patient):
+def generate_progress_report(patient, weeks=4):
+    """Generate a ProgressReport from REAL WorkoutSession / SessionFeedback
+    aggregates over the last `weeks` weeks.
+
+    Never invents numbers (DA-C7): a patient with no sessions in the
+    window gets a zeroed report with "insufficient data" copy, not a
+    fabricated 75% adherence.
     """
-    Generate report using REAL backend report generator
-    Returns Django ProgressReport object
-    """
-    
-    # Initialize REAL backend generator
-    report_generator = ReportGenerator()
-    
-    # Convert Django patient to backend
-    backend_patient = django_to_backend_patient(patient)
-    
-    # Get all Django sessions
-    django_sessions = patient.workout_sessions.all()
-    
-    # Convert to backend sessions
-    backend_sessions = []
-    for session in django_sessions:
-        backend_session = BackendWorkoutSession(
-            patient_id=patient.patient_id,
-            session_date=session.session_date,
-            week_number=session.week_number,
-            total_duration_minutes=session.total_duration_minutes,
-            total_green_reps_all=session.total_green_reps_all,
-            overall_session_form_score=session.overall_session_form_score,
-            patient_comfortable=session.patient_comfortable,
-            difficulty_rating=session.difficulty_rating
+    from datetime import timedelta
+    from django.utils import timezone
+
+    window_start = timezone.now() - timedelta(weeks=weeks)
+    sessions = list(
+        patient.workout_sessions
+        .filter(session_date__gte=window_start)
+        .order_by('session_date')
+    )
+
+    sessions_per_week = patient.sessions_per_week or 3
+    prescribed = sessions_per_week * weeks
+    completed = len(sessions)
+
+    period_label = f"Last {weeks} weeks"
+
+    if completed == 0:
+        return ProgressReport.objects.create(
+            patient=patient,
+            report_period=period_label,
+            total_sessions_completed=0,
+            total_sessions_prescribed=prescribed,
+            overall_adherence_rate=0.0,
+            total_green_reps_period=0,
+            average_form_score_period=0.0,
+            form_improvement=0.0,
+            continue_current_program=True,
+            patient_feedback_summary='Insufficient data — no completed sessions in this period.',
+            recommended_next_steps=(
+                'Insufficient data for meaningful trends. Complete a few '
+                'sessions and generate the report again.'
+            ),
         )
-        backend_sessions.append(backend_session)
-    
-    # Use REAL backend report generator
-    backend_report = report_generator.generate_progress_report(
-        patient=backend_patient,
-        all_sessions=backend_sessions,
-        report_period=f"Weeks 1-{patient.current_week or 1}"
-    )
-    
-    # Save to Django database
-    django_report = ProgressReport.objects.create(
+
+    adherence = min(100.0, round(completed / prescribed * 100, 1)) if prescribed else 0.0
+    green_total = sum(s.total_green_reps_all for s in sessions)
+    scored = [s.overall_session_form_score for s in sessions if s.overall_session_form_score > 0]
+    avg_form = round(sum(scored) / len(scored), 1) if scored else 0.0
+
+    # Form improvement: first vs last scored session in the window
+    form_improvement = round(scored[-1] - scored[0], 1) if len(scored) >= 2 else 0.0
+
+    # Pain summary from SessionFeedback in the window (factual counts only)
+    feedbacks = patient.session_feedbacks.filter(created_at__gte=window_start)
+    pain_counts = {}
+    for fb in feedbacks:
+        if fb.pain_reported and fb.pain_reported != 'none':
+            pain_counts[fb.pain_reported] = pain_counts.get(fb.pain_reported, 0) + 1
+    if pain_counts:
+        parts = [f"{count}× {level}" for level, count in sorted(pain_counts.items())]
+        pain_summary = 'Pain reported in this period: ' + ', '.join(parts) + '.'
+    else:
+        pain_summary = 'No pain reported in this period.'
+
+    # Current capability levels (source of truth for the V1 engine)
+    current_levels = {
+        cap.family_id: {
+            'exercise': cap.current_exercise_id,
+            'level_index': cap.current_level_index,
+            'capability': cap.capability_numeric,
+        }
+        for cap in patient.family_capabilities.all()
+    }
+
+    return ProgressReport.objects.create(
         patient=patient,
-        report_period=backend_report.report_period,
-        total_sessions_completed=backend_report.total_sessions_completed,
-        total_sessions_prescribed=backend_report.total_sessions_prescribed,
-        overall_adherence_rate=backend_report.overall_adherence_rate,
-        total_green_reps_period=backend_report.total_green_reps_period,
-        average_form_score_period=backend_report.average_form_score_period,
-        form_improvement=backend_report.form_improvement,
-        initial_fitness_levels_json=backend_report.initial_fitness_levels,
-        current_fitness_levels_json=backend_report.current_fitness_levels,
-        exercises_advanced_json=backend_report.exercises_advanced,
-        exercises_current_levels_json=backend_report.exercises_current_levels,
-        volume_by_exercise_json=backend_report.volume_by_exercise,
-        prescribed_by=backend_report.prescribed_by,
-        reason_for_prescription=backend_report.reason_for_prescription,
-        continue_current_program=backend_report.continue_current_program,
-        recommended_next_steps=backend_report.recommended_next_steps
+        report_period=period_label,
+        total_sessions_completed=completed,
+        total_sessions_prescribed=prescribed,
+        overall_adherence_rate=adherence,
+        total_green_reps_period=green_total,
+        average_form_score_period=avg_form,
+        form_improvement=form_improvement,
+        current_fitness_levels_json=current_levels,
+        patient_feedback_summary=pain_summary,
+        continue_current_program=True,
+        recommended_next_steps=(
+            f'{completed} of {prescribed} planned sessions completed '
+            f'({adherence:.0f}% adherence). Average form score {avg_form:.0f}. '
+            'Review with your therapist or coach for programme changes.'
+        ),
     )
-    
-    return django_report
