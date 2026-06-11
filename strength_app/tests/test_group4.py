@@ -220,15 +220,20 @@ class CoachViewTests(TestCase):
         self.assertEqual(response.status_code, 302)
 
     def test_coach_add_athlete_creates_link(self):
+        # The view was redesigned: it CREATES a new athlete from a name
+        # (auto-generated phone/password) and renders credentials inline,
+        # rather than linking an existing patient by phone.
         self.client.force_login(self.coach_user)
         response = self.client.post(
             reverse("coach_add_athlete"),
-            data={"phone": self.patient.phone},
+            data={"name": "New Test Athlete", "season_phase": "in_season"},
         )
-        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.status_code, 200)
+        new_patient = PatientProfile.objects.get(name="New Test Athlete")
+        self.assertTrue(new_patient.athlete_tier_eligible)
         self.assertTrue(
             CoachPatientLink.objects.filter(
-                coach=self.coach_profile, patient=self.patient
+                coach=self.coach_profile, patient=new_patient, is_active=True
             ).exists()
         )
 
