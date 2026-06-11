@@ -18,6 +18,7 @@ import secrets
 import string
 from datetime import date, timedelta
 
+from django.contrib import messages
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth import authenticate, login, logout
 from django.db import transaction
@@ -502,7 +503,13 @@ def coach_set_competition(request, patient_id):
     get_object_or_404(CoachPatientLink, coach=request.therapist, patient=patient)
     comp_date_str = request.POST.get('competition_date', '')
     if comp_date_str:
-        patient.competition_date = comp_date_str
+        # DA-C13: parse explicitly — assigning a raw string to a DateField
+        # raised ValidationError (500) on any malformed input.
+        try:
+            patient.competition_date = date.fromisoformat(comp_date_str)
+        except ValueError:
+            messages.error(request, 'Invalid competition date — use the date picker (YYYY-MM-DD).')
+            return redirect('coach_athlete_detail', patient_id=patient_id)
         patient.save(update_fields=['competition_date'])
     return redirect('coach_athlete_detail', patient_id=patient_id)
 

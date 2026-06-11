@@ -329,6 +329,88 @@ class TestDAC7RealReportNumbers(TestCase):
         self.assertNotEqual(report.total_sessions_prescribed, 20)
 
 
+class TestDAC13InputValidation(TestCase):
+    """C13 — garbage input never 500s; absurd values are clamped."""
+
+    def setUp(self):
+        self.patient = _make_patient(pid='DAC1301', phone='9000009911')
+        session = self.client.session
+        session['patient_id'] = self.patient.patient_id
+        session['v1_session'] = {'working_sets': [{}, {}]}
+        session.save()
+
+    def test_da_c13_save_result_junk_values_clamped(self):
+        import json as _json
+        from django.urls import reverse
+
+        resp = self.client.post(
+            reverse('v1_save_exercise_result'),
+            data=_json.dumps({
+                'exercise_index': 'banana',
+                'prescribed_sets': -5,
+                'prescribed_reps': 'NaN',
+                'form_score': 10**6,
+                'pain_severity': 999,
+                'completed_sets': '7e9',
+                'reps_per_set': ['12', 'x', -3],
+            }),
+            content_type='application/json',
+        )
+        self.assertEqual(resp.status_code, 200)
+        stored = self.client.session['v1_exercise_results'][0]
+        self.assertEqual(stored['prescribed_sets'], 0)      # clamped ≥0
+        self.assertEqual(stored['form_score'], 100.0)       # clamped ≤100
+        self.assertEqual(stored['pain_severity'], 10)       # clamped ≤10
+        self.assertEqual(stored['completed_reps_per_set'], [12, 0, 0])
+
+    def test_da_c13_save_result_malformed_array_body_400(self):
+        from django.urls import reverse
+        resp = self.client.post(
+            reverse('v1_save_exercise_result'),
+            data='[1, 2, 3]',
+            content_type='application/json',
+        )
+        self.assertEqual(resp.status_code, 400)
+
+    def test_da_c13_feedback_junk_rpe_and_severity(self):
+        from django.urls import reverse
+        from strength_app.models import SessionFeedback
+
+        session = self.client.session
+        session['v1_exercise_results'] = []
+        session.save()
+        resp = self.client.post(reverse('v1_post_session_feedback'), data={
+            'perceived_difficulty': 'just_right',
+            'pain_severity': 'lots',
+            'session_rpe': '9999',
+        })
+        self.assertLess(resp.status_code, 500)
+        fb = SessionFeedback.objects.get(patient=self.patient)
+        self.assertEqual(fb.pain_severity, 0)   # junk → default
+        self.assertEqual(fb.session_rpe, 10)    # clamped to 10
+
+    def test_da_c13_coach_set_competition_bad_date_redirects(self):
+        from django.contrib.auth.models import User
+        from django.urls import reverse
+        from strength_app.models import CoachPatientLink, TherapistProfile
+
+        coach_user = User.objects.create_user('dacoach13', password='x')
+        coach = TherapistProfile.objects.create(
+            user=coach_user, therapist_id='DAT13', name='Coach 13',
+            license_number='LIC-DA13', email='c13@x.com',
+        )
+        CoachPatientLink.objects.create(coach=coach, patient=self.patient)
+        self.client.force_login(coach_user)
+
+        resp = self.client.post(
+            reverse('coach_set_competition', args=[self.patient.patient_id]),
+            data={'competition_date': 'not-a-date'},
+        )
+        self.assertEqual(resp.status_code, 302)  # redirect, not 500
+        self.patient.refresh_from_db()
+        self.assertIsNone(self.patient.competition_date)
+
+
 class TestDAC12RepQualityHonesty(TestCase):
     """C12 — derived rep colors are labeled, never presented as CV data."""
 

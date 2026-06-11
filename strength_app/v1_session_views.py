@@ -520,12 +520,21 @@ def v1_save_exercise_result(request):
     if request.method != 'POST':
         return JsonResponse({'error': 'POST required'}, status=405)
 
-    try:
-        data = json.loads(request.body)
-    except Exception:
+    if request.body:
+        try:
+            data = json.loads(request.body)
+        except (ValueError, UnicodeDecodeError):
+            data = {k: v for k, v in request.POST.items()}
+    else:
         data = {k: v for k, v in request.POST.items()}
+    if not isinstance(data, dict):
+        # DA-C13: malformed body (e.g. a JSON array) → 400, not 500
+        return JsonResponse({'success': False, 'error': 'Malformed body'}, status=400)
 
-    exercise_index  = int(data.get('exercise_index', 0))
+    # DA-C13: clamp all client-supplied numbers — junk must never 500,
+    # absurd values must never persist.
+    from .validation import safe_int, safe_float
+    exercise_index  = safe_int(data.get('exercise_index', 0), 0, 0, 100)
     session_data    = request.session.get('v1_session', {})
     working_sets    = session_data.get('working_sets', [])
     total           = len(working_sets)
@@ -533,20 +542,23 @@ def v1_save_exercise_result(request):
     # Accumulate results
     results = list(request.session.get('v1_exercise_results', []))
     result = {
-        'exercise_id':          data.get('exercise_id', ''),
-        'exercise_name':        data.get('exercise_name', ''),
-        'movement_pattern':     data.get('movement_pattern', ''),
-        'prescribed_sets':      int(data.get('prescribed_sets', 3)),
-        'prescribed_reps':      int(data.get('prescribed_reps', 10)),
-        'prescribed_rest':      int(data.get('prescribed_rest', 75)),
-        'completed_sets':       int(data.get('completed_sets', 0)),
-        'completed_reps_per_set': data.get('reps_per_set', []),
-        'form_score':           float(data.get('form_score', 75)),
+        'exercise_id':          str(data.get('exercise_id', ''))[:100],
+        'exercise_name':        str(data.get('exercise_name', ''))[:200],
+        'movement_pattern':     str(data.get('movement_pattern', ''))[:50],
+        'prescribed_sets':      safe_int(data.get('prescribed_sets', 3), 3, 0, 20),
+        'prescribed_reps':      safe_int(data.get('prescribed_reps', 10), 10, 0, 100),
+        'prescribed_rest':      safe_int(data.get('prescribed_rest', 75), 75, 0, 600),
+        'completed_sets':       safe_int(data.get('completed_sets', 0), 0, 0, 20),
+        'completed_reps_per_set': [
+            safe_int(r, 0, 0, 100)
+            for r in (data.get('reps_per_set') or [])[:20]
+        ] if isinstance(data.get('reps_per_set'), list) else [],
+        'form_score':           safe_float(data.get('form_score', 75), 75.0, 0, 100),
         'pain_reported':        bool(data.get('pain_reported', False)),
-        'pain_type':            data.get('pain_type', ''),
-        'pain_location':        data.get('pain_location', ''),
-        'pain_severity':        int(data.get('pain_severity', 0)),
-        'pain_action':          data.get('pain_action', 'continue'),
+        'pain_type':            str(data.get('pain_type', ''))[:30],
+        'pain_location':        str(data.get('pain_location', ''))[:100],
+        'pain_severity':        safe_int(data.get('pain_severity', 0), 0, 0, 10),
+        'pain_action':          str(data.get('pain_action', 'continue'))[:30],
         'skipped':              bool(data.get('skipped', False)),
     }
     results.append(result)
@@ -677,7 +689,8 @@ def v1_post_session_feedback(request):
         pain_reported        = request.POST.get('pain_reported', 'none')
         pain_location        = request.POST.get('pain_location', '')
         pain_exercise        = request.POST.get('pain_exercise', '')
-        pain_severity        = int(request.POST.get('pain_severity') or 0)
+        from .validation import safe_int
+        pain_severity        = safe_int(request.POST.get('pain_severity'), 0, 0, 10)  # DA-C13
         energy_level         = request.POST.get('energy_level', 'good')
         hormonal_phase       = session_data.get('modifiers_applied', {}).get('hormonal_phase', '')
 
@@ -752,7 +765,7 @@ def v1_post_session_feedback(request):
             pain_severity=pain_severity,
             energy_level=energy_level,
             hormonal_phase=hormonal_phase,
-            session_rpe=int(request.POST.get('session_rpe', 5)),
+            session_rpe=safe_int(request.POST.get('session_rpe'), 5, 1, 10),  # DA-C13
         )
 
         # Update patient's sleep_quality from latest feedback for next session's modifier
