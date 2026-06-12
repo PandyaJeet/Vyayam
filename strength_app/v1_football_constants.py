@@ -40,7 +40,7 @@ FOOTBALL_ASSESSMENT_TESTS = [
         'test_id': 'nordic_test',
         'name': 'Nordic Hamstring Curl',
         'measure': 'Eccentric hold time (seconds)',
-        'input_label': 'Hold time (seconds)',
+        'input_label': 'Hold time (seconds, self-timed)',  # R2-W2-6: self-reported, not a measured break-point angle
         'pattern': 'nordic',
         'unit': 'seconds_held',
         'is_bilateral': False,
@@ -84,19 +84,24 @@ FOOTBALL_ASSESSMENT_TESTS = [
         },
     },
     {
+        # R2-W2-1 (SB-9): this is an APP-SPECIFIC reactivity count, NOT
+        # Reactive Strength Index. True RSI = flight time / ground-contact
+        # time, which requires a contact mat or force plate; a phone camera
+        # and a self-count cannot measure 200 ms contacts. Labels and copy
+        # must never use the term "RSI". See docs/FOOTBALL_METHODS.md.
         'test_id': 'pogo_test',
         'name': 'Pogo Hop (bilateral)',
-        'measure': 'Clean reps in 10 seconds',
-        'input_label': 'Clean reps (10 s window)',
+        'measure': 'Springy reps in 10 seconds (app reactivity count)',
+        'input_label': 'Springy reps counted (10 s window)',
         'pattern': 'pogo',
         'unit': 'clean_reps_in_10s',
         'is_bilateral': False,
         'scoring_thresholds': [10, 15, 20, 25],
         'scoring_thresholds_reverse': False,
         'instructions': [
-            'Bilateral continuous ankle hops — minimal ground contact.',
-            'Count reps with ground contact <200 ms in a 10-second window.',
-            'Athlete self-reports; coach verifies visually.',
+            'Bilateral continuous ankle hops — bounce, don’t squat between hops.',
+            'Count only springy reps: quick contact, knees nearly straight, heels barely touching.',
+            'Athlete self-reports; coach verifies visually. This is an app metric, not a lab reactive-strength measurement.',
         ],
         'scoring': {
             1: '<10 clean reps',
@@ -445,6 +450,28 @@ POSTERIOR_CHAIN_EXERCISES = [
 ]
 
 # ============================================================================
+# LSI THRESHOLDS — per test category (R2-W2-2 / SB-11)
+# ============================================================================
+# A uniform symmetry band across all tests is wrong: measurement noise and
+# the clinical meaning of a side-to-side gap differ by test type.
+#   hop      ≥90 — hop-distance batteries conventionally use ≥90 % LSI as the
+#                  symmetry benchmark (commonly cited from the ACL hop-test
+#                  literature, e.g. Noyes et al. 1991 — verify edition).
+#   cod      ≥90 — L/R 505-style times; no established band in common use —
+#                  pragmatic: mirror the hop convention. evidence: pragmatic.
+#   ybalance ≥94 — derived from the anterior-reach asymmetry >4 cm injury-risk
+#                  marker (commonly cited as Plisky et al. 2006) expressed as
+#                  a % of typical reach distance. evidence: pragmatic
+#                  conversion of a cited cm threshold.
+# KNOWN LIMITATION (shown to coaches in the methods doc): LSI is a ratio —
+# a symmetrically WEAK athlete passes it. It screens asymmetry, not capacity.
+LSI_THRESHOLDS = {
+    'hop': 90,
+    'cod': 90,
+    'ybalance': 94,
+}
+
+# ============================================================================
 # PLYOMETRIC GATES — safety clearance requirements
 # ============================================================================
 
@@ -487,6 +514,12 @@ PLYOMETRIC_GATES = {
 # ============================================================================
 # FORCE-VELOCITY TENDENCY CONFIG
 # ============================================================================
+# R2-W2-7 annotation: individualised F-V profiling (train your deficit) is
+# commonly cited from Morin & Samozino's force-velocity work — but their
+# method uses measured sprint/jump kinetics, not 1-5 test bands. Our
+# hop-vs-sprint score diff is a crude proxy; the ±10-20% emphasis weights
+# are pragmatic — uncited, revisit. Direction (train the weaker quality)
+# is the defensible part.
 
 FV_TENDENCY_CONFIG = {
     # tendency is derived by comparing hop_score vs sprint_score
@@ -515,6 +548,14 @@ FV_TENDENCY_CONFIG = {
     },
 }
 
+# ============================================================================
+# R2-W2-7 annotation (phases below): block-periodisation volume/intensity
+# waves (accumulation -> intensification -> realisation -> deload) follow
+# standard periodisation convention (commonly cited: Issurin's block
+# periodisation reviews; Bompa's texts) — convention, not RCT evidence.
+# All modifiers are within ±30% and the aggressive ones REDUCE load
+# approaching competition (conservative direction). Exact percentages
+# pragmatic — uncited, revisit.
 # ============================================================================
 # FOOTBALL PERIODISATION PHASES
 # ============================================================================

@@ -290,9 +290,11 @@ def coach_athlete_detail(request, patient_id):
             },
             {
                 'key': 'pogo',
-                'label': 'Pogo (reactive-strength)',
+                # R2-W2-1 (SB-9): app-specific reactivity count — never
+                # labelled RSI/reactive-strength (needs a force plate).
+                'label': 'Pogo (reactivity count — app metric)',
                 'score': football.pogo_score,
-                'raw': _format_single(football.pogo_clean_reps, unit='clean reps'),
+                'raw': _format_single(football.pogo_clean_reps, unit='springy reps'),
             },
             {
                 'key': 'cod',
@@ -310,19 +312,22 @@ def coach_athlete_detail(request, patient_id):
     else:
         battery = []
 
-    # 4 — Asymmetry / LSI panel.
+    # 4 — Asymmetry / LSI panel. R2-W2-2 (SB-11): per-test bands from
+    # LSI_THRESHOLDS; the messaging names each test's own benchmark.
     asymmetry_panel = []
     if football:
+        from .v1_football_constants import LSI_THRESHOLDS
         for key, label, pct in [
             ('hop', 'Hop LSI', football.hop_lsi_pct),
             ('cod', 'COD LSI', football.cod_lsi_pct),
             ('ybalance', 'Y-Balance LSI', football.ybalance_lsi_pct),
         ]:
+            threshold = LSI_THRESHOLDS[key]
             asymmetry_panel.append({
                 'key': key,
-                'label': label,
+                'label': f'{label} (benchmark ≥{threshold}%)',
                 'pct': pct,
-                'below_threshold': (pct is not None and pct < 90),
+                'below_threshold': (pct is not None and pct < threshold),
             })
 
     # 5 — Plyometric readiness gate: what's blocking it.

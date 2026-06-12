@@ -325,7 +325,12 @@ def check_deload_needed(patient, periodisation_state=None):
     from .v1_constants import DELOAD_CONFIG
     from datetime import date
 
-    max_weeks = DELOAD_CONFIG.get('trigger_every_n_weeks', 4)
+    # R2-W2-5 (SB-14): deload ceiling by training age. Novices get 6 weeks
+    # (less accumulated systemic fatigue at novice loads); trained users
+    # keep 4. Feedback triggers below are unchanged and fire earlier.
+    novice = getattr(patient, 'training_history', '') in ('never', 'tried', 'beginner')
+    max_weeks = (DELOAD_CONFIG.get('trigger_every_n_weeks_novice', 6) if novice
+                 else DELOAD_CONFIG.get('trigger_every_n_weeks', 4))
 
     # Resolve state: supplied by caller, else from the patient's OneToOne
     # (related_name is 'periodisation' — see models.PeriodisationState).
@@ -380,7 +385,8 @@ def compute_traffic_light(session_feedback):
     YELLOW conditions:
       - Perceived difficulty == 'too_hard'
       - Joint pain reported
-      - Sleep < 6 hours
+      - Sleep < 5 hours (alone), or 5-6 hours combined with energy != good
+        (R2-W2-9: one slightly-short night with good energy is not yellow)
       - Energy == 'low'
       - Luteal / menstruation phase (mild modifier — not auto-yellow alone)
 
@@ -427,7 +433,12 @@ def compute_traffic_light(session_feedback):
         return 'yellow'
     if 4 <= per_ex_max_severity <= 6:  # DA-F1
         return 'yellow'
-    if fb.sleep_last_night in ('under_5', '5_to_6'):
+    # R2-W2-9: <5 h is yellow on its own; 5–6 h only when energy is also
+    # not good — one slightly-short night with good energy shouldn't
+    # down-regulate the session (the rule was too trigger-happy).
+    if fb.sleep_last_night == 'under_5':
+        return 'yellow'
+    if fb.sleep_last_night == '5_to_6' and fb.energy_level != 'good':
         return 'yellow'
     if fb.energy_level == 'low':
         return 'yellow'

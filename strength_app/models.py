@@ -1307,15 +1307,22 @@ class FootballProfile(models.Model):
     def compute_lsi(self):
         """
         Compute Limb Symmetry Index for bilateral tests.
-        LSI = (weaker / stronger) × 100.  Sets lsi_flag if any LSI < 90 %.
+        LSI = (weaker / stronger) × 100.
+
+        R2-W2-2 (SB-11): thresholds are PER TEST TYPE (LSI_THRESHOLDS in
+        v1_football_constants — hop 90, cod 90, ybalance 94, with rationale
+        there). Sets lsi_flag if any test is below its own band.
+        Known limitation: a symmetrically weak athlete passes LSI — the
+        capability scores, not LSI, screen absolute capacity.
         """
+        from .v1_football_constants import LSI_THRESHOLDS
         flag = False
 
         if self.hop_left_cm and self.hop_right_cm:
             stronger = max(self.hop_left_cm, self.hop_right_cm)
             weaker = min(self.hop_left_cm, self.hop_right_cm)
             self.hop_lsi_pct = round((weaker / stronger) * 100, 1)
-            if self.hop_lsi_pct < 90:
+            if self.hop_lsi_pct < LSI_THRESHOLDS['hop']:
                 flag = True
 
         if self.cod_left_seconds and self.cod_right_seconds:
@@ -1323,14 +1330,14 @@ class FootballProfile(models.Model):
             faster = min(self.cod_left_seconds, self.cod_right_seconds)
             slower = max(self.cod_left_seconds, self.cod_right_seconds)
             self.cod_lsi_pct = round((faster / slower) * 100, 1)
-            if self.cod_lsi_pct < 90:
+            if self.cod_lsi_pct < LSI_THRESHOLDS['cod']:
                 flag = True
 
         if self.ybalance_left_pct and self.ybalance_right_pct:
             stronger = max(self.ybalance_left_pct, self.ybalance_right_pct)
             weaker = min(self.ybalance_left_pct, self.ybalance_right_pct)
             self.ybalance_lsi_pct = round((weaker / stronger) * 100, 1)
-            if self.ybalance_lsi_pct < 90:
+            if self.ybalance_lsi_pct < LSI_THRESHOLDS['ybalance']:
                 flag = True
 
         self.lsi_flag = flag

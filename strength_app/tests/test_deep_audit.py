@@ -16,13 +16,18 @@ from strength_app.v1_gamification import (
 from strength_app.v1_safety_logic import check_deload_needed
 
 
-def _make_patient(pid='DA001', phone='9000009001'):
+def _make_patient(pid='DA001', phone='9000009001', training_history='intermediate'):
+    # R2-W2-5: deload ceiling is now training-age dependent (novice 6 wk,
+    # trained 4 wk). The C2/C11 mechanics tests below assert the 4-week
+    # gate, so the default test patient is 'intermediate'; the novice path
+    # is covered by test_r2_w2_deload_*.
     return PatientProfile.objects.create(
         patient_id=pid,
         name='Deep Audit Patient',
         phone=phone,
         age=30,
         goals='Strength',
+        training_history=training_history,
     )
 
 

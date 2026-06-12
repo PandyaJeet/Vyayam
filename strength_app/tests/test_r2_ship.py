@@ -208,3 +208,143 @@ class TestR2W1ManualSave(TestCase):
         row = ExerciseExecution.objects.get(session=workout)
         self.assertIsNone(row.overall_form_score)
         self.assertEqual(row.rep_quality_source, 'manual')
+
+
+# ════════════════════════════════════════════════════════════════════════
+# W2 — football & sports-physio methodology
+# ════════════════════════════════════════════════════════════════════════
+
+class TestR2W2LsiPerTest(TestCase):
+    """SB-11: LSI thresholds are per test type, not a uniform 90."""
+
+    def _profile(self, **kw):
+        from strength_app.models import FootballProfile
+        patient = PatientProfile.objects.create(
+            patient_id=f'P9{len(PatientProfile.objects.all()):03d}',
+            name='LSI', phone=f'91000001{len(PatientProfile.objects.all()):02d}',
+            age=22, goals='Football',
+        )
+        return FootballProfile.objects.create(patient=patient, **kw)
+
+    def test_r2_w2_ybalance_uses_94_band(self):
+        fp = self._profile(ybalance_left_pct=92.0, ybalance_right_pct=100.0)
+        fp.compute_lsi()
+        self.assertEqual(fp.ybalance_lsi_pct, 92.0)
+        self.assertTrue(fp.lsi_flag, 'ybalance 92% must flag under the 94% band')
+
+    def test_r2_w2_hop_keeps_90_band(self):
+        fp = self._profile(hop_left_cm=92.0, hop_right_cm=100.0)
+        fp.compute_lsi()
+        self.assertFalse(fp.lsi_flag, 'hop 92% passes the 90% hop band')
+        fp2 = self._profile(hop_left_cm=85.0, hop_right_cm=100.0)
+        fp2.compute_lsi()
+        self.assertTrue(fp2.lsi_flag)
+
+
+class TestR2W2AsymmetryRaw(SimpleTestCase):
+    """SB-12: asymmetry from raw values; banding cannot change the result."""
+
+    def test_r2_w2_same_raw_same_class_regardless_of_bands(self):
+        from strength_app.v1_onboarding_views import _compute_asymmetry_raw
+        # 28 s vs 9 s hold — LSI 32.1 — significant, whatever bands they hit
+        cls, lsi = _compute_asymmetry_raw(28, 9)
+        self.assertEqual(cls, 'significant')
+        self.assertAlmostEqual(lsi, 32.1, places=1)
+        # same-band values that differ meaningfully are no longer hidden
+        cls2, lsi2 = _compute_asymmetry_raw(30, 22)   # both could band to 4
+        self.assertEqual(cls2, 'mild')
+
+    def test_r2_w2_raw_fallback_when_missing(self):
+        from strength_app.v1_onboarding_views import _compute_asymmetry_raw
+        self.assertEqual(_compute_asymmetry_raw(None, 10), (None, None))
+        self.assertEqual(_compute_asymmetry_raw(0, 10), (None, None))
+
+
+class TestR2W2DeloadTrainingAge(TestCase):
+    """SB-14: novices deload at 6 weeks; trained users keep 4."""
+
+    def _patient(self, history, weeks):
+        from strength_app.models import PeriodisationState
+        patient = PatientProfile.objects.create(
+            patient_id=f'P8{weeks}{history[:2]}', name='Deload',
+            phone=f'92000{weeks:03d}{len(history)}', age=30, goals='Strength',
+            training_history=history,
+        )
+        PeriodisationState.objects.create(patient=patient, weeks_since_deload=weeks)
+        return patient
+
+    def test_r2_w2_novice_five_weeks_no_mandatory_deload(self):
+        from strength_app.v1_safety_logic import check_deload_needed
+        needed, _ = check_deload_needed(self._patient('never', 5))
+        self.assertFalse(needed)
+
+    def test_r2_w2_novice_six_weeks_deloads(self):
+        from strength_app.v1_safety_logic import check_deload_needed
+        needed, reason = check_deload_needed(self._patient('beginner', 6))
+        self.assertTrue(needed)
+        self.assertIn('6', reason)
+
+    def test_r2_w2_intermediate_keeps_four_week_ceiling(self):
+        from strength_app.v1_safety_logic import check_deload_needed
+        needed, _ = check_deload_needed(self._patient('intermediate', 4))
+        self.assertTrue(needed)
+
+
+class TestR2W2SleepTrafficLight(SimpleTestCase):
+    """W2-9: 5-6h sleep is yellow only when energy is not good."""
+
+    def _fb(self, sleep, energy):
+        from types import SimpleNamespace
+        return SimpleNamespace(
+            pain_severity=0, pain_reported='none',
+            perceived_difficulty='just_right',
+            sleep_last_night=sleep, energy_level=energy,
+        )
+
+    def test_r2_w2_short_night_good_energy_is_green(self):
+        from strength_app.v1_safety_logic import compute_traffic_light
+        self.assertEqual(compute_traffic_light(self._fb('5_to_6', 'good')), 'green')
+
+    def test_r2_w2_short_night_tired_is_yellow(self):
+        from strength_app.v1_safety_logic import compute_traffic_light
+        self.assertEqual(compute_traffic_light(self._fb('5_to_6', 'moderate')), 'yellow')
+
+    def test_r2_w2_under_5_always_at_least_yellow(self):
+        from strength_app.v1_safety_logic import compute_traffic_light
+        self.assertEqual(compute_traffic_light(self._fb('under_5', 'good')), 'yellow')
+        self.assertEqual(compute_traffic_light(self._fb('under_5', 'low')), 'red')
+
+
+class TestR2W2ProtocolHygiene(SimpleTestCase):
+    """W2-1/4/8: pogo labelling, normalisation table, stretch durations."""
+
+    def test_r2_w2_no_rsi_claim_anywhere_user_facing(self):
+        from strength_app.v1_football_constants import FOOTBALL_ASSESSMENT_TESTS
+        for test in FOOTBALL_ASSESSMENT_TESTS:
+            blob = ' '.join([test['name'], test['measure'], test['input_label'],
+                             ' '.join(test['instructions'])])
+            self.assertNotIn('RSI', blob, f"{test['test_id']} claims RSI")
+            self.assertNotIn('reactive strength index', blob.lower())
+
+    def test_r2_w2_normalisation_table_complete_and_tagged(self):
+        from strength_app.v1_constants import V1_TEST_NORMALISATION
+        from strength_app.v1_onboarding_views import ASSESSMENT_SCORING
+        self.assertEqual(set(V1_TEST_NORMALISATION), set(ASSESSMENT_SCORING))
+        for key, cfg in V1_TEST_NORMALISATION.items():
+            self.assertIn(cfg['evidence'], ('cited', 'pragmatic'), key)
+            self.assertTrue(cfg.get('rationale'), f'{key} has no rationale')
+            self.assertEqual(len(cfg['thresholds']), 5, key)
+
+    def test_r2_w2_prematch_protocol_is_dynamic(self):
+        from strength_app.stretching_protocol import PRE_MATCH_STRETCHES
+        names = ' '.join(s['name'] for s in PRE_MATCH_STRETCHES)
+        self.assertNotIn('Standing Quadriceps Stretch', names)
+        for s in PRE_MATCH_STRETCHES:
+            self.assertLessEqual(s['duration_seconds'], 30, s['name'])
+
+    def test_r2_w2_cooldown_static_holds_within_acsm_band(self):
+        from strength_app.warmup_library import COOLDOWN_STATIC_STRETCHES
+        for day, stretches in COOLDOWN_STATIC_STRETCHES.items():
+            for s in stretches:
+                if 'hold' in s:  # cat_cow_slow is reps-based
+                    self.assertLessEqual(s['hold'], 30, f"{day}/{s['id']}")

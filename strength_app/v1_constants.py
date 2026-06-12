@@ -239,11 +239,14 @@ DOSAGE_POWER = {
     5: {'sets': 4, 'reps': 5, 'tempo': '1-0-X-0', 'rest': 90},
 }
 
+# R2-W2-8: static-stretch dosing aligned to ACSM-style flexibility
+# guidance — 15-30 s holds x multiple sets (was 40-45 s single-block);
+# more sets preserve total stretch time at the higher activity levels.
 DOSAGE_STRETCHING = {
     'sedentary':         {'sets': 2, 'hold': 30, 'rest': 20},
-    'moderately_active': {'sets': 2, 'hold': 40, 'rest': 20},
-    'active':            {'sets': 3, 'hold': 45, 'rest': 20},
-    'very_active':       {'sets': 3, 'hold': 45, 'rest': 20},
+    'moderately_active': {'sets': 3, 'hold': 30, 'rest': 20},
+    'active':            {'sets': 3, 'hold': 30, 'rest': 20},
+    'very_active':       {'sets': 4, 'hold': 30, 'rest': 20},
 }
 
 DOSAGE_ENDURANCE = {
@@ -315,6 +318,12 @@ PERIODISATION_PHASES = {
 # ============================================================================
 # SEX-SPECIFIC MODIFIERS
 # ============================================================================
+# R2-W2-7 annotation: programming EMPHASIS shifts, not load multipliers
+# (volume stays 1.0 for all). hinge/rotate emphasis and earlier hamstring/
+# glute-med work for females reflects the higher female ACL-injury rate and
+# neuromuscular-prevention literature (commonly cited: FIFA 11+ programme
+# evidence; female ACL incidence reviews). Exact weights (1.2/1.1/1.3/1.5)
+# are pragmatic defaults — uncited, revisit.
 
 SEX_MODIFIERS = {
     'male': {
@@ -347,6 +356,14 @@ SEX_MODIFIERS = {
 # ============================================================================
 # HORMONAL PHASE MODIFIERS (female only)
 # ============================================================================
+# R2-W2-7 annotation: cycle-phase performance effects are CONTESTED in the
+# literature (meta-analyses find trivial-to-small, inconsistent effects —
+# commonly cited: McNulty et al. 2020). V1 keeps only CONSERVATIVE
+# adaptations: nothing increases load; reductions are symptom-led
+# (menstruation tiers are driven by the user's reported symptom severity,
+# which is autoregulation, not a cycle claim). The ovulation plyo-block
+# reflects the laxity/ACL-risk hypothesis — evidence: contested; we take
+# the cautious side. Exact percentages pragmatic — uncited, revisit.
 
 HORMONAL_PHASE_MODIFIERS = {
     'follicular': {
@@ -379,6 +396,14 @@ HORMONAL_PHASE_MODIFIERS = {
 # ============================================================================
 # AGE CAPS
 # ============================================================================
+# R2-W2-7 annotation: conservative capability/impact ceilings by age band.
+# Direction is consistent with guidance for youth (no maximal power work
+# unsupervised) and older adults (longer recovery, falls/bone safety —
+# WHO/ACSM-style activity guidance, commonly cited). The specific caps
+# (L3/L4, set counts, +20/+40 s rest) are pragmatic defaults — uncited,
+# revisit. Note 50-64 power_allowed=False is DELIBERATELY conservative:
+# power training in older adults is actually well supported when
+# supervised; V1 has no supervision, so it stays off.
 
 AGE_CAPS = {
     'under_18': {'max_capability': 3, 'power_allowed': False, 'max_sets': 3, 'rest_modifier': 0},
@@ -410,8 +435,90 @@ TRAINING_AGE_CONFIG = {
 }
 
 # ============================================================================
+# 7-TEST SCREEN NORMALISATION (R2-W2-4 / SB-13)
+# ============================================================================
+# Every raw → 1-5 cutoff for the onboarding strength screen lives HERE, in
+# one documented table — no silent magic numbers in the views.
+#
+# Semantics (matches the JS in v1_exercise_execute.html assessment mode):
+#   thresholds = [t1, t2, t3, t4, cap]; score 5 if raw >= cap, 4 if >= t4,
+#   3 if >= t3, 2 if >= t2(*), else 1.  (*) historic off-by-one at band
+#   edges is preserved deliberately — changing cutoffs invalidates every
+#   existing baseline profile; revisit only with a re-baselining plan.
+#
+# evidence tags: 'cited' (literature-backed — citation in the rationale) |
+# 'pragmatic' (clinically-reasoned default, no direct citation — flagged
+# for Pawan's review, see docs/FOOTBALL_METHODS.md table).
+V1_TEST_NORMALISATION = {
+    'squat_test': {
+        'type': 'hold', 'measure': 'bodyweight squat-hold (s)',
+        'thresholds': [5, 15, 25, 30, 31],
+        'rationale': 'progressive hold-tolerance bands; 30 s+ comfortable deep '
+                     'squat hold is a common mobility/capacity marker',
+        'evidence': 'pragmatic',
+    },
+    'hinge_test': {
+        'type': 'hold', 'measure': 'single-leg RDL hold (s) — weaker side',
+        'thresholds': [3, 8, 15, 25, 30],
+        'rationale': 'balance + posterior-chain control under hinge; shorter '
+                     'bands than squat because single-leg holds fatigue faster',
+        'evidence': 'pragmatic',
+    },
+    'push_test': {
+        'type': 'reps', 'measure': 'strict push-ups in 60 s',
+        'thresholds': [4, 14, 24, 34, 35],
+        # Sex-adjusted: push-up norms differ by sex in every published
+        # normative table (ACSM-style fitness norms — commonly cited;
+        # verify exact percentile mapping before citing formally).
+        'thresholds_female': [3, 10, 18, 26, 26],
+        'rationale': 'bands track common fitness-norm quintiles for adults',
+        'evidence': 'pragmatic',
+    },
+    'core_test': {
+        'type': 'hold', 'measure': 'front plank (s)',
+        'thresholds': [15, 29, 44, 59, 60],
+        'rationale': '60 s+ front plank is a widely used capacity benchmark; '
+                     'bands quintile the path to it',
+        'evidence': 'pragmatic',
+    },
+    'rotate_test': {
+        'type': 'hold', 'measure': 'side plank (s) — weaker side',
+        'thresholds': [10, 19, 29, 39, 40],
+        'rationale': 'side-plank endurance benchmarks (McGill-style lateral '
+                     'endurance testing — commonly cited) scaled to a home '
+                     'self-test; absolute McGill norms assume supervised testing',
+        'evidence': 'pragmatic',
+    },
+    'lunge_test': {
+        'type': 'hold', 'measure': 'split-squat hold (s) — weaker side',
+        'thresholds': [5, 10, 20, 30, 31],
+        'rationale': 'single-leg static tolerance; mirrors squat bands with a '
+                     'lower entry step for the harder unilateral position',
+        'evidence': 'pragmatic',
+    },
+    'pull_test_bar': {
+        'type': 'hold', 'measure': 'dead hang (s)',
+        'thresholds': [5, 15, 30, 45, 45],
+        'rationale': 'grip + shoulder tolerance progression toward the 45-60 s '
+                     'hang commonly used as a pull-up readiness marker',
+        'evidence': 'pragmatic',
+    },
+    'pull_test_row': {
+        'type': 'reps', 'measure': 'inverted/doorframe rows in 60 s',
+        'thresholds': [4, 10, 18, 25, 26],
+        'rationale': 'row-angle is self-selected so bands are deliberately '
+                     'coarse; equipment-free alternative to the hang',
+        'evidence': 'pragmatic',
+    },
+}
+
+# ============================================================================
 # SLEEP / STRESS SESSION MODIFIERS
 # ============================================================================
+# R2-W2-7: all reductions are CONSERVATIVE (they lower load, never raise
+# it). Sleep restriction impairing recovery/performance is well replicated
+# (sleep-and-athletic-performance literature, commonly cited reviews);
+# the specific percentages are pragmatic defaults — uncited, revisit.
 
 SLEEP_MODIFIERS = {
     'poor':     {'volume_modifier': 0.6, 'intensity_modifier': 0.7},
@@ -420,6 +527,8 @@ SLEEP_MODIFIERS = {
     'variable': {'volume_modifier': 0.85, 'intensity_modifier': 0.9},
 }
 
+# Psychological stress reduces recovery capacity (commonly cited:
+# Stults-Kolehmainen & Sinha 2014 review). Percentages pragmatic — uncited.
 STRESS_MODIFIERS = {
     'low':       {'volume_modifier': 1.0},
     'moderate':  {'volume_modifier': 1.0},
@@ -497,8 +606,16 @@ PROGRESSION_RULES = {
 # DELOAD RULES
 # ============================================================================
 
+# R2-W2-5 (SB-14): the mandatory deload interval is modulated by training
+# age. Novices (training_history never/tried/beginner) accumulate less
+# systemic fatigue at their loads — a hard 4-week deload for them is a
+# blunt instrument; 6 weeks is the ceiling instead. Trained users keep the
+# 4-week ceiling. Feedback-triggered deloads (red lights, repeated pain)
+# are unchanged and always fire earlier. Periodisation convention rather
+# than RCT evidence — stated honestly in docs/FOOTBALL_METHODS.md.
 DELOAD_CONFIG = {
-    'trigger_every_n_weeks': 4,
+    'trigger_every_n_weeks': 4,          # intermediate/advanced ceiling
+    'trigger_every_n_weeks_novice': 6,   # never/tried/beginner ceiling
     'volume_reduction': 0.6,
     'intensity_reduction': 0.7,
     'duration_weeks': 1,

@@ -254,15 +254,14 @@ ASSESSMENT_EXERCISE_MAP = {
     'lunge_test':    {'exercise_id': 'lunge_hold_assess', 'mode': 'hold',     'duration': 60},
 }
 
+# R2-W2-4 (SB-13): the raw→1-5 cutoffs are documented in ONE table —
+# V1_TEST_NORMALISATION in v1_constants.py (measure, rationale, evidence
+# tag per test). This view-level dict is derived from it unchanged.
+from .v1_constants import V1_TEST_NORMALISATION
+
 ASSESSMENT_SCORING = {
-    'squat_test':    {'type': 'hold', 'thresholds': [5,  15, 25, 30, 31]},
-    'hinge_test':    {'type': 'hold', 'thresholds': [3,  8,  15, 25, 30]},
-    'push_test':     {'type': 'reps', 'thresholds': [4,  14, 24, 34, 35]},
-    'core_test':     {'type': 'hold', 'thresholds': [15, 29, 44, 59, 60]},
-    'rotate_test':   {'type': 'hold', 'thresholds': [10, 19, 29, 39, 40]},
-    'lunge_test':    {'type': 'hold', 'thresholds': [5,  10, 20, 30, 31]},
-    'pull_test_bar': {'type': 'hold', 'thresholds': [5,  15, 30, 45, 45]},
-    'pull_test_row': {'type': 'reps', 'thresholds': [4,  10, 18, 25, 26]},
+    key: {'type': cfg['type'], 'thresholds': cfg['thresholds']}
+    for key, cfg in V1_TEST_NORMALISATION.items()
 }
 
 # ============================================================================
@@ -343,6 +342,8 @@ def _gen_patient_id(name):
 
 
 def _compute_asymmetry(left_score, right_score):
+    """Band-gap fallback — used ONLY when raw L/R measurements are absent
+    (R2-W2-3 / SB-12: raw values are preferred; see _compute_asymmetry_raw)."""
     gap = abs(left_score - right_score)
     if gap == 0:
         return 'none'
@@ -351,6 +352,36 @@ def _compute_asymmetry(left_score, right_score):
     if gap == 2:
         return 'moderate'
     return 'significant'
+
+
+def _compute_asymmetry_raw(left_raw, right_raw):
+    """R2-W2-3 (SB-12): asymmetry from RAW measured values, not score bands.
+
+    LSI = (weaker / stronger) × 100 on the raw hold-seconds / reps. Two
+    different raw values that land in the same 1-5 band no longer hide the
+    gap, and adjacent-band values no longer exaggerate it.
+
+    Bands for time/rep-based HOME tests — deliberately wider than the ≥90 %
+    hop-distance convention because self-timed holds are noisier
+    (evidence: pragmatic — documented in docs/FOOTBALL_METHODS.md):
+      ≥85 none · 70–84 mild · 55–69 moderate · <55 significant
+
+    Returns (classification, lsi_pct) or (None, None) if raw data unusable.
+    """
+    try:
+        left_raw, right_raw = float(left_raw), float(right_raw)
+    except (TypeError, ValueError):
+        return None, None
+    if left_raw <= 0 or right_raw <= 0:
+        return None, None
+    lsi = round(min(left_raw, right_raw) / max(left_raw, right_raw) * 100, 1)
+    if lsi >= 85:
+        return 'none', lsi
+    if lsi >= 70:
+        return 'mild', lsi
+    if lsi >= 55:
+        return 'moderate', lsi
+    return 'significant', lsi
 
 
 def _weaker_side(left, right):
@@ -696,7 +727,13 @@ def onboarding_strength_test_execute(request, test_index):
         'common_mistakes': content.get('common_mistakes', []),
     }
 
-    scoring = ASSESSMENT_SCORING.get(map_key, {})
+    scoring = dict(ASSESSMENT_SCORING.get(map_key, {}))
+    # R2-W2-4: sex-adjusted cutoffs where the table provides them and the
+    # code already collects biological sex (currently: push test).
+    norm_cfg = V1_TEST_NORMALISATION.get(map_key, {})
+    if (getattr(patient, 'biological_sex', '') == 'female'
+            and norm_cfg.get('thresholds_female')):
+        scoring['thresholds'] = norm_cfg['thresholds_female']
 
     context = {
         'patient': patient,
@@ -736,13 +773,17 @@ def onboarding_save_test_result(request):
     except Exception:
         data = {k: v for k, v in request.POST.items()}
 
-    from .validation import safe_int
+    from .validation import safe_int, safe_float
     # DA-P4: clamp — junk must not 500; score is a 1-5 scale; index must
     # stay inside the test battery (it was used unbounded below).
     test_index = safe_int(data.get('test_index', 0), 0, 0, len(V1_STRENGTH_TESTS) - 1)
     score      = safe_int(data.get('score', 3), 3, 1, 5)
     side       = str(data.get('side', ''))
     variant    = str(data.get('variant', ''))
+    # R2-W2-3 (SB-12): the raw measurement (hold seconds / reps) was sent by
+    # the client and DISCARDED here — asymmetry could then only ever be
+    # computed from 1-5 score bands. Keep the raw value alongside the score.
+    measured   = safe_float(data.get('measured_value', 0), 0.0, 0, 10000)
 
     if 'test_results' not in request.session:
         request.session['test_results'] = {}
@@ -756,9 +797,11 @@ def onboarding_save_test_result(request):
         if not isinstance(sub, dict):
             sub = {}
         sub[side] = score
+        sub[side + '_raw'] = measured
         results[key] = sub
     else:
         results[key] = score
+        results[key + '_raw'] = measured
 
     request.session['test_results'] = results
     request.session.modified = True
@@ -814,14 +857,37 @@ def onboarding_asymmetry(request):
             return val.get('left', 3), val.get('right', 3)
         return 3, 3
 
+    def bilateral_raw(test_id):
+        val = test_results.get(test_id)
+        if isinstance(val, dict):
+            return val.get('left_raw'), val.get('right_raw')
+        return None, None
+
     hinge_left,  hinge_right  = bilateral_scores('hinge_test')
     rotate_left, rotate_right = bilateral_scores('rotate_test')
     lunge_left,  lunge_right  = bilateral_scores('lunge_test')
 
+    # R2-W2-3 (SB-12): asymmetry from RAW measured values wherever both
+    # sides have one; the 1-5 band gap is only the fallback. Each result
+    # is labelled with the method that produced it.
+    def asymmetry_for(test_id, left_score, right_score):
+        lraw, rraw = bilateral_raw(test_id)
+        cls, lsi = _compute_asymmetry_raw(lraw, rraw)
+        if cls is not None:
+            return cls, {'method': 'raw', 'lsi_pct': lsi}
+        return (_compute_asymmetry(left_score, right_score),
+                {'method': 'band_gap', 'lsi_pct': None})
+
+    hinge_cls,  hinge_meta  = asymmetry_for('hinge_test',  hinge_left,  hinge_right)
+    lunge_cls,  lunge_meta  = asymmetry_for('lunge_test',  lunge_left,  lunge_right)
+    rotate_cls, rotate_meta = asymmetry_for('rotate_test', rotate_left, rotate_right)
+
     auto = {
-        'hinge_asymmetry':  _compute_asymmetry(hinge_left,  hinge_right),
-        'lunge_asymmetry':  _compute_asymmetry(lunge_left,  lunge_right),
-        'rotate_asymmetry': _compute_asymmetry(rotate_left, rotate_right),
+        'hinge_asymmetry':  hinge_cls,
+        'lunge_asymmetry':  lunge_cls,
+        'rotate_asymmetry': rotate_cls,
+        'asymmetry_meta': {'hinge': hinge_meta, 'lunge': lunge_meta,
+                           'rotate': rotate_meta},
         'hinge_left': hinge_left,   'hinge_right': hinge_right,
         'lunge_left': lunge_left,   'lunge_right': lunge_right,
         'rotate_left': rotate_left, 'rotate_right': rotate_right,
@@ -866,7 +932,10 @@ def onboarding_asymmetry(request):
                 fat_asymmetry_location=request.POST.get('fat_asymmetry_location', ''),
                 fat_asymmetry_side=request.POST.get('fat_asymmetry_side', ''),
 
-                raw_test_data_json=test_results,
+                # R2-W2-3: raw L/R measurements + per-pattern method/LSI
+                # metadata persist with the profile (no schema change).
+                raw_test_data_json={**test_results,
+                                    '_asymmetry_meta': auto['asymmetry_meta']},
             ),
         )
         priorities = compute_pattern_priorities(patient, profile)

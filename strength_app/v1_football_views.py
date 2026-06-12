@@ -308,7 +308,7 @@ def football_assessment_results(request):
         {'name': 'Single-Leg Hop',     'score': fp.hop_score,     'icon': 'fas fa-shoe-prints'},
         {'name': 'Nordic Hold',         'score': fp.nordic_score,  'icon': 'fas fa-dumbbell'},
         {'name': '20 m Sprint',         'score': fp.sprint_score,  'icon': 'fas fa-bolt'},
-        {'name': 'Pogo Competency',     'score': fp.pogo_score,    'icon': 'fas fa-arrow-up'},
+        {'name': 'Pogo Reactivity (app metric)', 'score': fp.pogo_score, 'icon': 'fas fa-arrow-up'},  # R2-W2-1: never 'RSI'
         {'name': 'COD 505',             'score': fp.cod_score,     'icon': 'fas fa-random'},
         {'name': 'Y-Balance',           'score': fp.ybalance_score,'icon': 'fas fa-balance-scale'},
     ]

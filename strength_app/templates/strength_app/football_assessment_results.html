@@ -51,7 +51,7 @@
     <h5 class="font-bold text-sm mb-2" style="color:#b08800;">
       <i class="fas fa-exclamation-triangle me-2"></i>Asymmetry Detected
     </h5>
-    <p class="text-xs text-on-secondary-container mb-3">A difference of more than 10% between legs has been detected. Your programme will include extra unilateral work to address this.</p>
+    <p class="text-xs text-on-secondary-container mb-3">A left–right difference beyond the benchmark for one of your tests has been detected (hop ≥90%, Y-balance ≥94% symmetry). Your programme will include extra single-leg work to address this. Note: symmetry alone doesn’t prove capacity — your capability scores cover that.</p>
     <div class="grid grid-cols-2 gap-3">
       {% if lsi_hop %}
       <div class="bg-surface-container rounded-xl p-3 text-center">
@@ -62,7 +62,7 @@
       {% if lsi_ybalance %}
       <div class="bg-surface-container rounded-xl p-3 text-center">
         <div class="text-xs text-on-secondary-container mb-1">Y-Balance LSI</div>
-        <div class="text-xl font-extrabold {% if lsi_ybalance < 90 %}text-error{% else %}text-primary{% endif %}">{{ lsi_ybalance }}%</div>
+        <div class="text-xl font-extrabold {% if lsi_ybalance < 94 %}text-error{% else %}text-primary{% endif %}">{{ lsi_ybalance }}%</div>
       </div>
       {% endif %}
     </div>

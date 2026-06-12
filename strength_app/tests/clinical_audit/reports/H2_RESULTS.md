@@ -216,7 +216,6 @@
 | tuck_jumps | ok | 83.8 | 80.0 | 0 |
 | single_leg_landing | ok | 83.5 | 65.0 | 0 |
 | wall_sit | ok | 83.4 | 50.0 | 0 |
-| marching_on_spot | ok | 83.2 | 72.5 | 0 |
 | split_squat_static | ok | 82.8 | 49.1 | 0 |
 | box_squat | ok | 82.0 | 48.3 | 0 |
 | straight_leg_raises | ok | 81.8 | 75.0 | 0 |
@@ -224,6 +223,7 @@
 | sumo_squat | ok | 81.8 | 46.7 | 0 |
 | sideways_walking | ok | 81.7 | 75.0 | 0 |
 | deficit_reverse_lunge | ok | 81.7 | 47.9 | 0 |
+| marching_on_spot | ok | 81.3 | 72.5 | 0 |
 | heel_elevated_squat | ok | 80.8 | 44.9 | 0 |
 | hip_thrust_bodyweight | ok | 80.6 | 75.0 | 0 |
 | slider_reverse_lunge | ok | 80.6 | 47.5 | 0 |

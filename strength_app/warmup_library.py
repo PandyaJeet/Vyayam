@@ -407,33 +407,35 @@ COOLDOWN_LIGHT_MOVEMENT = [
 ]
 
 COOLDOWN_STATIC_STRETCHES = {
-    # Hold 45–60 seconds each
+    # R2-W2-8: holds capped at 30 s per ACSM-style flexibility guidance
+    # (15-30 s x 2-4 repeats); the UI copy says "repeat if time allows".
+    # Post-workout statics are fine — the pre-match protocol is dynamic-only.
     'squat_day': [
         {
             'id': 'quad_stretch_standing',
             'name': 'Standing Quad Stretch',
-            'hold': 45, 'side': 'each',
+            'hold': 30, 'side': 'each',
             'instructions': 'Stand, grab ankle behind, pull heel to glute. Keep knees together.',
             'cues': ['Upright torso', 'Knees together', 'Push hip slightly forward'],
         },
         {
             'id': 'hip_flexor_stretch_kneeling',
             'name': 'Kneeling Hip Flexor Stretch',
-            'hold': 45, 'side': 'each',
+            'hold': 30, 'side': 'each',
             'instructions': 'Half-kneeling position. Tuck pelvis under and shift weight forward until you feel a stretch at the front of the back-leg hip. Hold.',
             'cues': ['Tuck tailbone - this activates the stretch', 'Upright torso', 'Breathe and relax into it'],
         },
         {
             'id': 'calf_stretch_wall',
             'name': 'Wall Calf Stretch',
-            'hold': 45, 'side': 'each',
+            'hold': 30, 'side': 'each',
             'instructions': 'Hands on wall, one leg back, heel flat. Lean into wall until calf stretches. Also perform with slight knee bend for soleus.',
             'cues': ['Back heel stays DOWN', 'Slight bend at knee to target soleus', 'Do both versions'],
         },
         {
             'id': 'adductor_stretch_wide_squat',
             'name': 'Wide-Stance Adductor Stretch',
-            'hold': 45, 'side': None,
+            'hold': 30, 'side': None,
             'instructions': 'Stand with feet wide (wider than squat stance), toes out 45°. Sink into a deep squat, elbows pressing knees out. Hold at bottom.',
             'cues': ['Elbows press knees wide', 'Heels stay down', 'Upright torso'],
         },
@@ -442,28 +444,28 @@ COOLDOWN_STATIC_STRETCHES = {
         {
             'id': 'hamstring_stretch_standing',
             'name': 'Standing Hamstring Stretch',
-            'hold': 60, 'side': 'each',
+            'hold': 30, 'side': 'each',
             'instructions': 'Stand, extend one leg forward with heel on a slightly elevated surface or flat. Hinge from hips forward until you feel the hamstring stretch. Keep back straight.',
             'cues': ['Hinge from HIPS - not rounding the back', 'Toes pulled back (dorsiflex)', 'Hold at the point of tension - don\'t force'],
         },
         {
             'id': 'glute_stretch_figure4',
             'name': 'Figure-4 Glute Stretch',
-            'hold': 45, 'side': 'each',
+            'hold': 30, 'side': 'each',
             'instructions': 'Lying on back. Cross right ankle over left knee. Pull left knee to chest, feeling stretch in right glute. Hold.',
             'cues': ['Flex the top foot (protect knee)', 'The closer the knee to chest, the deeper', 'Breathe and let the glute release'],
         },
         {
             'id': 'hip_flexor_stretch_hinge',
             'name': 'Kneeling Hip Flexor Stretch',
-            'hold': 45, 'side': 'each',
+            'hold': 30, 'side': 'each',
             'instructions': 'Half-kneeling. Tuck pelvis and shift forward until stretch felt in front of back-leg hip.',
             'cues': ['Tuck tailbone', 'Upright torso', 'Breathe steadily'],
         },
         {
             'id': 'lower_back_rotation',
             'name': 'Supine Lumbar Rotation',
-            'hold': 45, 'side': 'each',
+            'hold': 30, 'side': 'each',
             'instructions': 'Lying on back, knees bent. Let both knees drop to one side, keep shoulders flat. Hold, then switch.',
             'cues': ['Shoulders stay flat on floor', 'Relax completely into the position', 'Breathe into the rotation'],
         },
@@ -472,14 +474,14 @@ COOLDOWN_STATIC_STRETCHES = {
         {
             'id': 'doorway_chest_stretch',
             'name': 'Doorway Chest Stretch',
-            'hold': 45, 'side': None,
+            'hold': 30, 'side': None,
             'instructions': 'Stand in a doorway, forearms vertical on door frame, elbows at 90°. Step one foot forward, lean through door until you feel the chest opening.',
             'cues': ['Forearms stay on frame', 'Do NOT shrug', 'Lean until mild stretch - not pain'],
         },
         {
             'id': 'lat_stretch_overhead',
             'name': 'Overhead Lat Stretch',
-            'hold': 45, 'side': 'each',
+            'hold': 30, 'side': 'each',
             'instructions': 'Reach one arm overhead, place hand on a wall or door frame. Lean away while keeping that arm extended. Feel the lat stretch along the side body.',
             'cues': ['Think "armpit to ceiling"', 'Ribs down - don\'t flare', 'Increase lean slowly'],
         },
@@ -502,28 +504,28 @@ COOLDOWN_STATIC_STRETCHES = {
         {
             'id': 'hip_flexor_stretch_deep',
             'name': 'Deep Kneeling Hip Flexor Stretch',
-            'hold': 60, 'side': 'each',
+            'hold': 30, 'side': 'each',
             'instructions': 'Half-kneeling. Tuck pelvis and shift weight forward. For a deeper stretch, raise the arm on the kneeling-leg side overhead and lean slightly away.',
             'cues': ['Tailbone tucked hard', 'Raise arm = deeper stretch', 'Breathe slowly into front of hip'],
         },
         {
             'id': 'quad_stretch_prone',
             'name': 'Prone Quad Stretch',
-            'hold': 45, 'side': 'each',
+            'hold': 30, 'side': 'each',
             'instructions': 'Lie face down. Bend one knee and reach back to hold the ankle (or use a towel). Gently pull heel toward glute.',
             'cues': ['Hips stay flat on floor', 'Feel it in the quad, not just knee', 'Relax the leg you are stretching'],
         },
         {
             'id': 'adductor_stretch_lunge',
             'name': 'Wide-Stance Adductor Stretch',
-            'hold': 45, 'side': None,
+            'hold': 30, 'side': None,
             'instructions': 'Wide stance, toes out. Sink into deep squat, elbows pressing out on knees. Hold at bottom.',
             'cues': ['Elbows press knees wide', 'Heels stay down', 'Upright torso'],
         },
         {
             'id': 'it_band_stretch',
             'name': 'IT Band / TFL Stretch (Standing)',
-            'hold': 45, 'side': 'each',
+            'hold': 30, 'side': 'each',
             'instructions': 'Stand near a wall. Cross one leg behind the other and lean hips toward the wall on the side of the front leg. Feel stretch on outer thigh/hip.',
             'cues': ['Lean hips sideways - not backward', 'Keep crossed leg straight', 'Subtle stretch - not dramatic'],
         },
@@ -532,14 +534,14 @@ COOLDOWN_STATIC_STRETCHES = {
         {
             'id': 'trunk_rotation_lying',
             'name': 'Supine Trunk Rotation',
-            'hold': 45, 'side': 'each',
+            'hold': 30, 'side': 'each',
             'instructions': 'Lying on back, knees bent. Lower both knees to one side while keeping shoulders flat. Breathe into the rotation.',
             'cues': ['Shoulders stay flat', 'Relax completely', 'Extend the hold as your body unwinds'],
         },
         {
             'id': 'childs_pose',
             'name': "Child's Pose",
-            'hold': 60, 'side': None,
+            'hold': 30, 'side': None,
             'instructions': 'Kneel and sit back on heels, extending arms forward along floor. Breathe into the lower back and lats.',
             'cues': ['Walk hands further forward to increase stretch', 'Try arms wide (like a Y) for lat focus', 'Let the spine decompress with each exhale'],
         },
