@@ -59,3 +59,35 @@ v1_exercise_execute.html.
 exercise module for the given exercise_id (registry now instantiates
 cleanly — DA-H3); until then, treat the legacy exercise_execute flow's
 form scores for non-squat exercises as invalid.
+
+---
+# RUN 2 UPDATE (2026-06, ship-ready-2026-06)
+
+## Dispositions of D1–D5
+- **D1 (load-spike note): CLOSED — SKIPPED** per Pawan's confirmation.
+- **D2 (therapist red-flag checklist): CLOSED-BY-T2** — red-flag clears now
+  raise a reviewable Alert in the therapist inbox (the original concern was
+  visibility; a structured intake checklist remains optional future work).
+- **D3 (stop-reason backfill): STILL OPEN** — run the ID→label data
+  migration ONLY if production rows with absolute_stop=True predate Run 1.
+  Listed in DEPLOY_CHECKLIST.md.
+- **D4 (tag layer): CLOSED** — tags are legacy-path metadata, documented in
+  exercise_tags.py; the V1 engine never consults them. No entries authored.
+- **D5 (three CV implementations): CLOSED** — Python registry is the single
+  source of truth; the live JS consumes the generated exercise_targets.json;
+  analyze_frame route removed. See docs/CV_ARCHITECTURE.md.
+
+## New decisions made this run (flag if you disagree)
+- **R2-A: Session lifetime** — 7-day persistent cookies, browser-close
+  expiry OFF (was contradictory). Rationale in settings.py.
+- **R2-B: Registration enumeration** — kept the helpful "already
+  registered" copy (rate-limited 3/10 min); the reset flow is
+  enumeration-safe. Documented in SECURITY_AUDIT.md #7.
+- **R2-C: Conservative camera set** — 112 of 288 exercises camera-tracked;
+  everything unverifiable runs in guided mode. Flip per-exercise in
+  export_exercise_targets.py only after passing the filming protocol.
+
+## New open questions (clinical — for the sports-physio review)
+- The five questions in docs/FOOTBALL_METHODS.md §13 (scoring bands,
+  Y-balance 94%, ovulation plyo block, Nordic density, novice deload
+  ceiling).
