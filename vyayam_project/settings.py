@@ -125,8 +125,14 @@ CACHES = {
 }
 
 SESSION_ENGINE = 'django.contrib.sessions.backends.db'
+# R2-W5: the previous config set BOTH a 7-day age AND expire-at-browser-
+# close — contradictory. Decision: 7-day persistent sessions. This is a
+# personal-phone PWA where mid-programme users return daily; forcing a
+# phone+password login on every browser restart kills adherence, and
+# browser-close rarely fires on mobile anyway. Therapist/coach consoles
+# share the setting; their value is staff-managed Django auth.
 SESSION_COOKIE_AGE = 86400 * 7
-SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+SESSION_EXPIRE_AT_BROWSER_CLOSE = False
 SESSION_COOKIE_HTTPONLY = True
 SESSION_COOKIE_SAMESITE = 'Lax'
 

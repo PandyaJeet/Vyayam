@@ -650,3 +650,27 @@ class TestR2W4Therapist(TestCase):
         self.assertTrue(profile.must_change_password)
         from django.contrib.auth.hashers import check_password
         self.assertFalse(check_password('original1', profile.password))
+
+
+# ════════════════════════════════════════════════════════════════════════
+# W5 — security regression anchors
+# ════════════════════════════════════════════════════════════════════════
+
+class TestR2W5Security(TestCase):
+
+    def test_r2_w5_security_headers_on_every_response(self):
+        resp = self.client.get(reverse('patient_login'))
+        self.assertEqual(resp['Referrer-Policy'], 'same-origin')
+        self.assertIn('camera=(self)', resp['Permissions-Policy'])
+        self.assertIn("default-src 'self'", resp['Content-Security-Policy-Report-Only'])
+
+    def test_r2_w5_session_settings_not_contradictory(self):
+        from django.conf import settings
+        self.assertFalse(settings.SESSION_EXPIRE_AT_BROWSER_CLOSE)
+        self.assertEqual(settings.SESSION_COOKIE_AGE, 86400 * 7)
+
+    def test_r2_w5_django_patched(self):
+        import django
+        major, minor, patch = (int(x) for x in django.get_version().split('.')[:3])
+        self.assertGreaterEqual((major, minor, patch), (4, 2, 30),
+                                'Django must stay at >= 4.2.30 (security patches)')

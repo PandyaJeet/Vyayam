@@ -738,6 +738,12 @@
 
   function render() {
     stackEl.innerHTML = '';
+    // R2-W5: values interpolated into the template literal below come from
+    // the DB (therapist-entered free text like `load`) — escape them so a
+    // stored payload can never break out of the attribute/HTML context.
+    const esc = (v) => String(v == null ? '' : v)
+      .replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;')
+      .replaceAll('"', '&quot;').replaceAll("'", '&#39;');
     stack.forEach((item, idx) => {
       const meta = catalog[item.exercise_id] || {name: item.exercise_name, pattern: item.movement_pattern};
       const card = document.createElement('div');
@@ -748,13 +754,13 @@
         <i class="fas fa-grip-vertical grip"></i>
         <div class="num">${idx + 1}</div>
         <div>
-          <div class="name">${meta.name}</div>
+          <div class="name">${esc(meta.name)}</div>
           <div class="fields">
-            <span class="t-pill t-pill--neutral">${meta.pattern || ''}</span>
-            <span class="t-presc-field"><span class="k">Sets:</span><input data-k="sets" class="w-narrow" value="${item.sets}"/></span>
-            <span class="t-presc-field"><span class="k">Reps:</span><input data-k="reps" class="w-narrow" value="${item.reps}"/></span>
-            <span class="t-presc-field"><span class="k">Load:</span><input data-k="load" class="w-wide" value="${item.load || ''}"/></span>
-            <span class="t-presc-field"><span class="k">Rest (s):</span><input data-k="rest_seconds" value="${item.rest_seconds}"/></span>
+            <span class="t-pill t-pill--neutral">${esc(meta.pattern)}</span>
+            <span class="t-presc-field"><span class="k">Sets:</span><input data-k="sets" class="w-narrow" value="${esc(item.sets)}"/></span>
+            <span class="t-presc-field"><span class="k">Reps:</span><input data-k="reps" class="w-narrow" value="${esc(item.reps)}"/></span>
+            <span class="t-presc-field"><span class="k">Load:</span><input data-k="load" class="w-wide" value="${esc(item.load)}"/></span>
+            <span class="t-presc-field"><span class="k">Rest (s):</span><input data-k="rest_seconds" value="${esc(item.rest_seconds)}"/></span>
           </div>
         </div>
         <button type="button" class="trash" title="Remove"><i class="fas fa-trash"></i></button>

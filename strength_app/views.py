@@ -420,6 +420,7 @@ def execute_gate_test(request: HttpRequest, family_index: int, level_index: int)
 
 
 
+@rate_limit(max_attempts=60, window_seconds=60, key_prefix='save_gate_test')  # R2-W5
 def save_gate_test_result(request: HttpRequest):
     """
     AJAX endpoint called when patient clicks any of the three buttons.
@@ -936,6 +937,7 @@ def execute_exercise(request: HttpRequest, exercise_index: int):
 
 
 
+@rate_limit(max_attempts=60, window_seconds=60, key_prefix='save_exercise')  # R2-W5
 def save_exercise_results(request: HttpRequest):
     """Save results from a single exercise execution"""
     if request.method == 'POST':
