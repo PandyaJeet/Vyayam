@@ -1,7 +1,7 @@
 {
   "name": "VYAYAM \u2014 Physiotherapy Strength Training",
   "short_name": "VYAYAM",
-  "description": "AI-guided physiotherapy strength training with camera overlay coaching",
+  "description": "Camera-guided physiotherapy strength training with overlay coaching",
   "start_url": "/v1/dashboard/",
   "scope": "/",
   "display": "standalone",

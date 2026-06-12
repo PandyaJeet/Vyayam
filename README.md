@@ -1,6 +1,6 @@
 # VYAYAM STRENGTH TRAINING SYSTEM
 
-Professional AI-Powered Physiotherapy & Strength Training Platform with Real-Time Form Tracking
+Personalised Physiotherapy & Strength Training Platform with Camera-Guided Form Tracking
 
 ## ⚡ Current Architecture (2026-06 — read this first)
 
