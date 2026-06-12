@@ -104,18 +104,12 @@ class GateTestEndpointTests(TestCase):
 
 
 class CVEndpointTests(SimpleTestCase):
-    def test_analyze_frame_rejects_get(self):
-        response = self.client.get(reverse("analyze_frame"))
-        self.assertEqual(response.status_code, 405)
-
-    def test_analyze_frame_requires_authenticated_patient(self):
-        response = self.client.post(
-            reverse("analyze_frame"),
-            data="{}",
-            content_type="application/json",
-        )
-        self.assertEqual(response.status_code, 401)
-        self.assertEqual(response.json().get("error"), "Authentication required")
+    def test_analyze_frame_route_removed(self):
+        # R2-W1-7: the legacy endpoint scored every exercise as a squat
+        # (D5) and nothing in the live JS called it — the route is gone.
+        from django.urls import NoReverseMatch
+        with self.assertRaises(NoReverseMatch):
+            reverse("analyze_frame")
 
 
 class NutritionApiTests(TestCase):

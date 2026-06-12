@@ -644,7 +644,13 @@ def v1_save_exercise_result(request):
             safe_int(r, 0, 0, 100)
             for r in (data.get('reps_per_set') or [])[:20]
         ] if isinstance(data.get('reps_per_set'), list) else [],
-        'form_score':           safe_float(data.get('form_score', 75), 75.0, 0, 100),
+        # R2-W1-4: null form_score means "no camera tracking" (guided /
+        # manual mode) and is preserved as None — never defaulted to 75.
+        'form_score':           (None if data.get('form_score') is None
+                                 else safe_float(data.get('form_score'), 75.0, 0, 100)),
+        'rep_quality_source':   (data.get('rep_quality_source')
+                                 if data.get('rep_quality_source') in ('cv', 'manual')
+                                 else ('manual' if data.get('form_score') is None else 'cv')),
         'pain_reported':        bool(data.get('pain_reported', False)),
         'pain_type':            str(data.get('pain_type', ''))[:30],
         'pain_location':        str(data.get('pain_location', ''))[:100],
@@ -705,7 +711,8 @@ def v1_save_exercise_result(request):
                     'prescribed_reps': nxt.get('reps', 0),
                     'completed_sets': 0,
                     'completed_reps_per_set': [],
-                    'form_score': 0,
+                    'form_score': None,
+                    'rep_quality_source': 'manual',
                     'pain_reported': False,
                     'skipped': True,
                     'skip_reason': 'pain',
@@ -884,15 +891,24 @@ def v1_post_session_feedback(request):
             completion_pct  = round(
                 min(100, (res.get('completed_sets', 0) / max(1, prescribed_sets)) * 100)
             )
-            form_score = float(res.get('form_score', 75))
-            # DA-C12: the self-serve client sends only the aggregate form
-            # score — these counts are ESTIMATES derived from it, not CV
-            # per-rep classifications. rep_quality_source='derived' marks
-            # them so every rendering surface adds the "estimated from
-            # form score" qualifier.
-            green_reps  = round(total_reps * (form_score / 100))
-            yellow_reps = round(total_reps * max(0, (1 - form_score / 100)) * 0.6)
-            red_reps    = total_reps - green_reps - yellow_reps
+            form_score_raw = res.get('form_score', None)
+            if form_score_raw is None or res.get('rep_quality_source') == 'manual':
+                # R2-W1-4: guided/manual session — no measured form. Store
+                # None and zero quality counts; surfaces show "no tracking".
+                form_score  = None
+                rep_source  = 'manual'
+                green_reps = yellow_reps = red_reps = 0
+            else:
+                form_score = float(form_score_raw)
+                # DA-C12: the self-serve client sends only the aggregate form
+                # score — these counts are ESTIMATES derived from it, not CV
+                # per-rep classifications. rep_quality_source='derived' marks
+                # them so every rendering surface adds the "estimated from
+                # form score" qualifier.
+                rep_source  = 'derived'
+                green_reps  = round(total_reps * (form_score / 100))
+                yellow_reps = round(total_reps * max(0, (1 - form_score / 100)) * 0.6)
+                red_reps    = total_reps - green_reps - yellow_reps
 
             ExerciseExecution.objects.create(
                 session=workout,
@@ -905,7 +921,7 @@ def v1_post_session_feedback(request):
                 total_green_reps=max(0, green_reps),
                 total_yellow_reps=max(0, yellow_reps),
                 total_red_reps=max(0, red_reps),
-                rep_quality_source='derived',
+                rep_quality_source=rep_source,
                 overall_form_score=form_score,
                 completion_percentage=completion_pct,
                 # DA-F1: per-exercise pain was collected by the execute UI
@@ -1032,7 +1048,19 @@ def v1_session_complete(request):
     # Per-exercise summary with traffic light
     exe_summary = []
     for res in exercise_results:
-        score = float(res.get('form_score', 75))
+        raw_score = res.get('form_score', None)
+        if raw_score is None or res.get('rep_quality_source') == 'manual':
+            # R2-W1-4: guided/manual exercise — no measured form, no light.
+            exe_summary.append({
+                'name':       res.get('exercise_name', ''),
+                'pattern':    res.get('movement_pattern', ''),
+                'sets':       res.get('completed_sets', 0),
+                'form_score': None,
+                'tl':         'none',
+                'skipped':    res.get('skipped', False),
+            })
+            continue
+        score = float(raw_score)
         from .v1_constants import FORM_SCORE_GREEN, FORM_SCORE_YELLOW  # DA-P6
         if score >= FORM_SCORE_GREEN:
             tl = 'green'

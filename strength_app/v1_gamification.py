@@ -248,7 +248,16 @@ def compute_session_xp(exercise_results):
 
     total_xp = 0
     for r in exercise_results:
-        form_score = float(r.get('form_score', 0))
+        raw = r.get('form_score', 0)
+        # R2-W1-4: guided/manual exercises have NO measured form (None).
+        # XP is completion-based: base XP if any set was done, never the
+        # quality bonus, and no form gate (the gate blocks rewarded UNSAFE
+        # movement — without a camera there is no form data to gate on).
+        if raw is None or r.get('rep_quality_source') == 'manual':
+            if not r.get('skipped') and int(r.get('completed_sets') or 0) > 0:
+                total_xp += 10
+            continue
+        form_score = float(raw)
         if form_score < MIN_FORM_SCORE_FOR_XP:
             continue  # 0 XP — unsafe form
         ex_base = 10

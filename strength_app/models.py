@@ -685,6 +685,9 @@ class ExerciseExecution(models.Model):
     REP_QUALITY_SOURCE_CHOICES = [
         ('cv', 'CV-classified per rep'),
         ('derived', 'Estimated from form score'),
+        # R2-W1-4: guided (manual) mode — user-counted reps, NO camera and
+        # NO form score. Downstream surfaces must not render quality data.
+        ('manual', 'Self-counted, no form tracking'),
     ]
     rep_quality_source = models.CharField(
         max_length=10, choices=REP_QUALITY_SOURCE_CHOICES, default='derived',
@@ -703,8 +706,9 @@ class ExerciseExecution(models.Model):
     skipped = models.BooleanField(default=False)
     skip_reason = models.CharField(max_length=30, blank=True, default='')
 
-    # Metrics
-    overall_form_score = models.FloatField(default=0.0)
+    # Metrics — null means "no measured form" (manual/guided sessions,
+    # R2-W1-4); never store a fabricated default instead.
+    overall_form_score = models.FloatField(null=True, blank=True, default=0.0)
     completion_percentage = models.FloatField(default=0.0)
     
     # Practice Mode

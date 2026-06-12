@@ -100,7 +100,7 @@ class SessionExecutor:
         session.total_exercises_completed = len(all_exercises)
         
         # Calculate overall form score
-        form_scores = [ex.overall_form_score for ex in all_exercises if ex.overall_form_score > 0]
+        form_scores = [ex.overall_form_score for ex in all_exercises if ex.overall_form_score and ex.overall_form_score > 0]  # R2-W1-4: None = manual session, no measured form
         if form_scores:
             session.overall_session_form_score = sum(form_scores) / len(form_scores)
         

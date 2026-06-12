@@ -44,3 +44,17 @@ def get_range(value):
         return range(int(value))
     except (ValueError, TypeError):
         return range(3)
+
+
+@register.simple_tag(name='cv_config_json')
+def cv_config_json(exercise_id):
+    """R2-W1: emit the generated CV config for this exercise as a JSON
+    string for inline use. Unknown IDs get a manual-mode stub — the live
+    path never fakes camera tracking for an exercise it can't verify."""
+    import json
+    from django.utils.safestring import mark_safe
+    from strength_app.cv_targets import get_cv_config
+
+    cfg = get_cv_config(exercise_id)
+    # json.dumps + escaping '<' keeps this safe inside a <script> block
+    return mark_safe(json.dumps(cfg).replace('<', '\\u003c'))

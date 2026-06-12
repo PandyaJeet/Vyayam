@@ -269,6 +269,7 @@
         <div style="text-align:center;margin-bottom:8px;">
           <span id="repCountDisplay" style="font-size:2.5rem;font-weight:800;transition:all .3s;">0</span>
           <span style="font-size:.85rem;opacity:.6;margin-left:4px;" id="repOrHoldLabel">reps</span>
+          <div id="partialCount" style="display:none;font-size:.75rem;color:#f59e0b;font-weight:700;margin-top:2px;"></div>
         </div>
         <div id="holdTimerDisplay" style="font-size:1.8rem;font-weight:800;color:#38ef7d;text-align:center;display:none;">0s</div>
 
@@ -431,6 +432,27 @@
   const LIBRARY_RETURN_URL = "{{ library_return_url|default:'' }}";
   const CAPABILITY_LEVEL = "{{ exercise.capability_level|default:2 }}";
   const EXERCISE_FORM_CUES = [{% for cue in exercise.form_cues %}"{{ cue|escapejs }}"{% if not forloop.last %},{% endif %}{% endfor %}];
+
+  // ── R2-W1: generated CV config (single source of truth: the Python
+  //    exercise-module registry, exported by manage.py export_exercise_targets).
+  //    tracking 'camera'  → verified ghost-coach tracking for this exercise
+  //    tracking 'manual'  → guided mode: cue card + self-counted reps/hold,
+  //                         NO camera, NO form score (honesty over fake tracking)
+  //    Assessment flows keep their dedicated camera logic regardless.
+  const CV_CONFIG = {% cv_config_json exercise.exercise_id %};
+  const CV_TRACKING = (ASSESSMENT_MODE || (CV_CONFIG && CV_CONFIG.tracking === 'camera'))
+    ? 'camera' : 'manual';
+
+  // Resolve the EXERCISE_PHASES template key for this exercise.
+  // The generated config wins; the legacy inline map remains only as a
+  // fallback for assessment/dev flows whose IDs predate the export.
+  function cvTypeName() {
+    if (CV_TRACKING !== 'camera') return null;
+    if (CV_CONFIG && CV_CONFIG.js_type && EXERCISE_PHASES[CV_CONFIG.js_type]) {
+      return CV_CONFIG.js_type;
+    }
+    return EXERCISE_TYPE_MAP[EXERCISE_ID] || null;
+  }
   const MIND_MUSCLE_CUE = "{{ exercise.mind_muscle_cue.during|default:''|escapejs }}";
   window.VYAYAM_DEBUG = true;
 
@@ -447,9 +469,56 @@
   let remainingSets = PRESCRIBED_SETS;
   const csrfToken = getCsrf();
 
+  // ---- Guided (manual) mode — R2-W1-4 ----
+  // Exercises whose JS tracking is not verified run WITHOUT a camera:
+  // the user counts reps in the set tracker (or uses the hold timer).
+  // No form score is fabricated; the ghost coach stays hidden.
+  function initGuidedMode() {
+    var ph = document.getElementById('camPlaceholder');
+    if (!ph) return;
+    var isHold = !!(CV_CONFIG && CV_CONFIG.is_hold);
+    ph.innerHTML =
+      '<i class="fas fa-person-walking fa-3x" style="opacity:.35;"></i>' +
+      '<div style="font-weight:800;font-size:1.05rem;margin-top:10px;">Guided mode</div>' +
+      '<p style="opacity:.6;font-size:.85rem;max-width:300px;text-align:center;margin:6px 0 0;">' +
+        'Follow the cues below and ' + (isHold ? 'time your hold' : 'count your reps') +
+        ' with the set tracker. Camera form tracking for this exercise is coming.</p>' +
+      (isHold
+        ? '<div style="margin-top:14px;text-align:center;">' +
+            '<div id="guidedHoldVal" style="font-size:2.2rem;font-weight:800;color:#38ef7d;">0s</div>' +
+            '<button id="guidedHoldBtn" onclick="toggleGuidedHold()" class="start-cam-btn" style="margin-top:8px;">' +
+              '<i class="fas fa-stopwatch me-2"></i>Start Hold Timer</button>' +
+          '</div>'
+        : '');
+  }
+
+  var _guidedHold = { running: false, seconds: 0, interval: null };
+  function toggleGuidedHold() {
+    var btn = document.getElementById('guidedHoldBtn');
+    var val = document.getElementById('guidedHoldVal');
+    if (_guidedHold.running) {
+      clearInterval(_guidedHold.interval);
+      _guidedHold.running = false;
+      btn.innerHTML = '<i class="fas fa-stopwatch me-2"></i>Resume';
+    } else {
+      _guidedHold.running = true;
+      _guidedHold.interval = setInterval(function() {
+        _guidedHold.seconds++;
+        val.textContent = _guidedHold.seconds + 's';
+        VoiceCoach.announceHold(_guidedHold.seconds);
+      }, 1000);
+      btn.innerHTML = '<i class="fas fa-pause me-2"></i>Pause';
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', function() {
+    if (CV_TRACKING !== 'camera') initGuidedMode();
+  });
+
   // ---- Camera ----
 async function startCamera() {
     console.log('startCamera called, EXERCISE_ID:', EXERCISE_ID);
+    if (CV_TRACKING !== 'camera') return;  // guided mode never opens the camera
     try {
       try {
         stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 } } });
@@ -471,10 +540,10 @@ async function startCamera() {
       // Show ghost status card for exercises with pose guidance
       document.getElementById('voiceToggle').style.display = 'block';
 
-      if (EXERCISE_ID in EXERCISE_TYPE_MAP) {
+      if (cvTypeName()) {
         document.getElementById('ghostStatusCard').style.display = 'block';
         // initGhostAnimator is called inside initPose — demo starts automatically
-        var phaseType = EXERCISE_PHASES[EXERCISE_TYPE_MAP[EXERCISE_ID]];
+        var phaseType = EXERCISE_PHASES[cvTypeName()];
         if (phaseType && phaseType.phases.length <= 1) {
           // Hold exercise — show hold timer, hide rep counter
           document.getElementById('holdTimerDisplay').style.display = 'block';
@@ -488,20 +557,11 @@ async function startCamera() {
         <div class="cam-placeholder" style="flex-direction:column;gap:14px;padding:32px;text-align:center;">
           <i class="fas fa-video-slash" style="font-size:3rem;opacity:.3;"></i>
           <h6 class="mt-2" style="color:#fff;">Camera not available</h6>
-          <p style="opacity:.6;font-size:.85rem;">You can still complete this exercise. Count your reps manually and rate your form below.</p>
+          <p style="opacity:.6;font-size:.85rem;">You can still complete this exercise. Count your reps and mark each set Done in the set tracker — no form score will be recorded without the camera.</p>
           <div style="text-align:left;width:100%;max-width:280px;">
             <label style="font-size:.82rem;opacity:.7;display:block;margin-bottom:4px;">Reps completed:</label>
             <input type="number" id="manualReps" value="0" min="0" max="50"
               style="width:100%;background:#2a2f4a;border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:8px 12px;color:#fff;font-size:.9rem;margin-bottom:10px;">
-            <label style="font-size:.82rem;opacity:.7;display:block;margin-bottom:4px;">Form quality (1–5):</label>
-            <select id="manualForm"
-              style="width:100%;background:#2a2f4a;border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:8px 12px;color:#fff;font-size:.85rem;">
-              <option value="100">5 — Perfect form</option>
-              <option value="85">4 — Good, minor deviation</option>
-              <option value="70" selected>3 — Adequate</option>
-              <option value="50">2 — Significant compensation</option>
-              <option value="30">1 — Poor form</option>
-            </select>
           </div>
         </div>`;
       // Override saveAndNext to use manual values
@@ -1358,7 +1418,9 @@ async function startCamera() {
       cues: {
         hip:          'Hinge deeper — push hips back',
         knee_support: 'Keep your supporting knee soft',
-        trunk:        'Keep your back flat',
+        // R2-SB-15: trunk = shoulder-hip-ankle (hinge depth) — the cue must
+        // describe position, not claim to see spinal flatness.
+        trunk:        'Tip your chest further toward the floor',
         trail_leg:    'Lift your back leg higher',
       },
       forceArrows: [],
@@ -1936,26 +1998,28 @@ async function startCamera() {
         label: 'Feet hip width, hinged at the hips',
       },
       // Targets per dumbell_rowing_v2.py get_target_poses()
+      // R2-SB-15: the shoulder–hip–ankle angle measures HINGE POSITION
+      // (staying bent over), NOT spinal rounding — spinal position is not
+      // measurable with MediaPipe (no landmarks between shoulders and
+      // hips). Renamed back→hinge; cues no longer claim to see rounding.
       phases: [
-        { name: 'hanging',  duration: 0,    joints: { elbow: 170, back: 160 }, voice: 'Arms extended — ready' },
-        { name: 'pulling',  duration: 1500, joints: { elbow: 110, back: 160 }, voice: 'Pull both elbows back' },
-        { name: 'top',      duration: 800,  joints: { elbow: 45,  back: 160 }, voice: 'Squeeze your shoulder blades' },
-        { name: 'lowering', duration: 1800, joints: { elbow: 120, back: 160 }, voice: 'Lower with control' },
+        { name: 'hanging',  duration: 0,    joints: { elbow: 170, hinge: 160 }, voice: 'Arms extended — ready' },
+        { name: 'pulling',  duration: 1500, joints: { elbow: 110, hinge: 160 }, voice: 'Pull both elbows back' },
+        { name: 'top',      duration: 800,  joints: { elbow: 45,  hinge: 160 }, voice: 'Squeeze your shoulder blades' },
+        { name: 'lowering', duration: 1800, joints: { elbow: 120, hinge: 160 }, voice: 'Lower with control' },
       ],
       checkAngles: function(lm) {
         // BILATERAL — average both elbows (Python: avg_elbow)
         var elbow = (calcAngle(lm[LM.leftShoulder],  lm[LM.leftElbow],  lm[LM.leftWrist]) +
                      calcAngle(lm[LM.rightShoulder], lm[LM.rightElbow], lm[LM.rightWrist])) / 2;
-        // Back angle — shoulder-hip-ankle: at correct hinge ≈ 160°.
-        // Python computes shoulder-hip-vertical line; we use the joint chain
-        // (works because ankle below hip while user is hinged forward).
-        var back = (calcAngle(lm[LM.leftShoulder],  lm[LM.leftHip],  lm[LM.leftAnkle]) +
-                    calcAngle(lm[LM.rightShoulder], lm[LM.rightHip], lm[LM.rightAnkle])) / 2;
-        return { elbow: elbow, back: back };
+        // Hinge angle — shoulder-hip-ankle: at correct bent-over position ≈ 160°.
+        var hinge = (calcAngle(lm[LM.leftShoulder],  lm[LM.leftHip],  lm[LM.leftAnkle]) +
+                     calcAngle(lm[LM.rightShoulder], lm[LM.rightHip], lm[LM.rightAnkle])) / 2;
+        return { elbow: elbow, hinge: hinge };
       },
       cues: {
         elbow: 'Pull your elbows further back',
-        back:  'Keep your back flat — chest out, no rounding',
+        hinge: 'Stay hinged forward — push your hips back',
       },
       forceArrows: [
         { joint: 11, dir: { x: 0, y: 0.05 }, label: 'Drive elbows toward your hips' },
@@ -2065,15 +2129,36 @@ async function startCamera() {
     }
   })();
 
+  // ── R2-W1-3: port corrected Python depth targets for THIS exercise from
+  // exercise_targets.json (generated from the 264 Python modules — the
+  // single source of truth). Conservative compose with the capability
+  // easing above: never coach DEEPER than the capability-adjusted depth —
+  // keep the shallower (larger) angle of the two.
+  (function() {
+    if (!CV_CONFIG || !CV_CONFIG.js_overrides || !CV_CONFIG.js_type) return;
+    var def = EXERCISE_PHASES[CV_CONFIG.js_type];
+    if (!def || !def.phases) return;
+    def.phases.forEach(function(p) {
+      var ov = CV_CONFIG.js_overrides[p.name];
+      if (!ov || !p.joints) return;
+      Object.keys(ov).forEach(function(j) {
+        var v = ov[j];
+        if (typeof v === 'number' && typeof p.joints[j] === 'number') {
+          p.joints[j] = Math.max(p.joints[j], v);
+        }
+      });
+    });
+  })();
 
-  // (EXERCISE_TEMPLATE_MAP follows — kept intact, used by EXERCISE_TYPE_MAP below)
 
-
-
+  // ── LEGACY MAP (R2-W1): superseded by CV_CONFIG.js_type from
+  // exercise_targets.json for every exported exercise. Kept ONLY as a
+  // fallback for assessment/dev flows. Do not extend — add new exercises
+  // to the curated table in export_exercise_targets.py instead.
   const EXERCISE_TEMPLATE_MAP = {
     // SQUAT_BILATERAL (25)
     'full_squats': 'SQUAT_BILATERAL', 'partial_squats': 'SQUAT_PARTIAL', 'box_squat': 'SQUAT_BILATERAL',
-    'goblet_squat': 'GOBLET_SQUAT', 'sit_to_stand': 'SQUAT_BILATERAL', 'wall_sit': 'PLANK_FRONT',
+    'goblet_squat': 'GOBLET_SQUAT', 'sit_to_stand': 'SQUAT_BILATERAL', 'wall_sit': 'SQUAT_HOLD',
     'heel_elevated_squat': 'SQUAT_BILATERAL', 'pause_squat': 'SQUAT_BILATERAL', 'prisoner_squat': 'SQUAT_BILATERAL',
     'sumo_squat': 'SQUAT_BILATERAL', 'tempo_squat': 'SQUAT_BILATERAL', 'squat_pulse': 'SQUAT_BILATERAL',
     'hindu_squat': 'SQUAT_BILATERAL', 'spanish_squat': 'SQUAT_BILATERAL', 'decline_squats': 'SQUAT_BILATERAL',
@@ -2233,7 +2318,7 @@ async function startCamera() {
 
     // SQUAT_BILATERAL
     'partial_squats': 'SQUAT_PARTIAL', 'box_squat': 'SQUAT_BILATERAL',
-    'sit_to_stand': 'SQUAT_BILATERAL', 'wall_sit': 'PLANK_FRONT',
+    'sit_to_stand': 'SQUAT_BILATERAL', 'wall_sit': 'SQUAT_HOLD',
     'pause_squat': 'SQUAT_BILATERAL', 'prisoner_squat': 'SQUAT_BILATERAL',
     'tempo_squat': 'SQUAT_BILATERAL', 'squat_pulse': 'SQUAT_BILATERAL',
     'spanish_squat': 'SQUAT_BILATERAL', 'decline_squats': 'SQUAT_BILATERAL',
@@ -2619,7 +2704,7 @@ async function startCamera() {
   };
 
   function initGhostAnimator() {
-    var typeName = EXERCISE_TYPE_MAP[EXERCISE_ID];
+    var typeName = cvTypeName();
     if (!typeName) { ghostState.exerciseDef = null; return; }
     ghostState.exerciseDef = EXERCISE_PHASES[typeName];
     if (!ghostState.exerciseDef) { return; }
@@ -3073,12 +3158,14 @@ async function startCamera() {
             });
           }
         }
-        // ROW_BENT_OVER — back-rounding safety check (Python rejects back < 150°)
+        // ROW_BENT_OVER — hinge-position check (R2-SB-15: this measures
+        // whether the user is still bent over, NOT spinal rounding — which
+        // MediaPipe cannot see. Cue is positional only.)
         if (ghostState.exerciseType === 'ROW_BENT_OVER' && lm) {
           var _rbA = ghostState.exerciseDef.checkAngles(lm);
-          if (_rbA.back !== undefined && _rbA.back < 150) {
+          if (_rbA.hinge !== undefined && _rbA.hinge < 150) {
             if (Date.now() - VoiceCoach.lastSpokenTime > 4000) {
-              VoiceCoach.speak('Keep your back flat — chest out, no rounding.', true);
+              VoiceCoach.speak('Stay hinged forward — push your hips back.', true);
             }
           }
           if (window.VYAYAM_DEBUG) {
@@ -3088,7 +3175,7 @@ async function startCamera() {
               orientation_expected: 'standing',
               phase: _rbT.name,
               elbow: _rbA.elbow.toFixed(1), elbow_target: _rbT.joints.elbow,
-              back:  _rbA.back.toFixed(1),  back_target:  _rbT.joints.back,
+              hinge: _rbA.hinge.toFixed(1), hinge_target: _rbT.joints.hinge,
             });
           }
         }
@@ -3306,7 +3393,10 @@ async function startCamera() {
         }
         if (matchScore >= 70) {
           ghostState.matchFrames = (ghostState.matchFrames || 0) + 1;
-          if (ghostState.matchFrames >= 5) {
+          // R2-W1-5: 5-frame confirmation + 250ms minimum phase duration —
+          // a bounce through the threshold must not advance the phase.
+          if (ghostState.matchFrames >= 5 &&
+              (Date.now() - ghostState.phaseStartTime) >= 250) {
             ghostState.currentPhaseIndex++;
             ghostState.matchFrames = 0;
             if (ghostState.currentPhaseIndex >= phases.length) {
@@ -3355,8 +3445,21 @@ async function startCamera() {
       }
 
       case 'REP_DONE': {
-        ghostState.repCount++;
-        if (typeof onRepCounted === 'function') onRepCounted(ghostState.repCount);
+        // R2-W1-5: a rep that never reached the target depth band is a
+        // PARTIAL — it gets its own visible counter and a gentle cue, and
+        // does NOT count toward the prescribed reps (was the "partial reps
+        // counting" High finding: stall → REP_DONE → repCount++).
+        if (ghostState.lastRepPartial) {
+          var partialEl = document.getElementById('partialCount');
+          if (partialEl) {
+            partialEl.style.display = 'block';
+            partialEl.textContent = '+' + ghostState.partialRomReps +
+              ' partial — almost! A little deeper to count';
+          }
+        } else {
+          ghostState.repCount++;
+          if (typeof onRepCounted === 'function') onRepCounted(ghostState.repCount);
+        }
         var repEl = document.getElementById('repCountDisplay');
         if (repEl) repEl.textContent = ghostState.repCount + ' / ' + ghostState.targetReps;
         if (ghostState.repCount >= ghostState.targetReps) {
@@ -4750,7 +4853,7 @@ async function startCamera() {
     console.log('initPose called');
     var canvas   = document.getElementById('videoCanvas');
     var ctx      = canvas.getContext('2d');
-    var hasGhost = !!(EXERCISE_TYPE_MAP[EXERCISE_ID] && EXERCISE_PHASES[EXERCISE_TYPE_MAP[EXERCISE_ID]]);
+    var hasGhost = !!(cvTypeName() && EXERCISE_PHASES[cvTypeName()]);
 
     // ── VIDEO_MODE — for exercises in the allowlist (full_squats for
     //    now), set up the side-panel reference video element: src,
@@ -5283,19 +5386,20 @@ async function startCamera() {
     btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Saving...';
     if (stream) stream.getTracks().forEach(t => t.stop());
 
-    let avgForm;
+    // R2-W1-4: a session without camera tracking stores NO form score —
+    // null + rep_quality_source 'manual', never a fabricated default.
+    let avgForm = null;
+    let repSource = 'manual';
     if (window._cameraFailed) {
-      avgForm = parseInt(document.getElementById('manualForm')?.value || 70);
       const manualRepsEl = document.getElementById('manualReps');
       if (manualRepsEl && repsPerSet.length === 0) {
         const manualReps = parseInt(manualRepsEl.value) || PRESCRIBED_REPS;
         repsPerSet = Array(completedSets || PRESCRIBED_SETS).fill(manualReps);
         completedSets = repsPerSet.length;
       }
-    } else {
-      avgForm = formScores.length
-        ? Math.round(formScores.reduce((a,b) => a+b, 0) / formScores.length)
-        : 75;
+    } else if (formScores.length) {
+      avgForm = Math.round(formScores.reduce((a,b) => a+b, 0) / formScores.length);
+      repSource = 'cv';
     }
 
     const painDetails = painReported ? {
@@ -5330,6 +5434,7 @@ async function startCamera() {
         completed_sets:   completedSets,
         reps_per_set:     repsPerSet,
         form_score:       avgForm,
+        rep_quality_source: repSource,
         pain_reported:    painReported,
         pain_details:     painDetails,
         skipped:          false,
@@ -5383,7 +5488,8 @@ async function startCamera() {
         prescribed_rest:  REST_SECS,
         completed_sets:   0,
         reps_per_set:     [],
-        form_score:       0,
+        form_score:       null,
+        rep_quality_source: 'manual',
         pain_reported:    false,
         pain_details:     {},
         skipped:          true,

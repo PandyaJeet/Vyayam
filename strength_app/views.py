@@ -1003,7 +1003,13 @@ def get_or_create_analyzer(session_id):
 @rate_limit(max_attempts=120, window_seconds=60, key_prefix='analyze_frame')
 def analyze_frame(request: HttpRequest):
     """
-    Analyze video frame using REAL COMPUTER VISION
+    R2-W1-7: NOT ROUTED. The live patient path runs MediaPipe client-side
+    (v1_exercise_execute.html); no template ever fetched this endpoint.
+    This implementation scores every exercise with squat (knee-angle)
+    logic — D5 — so it must never be exposed as-is. Kept only as a
+    reference for a future server-side dispatch through the per-exercise
+    module registry (exercise_system/), which is how the desktop runner
+    already works.
 
     POST data:
     {

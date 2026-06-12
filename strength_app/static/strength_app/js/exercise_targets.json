@@ -1,0 +1,6991 @@
+{
+ "a_skip_drill": {
+  "display_name": "A Skip Drill",
+  "is_hold": false,
+  "js_type": null,
+  "movement_pattern": "",
+  "phases": {},
+  "tracking": "manual",
+  "unilateral": false
+ },
+ "ab_wheel_rollout": {
+  "display_name": "Ab Wheel Rollout",
+  "is_hold": false,
+  "js_type": null,
+  "movement_pattern": "rotate",
+  "phases": {
+   "active": {
+    "avg_knee": 90,
+    "tolerance": 20
+   },
+   "extended": {
+    "avg_knee": 90,
+    "tolerance": 20
+   },
+   "returning": {
+    "avg_knee": 90,
+    "tolerance": 20
+   },
+   "start": {
+    "avg_knee": 90,
+    "tolerance": 20
+   }
+  },
+  "tracking": "manual",
+  "unilateral": false
+ },
+ "adductor_rock": {
+  "display_name": "Adductor Rock",
+  "is_hold": true,
+  "js_type": null,
+  "movement_pattern": "lunge",
+  "phases": {
+   "holding": {
+    "avg_knee": 170,
+    "tolerance": 20
+   },
+   "rest": {
+    "avg_knee": 170,
+    "tolerance": 20
+   }
+  },
+  "tracking": "manual",
+  "unilateral": true
+ },
+ "altitude_drop_landing": {
+  "display_name": "Altitude Drop Landing",
+  "is_hold": false,
+  "js_type": null,
+  "movement_pattern": "",
+  "phases": {},
+  "tracking": "manual",
+  "unilateral": false
+ },
+ "ankle_dorsiflexion_wall": {
+  "display_name": "Ankle Dorsiflexion (Wall)",
+  "is_hold": true,
+  "js_type": null,
+  "movement_pattern": "squat",
+  "phases": {
+   "holding": {
+    "avg_knee": 170,
+    "tolerance": 20
+   },
+   "rest": {
+    "avg_knee": 170,
+    "tolerance": 20
+   }
+  },
+  "tracking": "manual",
+  "unilateral": true
+ },
+ "ankle_pumps": {
+  "display_name": "Ankle Pumps",
+  "is_hold": true,
+  "js_type": null,
+  "movement_pattern": "squat",
+  "phases": {
+   "holding": {
+    "avg_knee": 170,
+    "tolerance": 20
+   },
+   "rest": {
+    "avg_knee": 170,
+    "tolerance": 20
+   }
+  },
+  "tracking": "manual",
+  "unilateral": true
+ },
+ "archer_pull_up": {
+  "display_name": "Archer Pull-Up",
+  "is_hold": false,
+  "js_type": "HANG",
+  "movement_pattern": "pull",
+  "phases": {
+   "hang": {
+    "assist_arm": 175,
+    "tolerance": 10,
+    "working_arm": 175
+   },
+   "lower": {
+    "avg_elbow": [
+     60,
+     175
+    ],
+    "tolerance": 15
+   },
+   "pull": {
+    "assist_arm": 155,
+    "tolerance": 15,
+    "working_arm": 90
+   },
+   "start": {
+    "assist_arm": 175,
+    "tolerance": 10,
+    "working_arm": 175
+   },
+   "top": {
+    "assist_arm": 150,
+    "tolerance": 15,
+    "working_arm": 55
+   }
+  },
+  "tracking": "camera",
+  "unilateral": true
+ },
+ "archer_push_up": {
+  "display_name": "Archer Push-Up",
+  "is_hold": false,
+  "js_type": null,
+  "movement_pattern": "push",
+  "phases": {
+   "bottom": {
+    "assist_arm": 165,
+    "tolerance": 15,
+    "working_arm": 90
+   },
+   "down": {
+    "assist_arm": 165,
+    "tolerance": 15,
+    "working_arm": 90
+   },
+   "start": {
+    "assist_arm": 170,
+    "tolerance": 10,
+    "working_arm": 170
+   },
+   "up": {
+    "assist_arm": 170,
+    "tolerance": 10,
+    "working_arm": 170
+   }
+  },
+  "tracking": "manual",
+  "unilateral": true
+ },
+ "australian_row": {
+  "display_name": "Australian Row",
+  "is_hold": false,
+  "js_type": "ROW",
+  "movement_pattern": "pull",
+  "phases": {
+   "hanging": {
+    "avg_elbow": 170,
+    "tolerance": 15
+   },
+   "lowering": {
+    "avg_elbow": 100,
+    "tolerance": 20
+   },
+   "pulling": {
+    "avg_elbow": 100,
+    "tolerance": 20
+   },
+   "top": {
+    "avg_elbow": 50,
+    "tolerance": 15
+   }
+  },
+  "tracking": "camera",
+  "unilateral": false
+ },
+ "b_skip_drill": {
+  "display_name": "B Skip Drill",
+  "is_hold": false,
+  "js_type": null,
+  "movement_pattern": "",
+  "phases": {},
+  "tracking": "manual",
+  "unilateral": false
+ },
+ "b_stance_rdl": {
+  "display_name": "B-Stance RDL",
+  "is_hold": false,
+  "js_type": "HINGE_SINGLE",
+  "movement_pattern": "hinge",
+  "phases": {
+   "bottom": {
+    "avg_hip": 90,
+    "tolerance": 15
+   },
+   "hinging": {
+    "avg_hip": 130,
+    "tolerance": 15
+   },
+   "returning": {
+    "avg_hip": 130,
+    "tolerance": 15
+   },
+   "standing": {
+    "avg_hip": 175,
+    "tolerance": 10
+   }
+  },
+  "tracking": "camera",
+  "unilateral": false
+ },
+ "backward_walking": {
+  "display_name": "Backward Walking",
+  "is_hold": true,
+  "js_type": null,
+  "movement_pattern": "lunge",
+  "phases": {
+   "walking": {
+    "avg_knee": 175,
+    "left_knee": 175,
+    "right_knee": 175,
+    "tolerance": 10
+   }
+  },
+  "tracking": "manual",
+  "unilateral": false
+ },
+ "band_assisted_pull_up": {
+  "display_name": "Band-Assisted Pull-Up",
+  "is_hold": false,
+  "js_type": "HANG",
+  "movement_pattern": "pull",
+  "phases": {
+   "hang": {
+    "avg_elbow": 175,
+    "chin_clear": 0,
+    "tolerance": 10
+   },
+   "lower": {
+    "avg_elbow": [
+     60,
+     175
+    ],
+    "tolerance": 15
+   },
+   "pull": {
+    "avg_elbow": [
+     60,
+     175
+    ],
+    "tolerance": 15
+   },
+   "start": {
+    "avg_elbow": 175,
+    "chin_clear": 0,
+    "tolerance": 10
+   },
+   "top": {
+    "avg_elbow": 60,
+    "chin_clear": 1,
+    "tolerance": 15
+   }
+  },
+  "tracking": "camera",
+  "unilateral": false
+ },
+ "band_pull_apart": {
+  "display_name": "Band Pull-Apart",
+  "is_hold": false,
+  "js_type": "BAND_PULL_APART",
+  "movement_pattern": "pull",
+  "phases": {
+   "hanging": {
+    "avg_elbow": 170,
+    "tolerance": 15
+   },
+   "lowering": {
+    "avg_elbow": 100,
+    "tolerance": 20
+   },
+   "pulling": {
+    "avg_elbow": [
+     100,
+     170
+    ],
+    "tolerance": 20
+   },
+   "top": {
+    "avg_elbow": 170,
+    "tolerance": 15
+   }
+  },
+  "tracking": "camera",
+  "unilateral": false
+ },
+ "band_woodchop": {
+  "display_name": "Band Woodchop",
+  "is_hold": false,
+  "js_type": null,
+  "movement_pattern": "rotate",
+  "phases": {
+   "chopping": {
+    "tolerance": 20,
+    "trunk_rotation": 140
+   },
+   "high": {
+    "arm_path_high": 160,
+    "tolerance": 20
+   },
+   "low": {
+    "arm_path_low": 50,
+    "tolerance": 20
+   },
+   "returning": {
+    "tolerance": 20,
+    "trunk_rotation": 160
+   }
+  },
+  "tracking": "manual",
+  "unilateral": false
+ },
+ "banded_clamshells": {
+  "display_name": "Banded Clamshells",
+  "is_hold": false,
+  "js_type": "CLAMSHELL",
+  "movement_pattern": "",
+  "phases": {},
+  "tracking": "camera",
+  "unilateral": false
+ },
+ "banded_rdl": {
+  "display_name": "Banded RDL",
+  "is_hold": false,
+  "js_overrides": {
+   "down": {
+    "hip": 90
+   },
+   "start": {
+    "hip": 90
+   }
+  },
+  "js_type": "HINGE",
+  "movement_pattern": "hinge",
+  "phases": {
+   "bottom": {
+    "avg_hip": 90,
+    "avg_knee": 158,
+    "tolerance": 15
+   },
+   "hinging": {
+    "avg_hip": 130,
+    "avg_knee": 162,
+    "tolerance": 15
+   },
+   "returning": {
+    "avg_hip": 130,
+    "avg_knee": 162,
+    "tolerance": 15
+   },
+   "standing": {
+    "avg_hip": 175,
+    "avg_knee": 170,
+    "tolerance": 10
+   }
+  },
+  "tracking": "camera",
+  "unilateral": false
+ },
+ "banded_shoulder_dislocate": {
+  "display_name": "Banded Shoulder Dislocate",
+  "is_hold": true,
+  "js_type": null,
+  "movement_pattern": "pull",
+  "phases": {
+   "holding": {
+    "avg_knee": 170,
+    "tolerance": 20
+   },
+   "rest": {
+    "avg_knee": 170,
+    "tolerance": 20
+   }
+  },
+  "tracking": "manual",
+  "unilateral": false
+ },
+ "barbell_back_squat": {
+  "display_name": "Barbell Back Squat",
+  "is_hold": false,
+  "js_type": "SQUAT",
+  "movement_pattern": "",
+  "phases": {},
+  "tracking": "camera",
+  "unilateral": false
+ },
+ "barbell_front_squat": {
+  "display_name": "Barbell Front Squat",
+  "is_hold": false,
+  "js_type": "SQUAT",
+  "movement_pattern": "",
+  "phases": {},
+  "tracking": "camera",
+  "unilateral": false
+ },
+ "barbell_hip_thrust": {
+  "display_name": "Barbell Hip Thrust",
+  "is_hold": false,
+  "js_type": null,
+  "movement_pattern": "",
+  "phases": {},
+  "tracking": "manual",
+  "unilateral": false
+ },
+ "barbell_rdl": {
+  "display_name": "Barbell Rdl",
+  "is_hold": false,
+  "js_type": "HINGE",
+  "movement_pattern": "",
+  "phases": {},
+  "tracking": "camera",
+  "unilateral": false
+ },
+ "bear_crawl": {
+  "display_name": "Bear Crawl",
+  "is_hold": true,
+  "js_type": null,
+  "movement_pattern": "carry",
+  "phases": {},
+  "tracking": "manual",
+  "unilateral": false
+ },
+ "bear_crawl_cardio": {
+  "display_name": "Bear Crawl (Cardio)",
+  "is_hold": true,
+  "js_type": null,
+  "movement_pattern": "carry",
+  "phases": {
+   "holding": {
+    "avg_knee": 90,
+    "tolerance": 20
+   },
+   "setup": {
+    "avg_knee": 175,
+    "tolerance": 20
+   }
+  },
+  "tracking": "manual",
+  "unilateral": false
+ },
+ "bear_crawl_with_reach": {
+  "display_name": "Bear Crawl with Reach",
+  "is_hold": false,
+  "js_type": null,
+  "movement_pattern": "carry",
+  "phases": {
+   "hover": {
+    "spine_angle": 175,
+    "tolerance": 15
+   },
+   "reaching": {
+    "left_reach": 170,
+    "tolerance": 15
+   },
+   "return": {
+    "left_reach": 90,
+    "tolerance": 20
+   }
+  },
+  "tracking": "manual",
+  "unilateral": false
+ },
+ "bedsheet_row": {
+  "display_name": "Bedsheet Row",
+  "is_hold": false,
+  "js_type": "ROW",
+  "movement_pattern": "pull",
+  "phases": {
+   "lower": {
+    "avg_elbow": [
+     90,
+     170
+    ],
+    "tolerance": 15
+   },
+   "pull": {
+    "avg_elbow": 90,
+    "tolerance": 15,
+    "trunk_angle": 45
+   },
+   "start": {
+    "avg_elbow": 170,
+    "tolerance": 15,
+    "trunk_angle": 45
+   },
+   "top": {
+    "avg_elbow": 90,
+    "tolerance": 15,
+    "trunk_angle": 45
+   }
+  },
+  "tracking": "camera",
+  "unilateral": false
+ },
+ "bicep_curls": {
+  "display_name": "Bicep Curls",
+  "is_hold": false,
+  "js_type": null,
+  "movement_pattern": "pull",
+  "phases": {
+   "contracted": {
+    "avg_elbow": 40,
+    "tolerance": 12
+   },
+   "extended": {
+    "avg_elbow": 170,
+    "tolerance": 10
+   },
+   "extending": {
+    "avg_elbow": [
+     40,
+     170
+    ],
+    "tolerance": 15
+   },
+   "flexing": {
+    "avg_elbow": [
+     40,
+     170
+    ],
+    "tolerance": 15
+   }
+  },
+  "tracking": "manual",
+  "unilateral": false
+ },
+ "bicycle_crunch": {
+  "display_name": "Bicycle Crunch",
+  "is_hold": false,
+  "js_type": null,
+  "movement_pattern": "rotate",
+  "phases": {
+   "active": {
+    "avg_knee": 90,
+    "tolerance": 20
+   },
+   "start": {
+    "avg_knee": 90,
+    "tolerance": 20
+   }
+  },
+  "tracking": "manual",
+  "unilateral": false
+ },
+ "bird_dog": {
+  "display_name": "Bird Dog",
+  "is_hold": false,
+  "js_type": null,
+  "movement_pattern": "rotate",
+  "phases": {
+   "extending": {
+    "left_hip_ext": 170,
+    "right_hip_ext": 170,
+    "tolerance": 15
+   },
+   "quadruped": {
+    "spine_angle": 180,
+    "tolerance": 15
+   },
+   "return": {
+    "spine_angle": 180,
+    "tolerance": 15
+   }
+  },
+  "tracking": "manual",
+  "unilateral": false
+ },
+ "bodyweight_rdl": {
+  "display_name": "Bodyweight RDL",
+  "is_hold": false,
+  "js_type": "BW_RDL",
+  "movement_pattern": "hinge",
+  "phases": {
+   "bottom": {
+    "avg_hip": 90,
+    "avg_knee": 158,
+    "tolerance": 15
+   },
+   "hinging": {
+    "avg_hip": 130,
+    "avg_knee": 162,
+    "tolerance": 15
+   },
+   "returning": {
+    "avg_hip": 130,
+    "avg_knee": 162,
+    "tolerance": 15
+   },
+   "standing": {
+    "avg_hip": 175,
+    "avg_knee": 170,
+    "tolerance": 10
+   }
+  },
+  "tracking": "camera",
+  "unilateral": false
+ },
+ "bosu_balance": {
+  "display_name": "Unstable Surface Balance",
+  "is_hold": true,
+  "js_type": null,
+  "movement_pattern": "squat",
+  "phases": {},
+  "tracking": "manual",
+  "unilateral": false
+ },
+ "bosu_squat": {
+  "display_name": "Bosu Squat",
+  "is_hold": true,
+  "js_type": null,
+  "movement_pattern": "squat",
+  "phases": {
+   "holding": {
+    "avg_knee": 170,
+    "tolerance": 20
+   },
+   "rest": {
+    "avg_knee": 170,
+    "tolerance": 20
+   }
+  },
+  "tracking": "manual",
+  "unilateral": false
+ },
+ "bottoms_up_carry": {
+  "display_name": "Bottoms-Up Carry",
+  "is_hold": false,
+  "js_type": null,
+  "movement_pattern": "carry",
+  "phases": {
+   "active": {
+    "avg_knee": 90,
+    "tolerance": 20
+   },
+   "start": {
+    "avg_knee": 90,
+    "tolerance": 20
+   },
+   "walking": {
+    "avg_knee": 90,
+    "tolerance": 20
+   }
+  },
+  "tracking": "manual",
+  "unilateral": true
+ },
+ "box_jumps": {
+  "display_name": "Box Jumps",
+  "is_hold": false,
+  "js_type": null,
+  "movement_pattern": "squat",
+  "phases": {
+   "box_stance": {
+    "avg_knee": 165,
+    "position_level": "box",
+    "tolerance": 15
+   },
+   "ground_stance": {
+    "avg_knee": 165,
+    "position_level": "ground",
+    "tolerance": 15
+   },
+   "jumping": {
+    "position_level": "transitioning",
+    "tolerance": 40
+   },
+   "landing": {
+    "avg_knee": 130,
+    "position_level": "box",
+    "tolerance": 20
+   },
+   "loading": {
+    "avg_knee": 120,
+    "position_level": "ground",
+    "tolerance": 20
+   },
+   "stepping_down": {
+    "position_level": "transitioning",
+    "tolerance": 40
+   }
+  },
+  "tracking": "manual",
+  "unilateral": false
+ },
+ "box_push_up": {
+  "display_name": "Box Push-Up",
+  "is_hold": false,
+  "js_overrides": {
+   "down": {
+    "elbow": 90
+   },
+   "hold": {
+    "elbow": 90
+   }
+  },
+  "js_type": "PUSH_UP",
+  "movement_pattern": "push",
+  "phases": {
+   "bottom": {
+    "avg_elbow": 90,
+    "hip_angle": 175,
+    "tolerance": 15
+   },
+   "down": {
+    "avg_elbow": 90,
+    "hip_angle": 175,
+    "tolerance": 15
+   },
+   "start": {
+    "avg_elbow": 170,
+    "hip_angle": 175,
+    "tolerance": 10
+   },
+   "up": {
+    "avg_elbow": 170,
+    "hip_angle": 175,
+    "tolerance": 10
+   }
+  },
+  "tracking": "camera",
+  "unilateral": false
+ },
+ "box_squat": {
+  "display_name": "Box Squat",
+  "is_hold": false,
+  "js_type": "SQUAT",
+  "movement_pattern": "squat",
+  "phases": {
+   "ascending": {
+    "avg_knee": 135,
+    "tolerance": 15
+   },
+   "descending": {
+    "avg_knee": [
+     105,
+     175
+    ],
+    "tolerance": 15
+   },
+   "standing": {
+    "avg_knee": 175,
+    "tolerance": 10
+   },
+   "touching": {
+    "avg_knee": 105,
+    "tolerance": 12
+   }
+  },
+  "tracking": "camera",
+  "unilateral": false
+ },
+ "broad_jump": {
+  "display_name": "Broad Jump",
+  "is_hold": false,
+  "js_type": "PLYO_BROAD_JUMP",
+  "movement_pattern": "squat",
+  "phases": {
+   "active": {
+    "avg_knee": 90,
+    "tolerance": 20
+   },
+   "airborne": {
+    "avg_knee": 90,
+    "tolerance": 20
+   },
+   "landing": {
+    "avg_knee": 90,
+    "tolerance": 20
+   },
+   "loaded": {
+    "avg_knee": 90,
+    "tolerance": 20
+   },
+   "start": {
+    "avg_knee": 90,
+    "tolerance": 20
+   }
+  },
+  "tracking": "camera",
+  "unilateral": false
+ },
+ "bulgarian_split_squats": {
+  "display_name": "Bulgarian Split Squats",
+  "is_hold": false,
+  "js_type": "BSS",
+  "movement_pattern": "squat",
+  "phases": {
+   "ascending": {
+    "back": 165,
+    "back_knee": [
+     90,
+     140
+    ],
+    "front_knee": [
+     90,
+     175
+    ],
+    "tolerance": 12
+   },
+   "bottom": {
+    "back": 165,
+    "back_knee": 90,
+    "front_knee": 90,
+    "tolerance": 10
+   },
+   "descending": {
+    "back": 165,
+    "back_knee": [
+     90,
+     140
+    ],
+    "front_knee": [
+     90,
+     175
+    ],
+    "tolerance": 12
+   },
+   "standing": {
+    "back": 165,
+    "back_knee": 140,
+    "front_knee": 175,
+    "tolerance": 10
+   }
+  },
+  "tracking": "camera",
+  "unilateral": true
+ },
+ "burpees": {
+  "display_name": "Burpees",
+  "is_hold": false,
+  "js_type": null,
+  "movement_pattern": "squat",
+  "phases": {
+   "feet_forward": {
+    "body_position": "squat_low",
+    "hands_on_ground": true,
+    "tolerance": 15
+   },
+   "hands_down": {
+    "body_position": "squat_low",
+    "hands_on_ground": true,
+    "tolerance": 10
+   },
+   "jumping_up": {
+    "body_position": "standing",
+    "hands_overhead": true,
+    "tolerance": 15
+   },
+   "plank": {
+    "body_position": "plank",
+    "tolerance": 15
+   },
+   "squatting": {
+    "avg_knee": 120,
+    "body_position": "squatting",
+    "tolerance": 20
+   },
+   "standing": {
+    "avg_knee": 170,
+    "body_position": "standing",
+    "tolerance": 15
+   }
+  },
+  "tracking": "manual",
+  "unilateral": false
+ },
+ "butt_kicks": {
+  "display_name": "Butt Kicks",
+  "is_hold": false,
+  "js_type": null,
+  "movement_pattern": "hinge",
+  "phases": {
+   "extended": {
+    "tolerance": 10,
+    "working_knee_angle": 170
+   },
+   "kicking": {
+    "tolerance": 15,
+    "working_knee_angle": [
+     60,
+     170
+    ]
+   },
+   "lowering": {
+    "tolerance": 15,
+    "working_knee_angle": [
+     60,
+     170
+    ]
+   },
+   "peak": {
+    "tolerance": 15,
+    "working_knee_angle": 60
+   }
+  },
+  "tracking": "manual",
+  "unilateral": false
+ },
+ "calf_stretch": {
+  "display_name": "Calf Stretch",
+  "is_hold": true,
+  "js_type": null,
+  "movement_pattern": "squat",
+  "phases": {
+   "holding": {
+    "back_knee": 170,
+    "tolerance": 8
+   },
+   "ready": {
+    "back_knee": 165,
+    "tolerance": 10
+   }
+  },
+  "tracking": "manual",
+  "unilateral": false
+ },
+ "carioca_drill": {
+  "display_name": "Carioca Drill",
+  "is_hold": false,
+  "js_type": null,
+  "movement_pattern": "",
+  "phases": {},
+  "tracking": "manual",
+  "unilateral": false
+ },
+ "cat_cow": {
+  "display_name": "Cat-Cow",
+  "is_hold": false,
+  "js_type": null,
+  "movement_pattern": "hinge",
+  "phases": {
+   "cat": {
+    "spine_curve": 145,
+    "tolerance": 20
+   },
+   "cow": {
+    "spine_curve": 200,
+    "tolerance": 20
+   },
+   "neutral": {
+    "spine_curve": 175,
+    "tolerance": 15
+   }
+  },
+  "tracking": "manual",
+  "unilateral": false
+ },
+ "change_of_direction": {
+  "display_name": "Change of Direction",
+  "is_hold": false,
+  "js_type": null,
+  "movement_pattern": "lunge",
+  "phases": {
+   "cutting": {
+    "plant_knee": 110,
+    "tolerance": 20
+   },
+   "decelerating": {
+    "plant_knee": 130,
+    "tolerance": 20
+   },
+   "driving": {
+    "avg_knee": 145,
+    "tolerance": 20
+   },
+   "sprinting": {
+    "avg_knee": 150,
+    "tolerance": 25
+   }
+  },
+  "tracking": "manual",
+  "unilateral": true
+ },
+ "chest_stretch": {
+  "display_name": "Chest Stretch",
+  "is_hold": true,
+  "js_type": null,
+  "movement_pattern": "push",
+  "phases": {
+   "holding": {
+    "avg_elbow": 90,
+    "spread_ratio": 1.5,
+    "tolerance": 15
+   }
+  },
+  "tracking": "manual",
+  "unilateral": false
+ },
+ "chin_tuck": {
+  "display_name": "Chin Tuck",
+  "is_hold": true,
+  "js_type": null,
+  "movement_pattern": "pull",
+  "phases": {
+   "holding": {
+    "avg_knee": 170,
+    "tolerance": 20
+   },
+   "rest": {
+    "avg_knee": 170,
+    "tolerance": 20
+   }
+  },
+  "tracking": "manual",
+  "unilateral": false
+ },
+ "chin_up": {
+  "display_name": "Chin-Up",
+  "is_hold": false,
+  "js_type": "HANG",
+  "movement_pattern": "pull",
+  "phases": {
+   "hang": {
+    "avg_elbow": 175,
+    "tolerance": 10
+   },
+   "lower": {
+    "avg_elbow": 130,
+    "tolerance": 15
+   },
+   "pull": {
+    "avg_elbow": 100,
+    "tolerance": 15
+   },
+   "start": {
+    "avg_elbow": 175,
+    "tolerance": 10
+   },
+   "top": {
+    "avg_elbow": 55,
+    "chin_clear": 1,
+    "tolerance": 15
+   }
+  },
+  "tracking": "camera",
+  "unilateral": false
+ },
+ "clamshells": {
+  "display_name": "Clamshells",
+  "is_hold": false,
+  "js_type": "CLAMSHELL",
+  "movement_pattern": "hinge",
+  "phases": {
+   "closed": {
+    "knee_separation": 0,
+    "tolerance": 10
+   },
+   "closing": {
+    "knee_separation": 20,
+    "tolerance": 12
+   },
+   "open": {
+    "knee_separation": 45,
+    "tolerance": 10
+   },
+   "opening": {
+    "knee_separation": 30,
+    "tolerance": 12
+   }
+  },
+  "tracking": "camera",
+  "unilateral": true
+ },
+ "clapping_push_up": {
+  "display_name": "Clapping Push-Up",
+  "is_hold": false,
+  "js_type": null,
+  "movement_pattern": "push",
+  "phases": {
+   "down": {
+    "avg_elbow": [
+     90,
+     170
+    ],
+    "tolerance": 15
+   },
+   "up": {
+    "avg_elbow": [
+     90,
+     170
+    ],
+    "tolerance": 12
+   }
+  },
+  "tracking": "manual",
+  "unilateral": false
+ },
+ "clock_lunge": {
+  "display_name": "Clock Lunge",
+  "is_hold": false,
+  "js_type": null,
+  "movement_pattern": "lunge",
+  "phases": {
+   "ascending": {
+    "front_knee": 130,
+    "tolerance": 15
+   },
+   "bottom": {
+    "front_knee": 90,
+    "tolerance": 15
+   },
+   "descending": {
+    "front_knee": 120,
+    "tolerance": 15
+   },
+   "standing": {
+    "front_knee": 170,
+    "tolerance": 10
+   }
+  },
+  "tracking": "manual",
+  "unilateral": true
+ },
+ "clock_reaches": {
+  "display_name": "Clock Reaches",
+  "is_hold": false,
+  "js_type": null,
+  "movement_pattern": "lunge",
+  "phases": {
+   "center_balance": {
+    "reaching_knee": 175,
+    "stance_back": 165,
+    "stance_knee": 170,
+    "tolerance": 10
+   },
+   "reaching": {
+    "reaching_knee": 170,
+    "stance_back": 160,
+    "stance_knee": 165,
+    "tolerance": 12
+   },
+   "returning": {
+    "reaching_knee": 175,
+    "stance_back": 165,
+    "stance_knee": 170,
+    "tolerance": 10
+   }
+  },
+  "tracking": "manual",
+  "unilateral": true
+ },
+ "close_grip_pull_up": {
+  "display_name": "Close Grip Pull-Up",
+  "is_hold": false,
+  "js_type": "HANG",
+  "movement_pattern": "pull",
+  "phases": {
+   "hanging": {
+    "avg_elbow": 170,
+    "tolerance": 15
+   },
+   "lowering": {
+    "avg_elbow": 100,
+    "tolerance": 20
+   },
+   "pulling": {
+    "avg_elbow": [
+     30,
+     170
+    ],
+    "tolerance": 20
+   },
+   "top": {
+    "avg_elbow": 30,
+    "tolerance": 15
+   }
+  },
+  "tracking": "camera",
+  "unilateral": false
+ },
+ "close_grip_push_up": {
+  "display_name": "Close Grip Push-Up",
+  "is_hold": false,
+  "js_overrides": {
+   "down": {
+    "elbow": 90
+   },
+   "hold": {
+    "elbow": 90
+   }
+  },
+  "js_type": "PUSH_UP",
+  "movement_pattern": "push",
+  "phases": {
+   "bottom": {
+    "avg_elbow": 90,
+    "shoulder_angle": 15,
+    "tolerance": 15
+   },
+   "down": {
+    "avg_elbow": 90,
+    "shoulder_angle": 15,
+    "tolerance": 15
+   },
+   "start": {
+    "avg_elbow": 170,
+    "shoulder_angle": 15,
+    "tolerance": 10
+   },
+   "up": {
+    "avg_elbow": 170,
+    "shoulder_angle": 15,
+    "tolerance": 10
+   }
+  },
+  "tracking": "camera",
+  "unilateral": false
+ },
+ "commando_pull_up": {
+  "display_name": "Commando Pull-Up",
+  "is_hold": false,
+  "js_type": "HANG",
+  "movement_pattern": "pull",
+  "phases": {
+   "hanging": {
+    "avg_elbow": 170,
+    "tolerance": 15
+   },
+   "lowering": {
+    "avg_elbow": 100,
+    "tolerance": 20
+   },
+   "pulling": {
+    "avg_elbow": [
+     35,
+     170
+    ],
+    "tolerance": 20
+   },
+   "top": {
+    "avg_elbow": 35,
+    "tolerance": 15
+   }
+  },
+  "tracking": "camera",
+  "unilateral": false
+ },
+ "continuous_hurdle_hops": {
+  "display_name": "Continuous Hurdle Hops",
+  "is_hold": false,
+  "js_type": null,
+  "movement_pattern": "",
+  "phases": {},
+  "tracking": "manual",
+  "unilateral": false
+ },
+ "copenhagen_plank": {
+  "display_name": "Copenhagen Plank",
+  "is_hold": true,
+  "js_type": "SIDE_PLANK",
+  "movement_pattern": "rotate",
+  "phases": {},
+  "tracking": "camera",
+  "unilateral": true
+ },
+ "copenhagen_with_movement": {
+  "display_name": "Copenhagen with Movement",
+  "is_hold": false,
+  "js_type": null,
+  "movement_pattern": "rotate",
+  "phases": {
+   "abducting": {
+    "hip_ab_angle": 170,
+    "tolerance": 15
+   },
+   "adducting": {
+    "hip_ab_angle": 150,
+    "tolerance": 20
+   },
+   "neutral": {
+    "body_line": 175,
+    "tolerance": 15
+   }
+  },
+  "tracking": "manual",
+  "unilateral": true
+ },
+ "cossack_squat": {
+  "display_name": "Cossack Squat",
+  "is_hold": false,
+  "js_overrides": {
+   "down": {
+    "workingKnee": 70
+   },
+   "hold": {
+    "workingKnee": 70
+   }
+  },
+  "js_type": "SQUAT_SINGLE",
+  "movement_pattern": "squat",
+  "phases": {
+   "ascending": {
+    "avg_knee": 130,
+    "tolerance": 15
+   },
+   "bottom": {
+    "avg_knee": 70,
+    "tolerance": 15
+   },
+   "descending": {
+    "avg_knee": 130,
+    "tolerance": 15
+   },
+   "standing": {
+    "avg_knee": 175,
+    "tolerance": 10
+   }
+  },
+  "tracking": "camera",
+  "unilateral": true
+ },
+ "crab_walk": {
+  "display_name": "Crab Walk",
+  "is_hold": true,
+  "js_type": null,
+  "movement_pattern": "carry",
+  "phases": {},
+  "tracking": "manual",
+  "unilateral": false
+ },
+ "crawl_drag": {
+  "display_name": "Crawl and Drag",
+  "is_hold": false,
+  "js_type": null,
+  "movement_pattern": "carry",
+  "phases": {
+   "active": {
+    "avg_knee": 90,
+    "tolerance": 20
+   },
+   "crawling": {
+    "avg_knee": 90,
+    "tolerance": 20
+   },
+   "start": {
+    "avg_knee": 90,
+    "tolerance": 20
+   }
+  },
+  "tracking": "manual",
+  "unilateral": false
+ },
+ "curtsy_lunge": {
+  "display_name": "Curtsy Lunge",
+  "is_hold": false,
+  "js_overrides": {
+   "down": {
+    "knee": 90
+   },
+   "hold": {
+    "knee": 90
+   }
+  },
+  "js_type": "LUNGE",
+  "movement_pattern": "lunge",
+  "phases": {
+   "bottom": {
+    "front_knee": 90,
+    "tolerance": 15
+   },
+   "returning": {
+    "front_knee": 140,
+    "tolerance": 15
+   },
+   "standing": {
+    "front_knee": 170,
+    "tolerance": 10
+   },
+   "stepping": {
+    "front_knee": 130,
+    "tolerance": 15
+   }
+  },
+  "tracking": "camera",
+  "unilateral": true
+ },
+ "dead_bug": {
+  "display_name": "Dead Bug",
+  "is_hold": false,
+  "js_type": "DEAD_BUG",
+  "movement_pattern": "rotate",
+  "phases": {
+   "extending": {
+    "left_hip_flex": 160,
+    "right_hip_flex": 160,
+    "tolerance": 20
+   },
+   "return": {
+    "avg_knee": 90,
+    "tolerance": 15
+   },
+   "start": {
+    "avg_knee": 90,
+    "tolerance": 15
+   }
+  },
+  "tracking": "camera",
+  "unilateral": false
+ },
+ "dead_hang": {
+  "display_name": "Dead Hang",
+  "is_hold": true,
+  "js_type": "HANG_HOLD",
+  "movement_pattern": "pull",
+  "phases": {
+   "holding": {
+    "avg_elbow": 170,
+    "tolerance": 15
+   },
+   "setup": {
+    "avg_elbow": 170,
+    "tolerance": 20
+   }
+  },
+  "tracking": "camera",
+  "unilateral": false
+ },
+ "deadlift_dumbbell": {
+  "display_name": "Dumbbell Deadlift",
+  "is_hold": false,
+  "js_overrides": {
+   "down": {
+    "hip": 100
+   },
+   "start": {
+    "hip": 100
+   }
+  },
+  "js_type": "HINGE",
+  "movement_pattern": "hinge",
+  "phases": {
+   "bottom": {
+    "avg_hip": 100,
+    "avg_knee": 165,
+    "tolerance": 10
+   },
+   "hinging": {
+    "avg_hip": 130,
+    "avg_knee": 170,
+    "tolerance": 12
+   },
+   "rising": {
+    "avg_hip": 140,
+    "avg_knee": 170,
+    "tolerance": 12
+   },
+   "standing": {
+    "avg_hip": 175,
+    "avg_knee": 175,
+    "tolerance": 10
+   }
+  },
+  "tracking": "camera",
+  "unilateral": false
+ },
+ "decline_push_up": {
+  "display_name": "Decline Push-Up",
+  "is_hold": false,
+  "js_overrides": {
+   "down": {
+    "elbow": 90
+   },
+   "hold": {
+    "elbow": 90
+   }
+  },
+  "js_type": "PUSH_UP",
+  "movement_pattern": "push",
+  "phases": {
+   "bottom": {
+    "avg_elbow": 90,
+    "shoulder_angle": 90,
+    "tolerance": 15
+   },
+   "down": {
+    "avg_elbow": 90,
+    "shoulder_angle": 90,
+    "tolerance": 15
+   },
+   "start": {
+    "avg_elbow": 170,
+    "shoulder_angle": 75,
+    "tolerance": 10
+   },
+   "up": {
+    "avg_elbow": 170,
+    "shoulder_angle": 75,
+    "tolerance": 10
+   }
+  },
+  "tracking": "camera",
+  "unilateral": false
+ },
+ "decline_squats": {
+  "display_name": "Decline Squats",
+  "is_hold": false,
+  "js_overrides": {
+   "down": {
+    "knee": 90
+   },
+   "hold": {
+    "knee": 90
+   }
+  },
+  "js_type": "SQUAT",
+  "movement_pattern": "squat",
+  "phases": {
+   "ascending": {
+    "avg_knee": 135,
+    "left_knee": 135,
+    "right_knee": 135,
+    "tolerance": 12
+   },
+   "bottom": {
+    "avg_knee": 90,
+    "left_knee": 90,
+    "right_knee": 90,
+    "tolerance": 10
+   },
+   "descending": {
+    "avg_knee": 135,
+    "left_knee": 135,
+    "right_knee": 135,
+    "tolerance": 12
+   },
+   "standing": {
+    "avg_knee": 175,
+    "left_knee": 175,
+    "right_knee": 175,
+    "tolerance": 8
+   }
+  },
+  "tracking": "camera",
+  "unilateral": false
+ },
+ "deep_neck_flexor_activation": {
+  "display_name": "Deep Neck Flexor Activation",
+  "is_hold": true,
+  "js_type": null,
+  "movement_pattern": "pull",
+  "phases": {
+   "holding": {
+    "avg_knee": 170,
+    "tolerance": 20
+   },
+   "rest": {
+    "avg_knee": 170,
+    "tolerance": 20
+   }
+  },
+  "tracking": "manual",
+  "unilateral": false
+ },
+ "deficit_reverse_lunge": {
+  "display_name": "Deficit Reverse Lunge",
+  "is_hold": false,
+  "js_overrides": {
+   "down": {
+    "knee": 80
+   },
+   "hold": {
+    "knee": 80
+   }
+  },
+  "js_type": "LUNGE",
+  "movement_pattern": "lunge",
+  "phases": {
+   "ascending": {
+    "front_knee": 130,
+    "tolerance": 15
+   },
+   "bottom": {
+    "front_knee": 80,
+    "tolerance": 12
+   },
+   "descending": {
+    "front_knee": [
+     80,
+     170
+    ],
+    "tolerance": 15
+   },
+   "standing": {
+    "front_knee": 170,
+    "tolerance": 10
+   }
+  },
+  "tracking": "camera",
+  "unilateral": true
+ },
+ "depth_jump": {
+  "display_name": "Depth Jump",
+  "is_hold": false,
+  "js_type": null,
+  "movement_pattern": "squat",
+  "phases": {
+   "jumping": {
+    "avg_knee": 170,
+    "tolerance": 10
+   },
+   "landing": {
+    "avg_knee": 130,
+    "tolerance": 20
+   },
+   "loaded": {
+    "avg_knee": 100,
+    "tolerance": 20
+   },
+   "ready": {
+    "avg_knee": 175,
+    "tolerance": 10
+   }
+  },
+  "tracking": "manual",
+  "unilateral": false
+ },
+ "diamond_push_up": {
+  "display_name": "Diamond Push-Up",
+  "is_hold": false,
+  "js_type": "PUSH_UP",
+  "movement_pattern": "push",
+  "phases": {
+   "down": {
+    "avg_elbow": [
+     90,
+     170
+    ],
+    "tolerance": 15
+   },
+   "up": {
+    "avg_elbow": [
+     90,
+     170
+    ],
+    "tolerance": 12
+   }
+  },
+  "tracking": "camera",
+  "unilateral": false
+ },
+ "dip_progression": {
+  "display_name": "Dip Progression",
+  "is_hold": false,
+  "js_type": null,
+  "movement_pattern": "push",
+  "phases": {
+   "down": {
+    "avg_elbow": [
+     90,
+     170
+    ],
+    "tolerance": 15
+   },
+   "up": {
+    "avg_elbow": [
+     90,
+     170
+    ],
+    "tolerance": 12
+   }
+  },
+  "tracking": "manual",
+  "unilateral": false
+ },
+ "doorframe_row": {
+  "display_name": "Doorframe Row",
+  "is_hold": false,
+  "js_type": "ROW",
+  "movement_pattern": "pull",
+  "phases": {
+   "lower": {
+    "avg_elbow": [
+     90,
+     170
+    ],
+    "tolerance": 15
+   },
+   "pull": {
+    "avg_elbow": 90,
+    "body_lean": 130,
+    "tolerance": 15
+   },
+   "start": {
+    "avg_elbow": 170,
+    "body_lean": 130,
+    "tolerance": 15
+   },
+   "top": {
+    "avg_elbow": 90,
+    "body_lean": 130,
+    "tolerance": 15
+   }
+  },
+  "tracking": "camera",
+  "unilateral": false
+ },
+ "double_leg_balance": {
+  "display_name": "Double Leg Balance",
+  "is_hold": false,
+  "js_type": null,
+  "movement_pattern": "squat",
+  "phases": {
+   "holding": {
+    "avg_knee": 175,
+    "tolerance": 10
+   },
+   "standing": {
+    "avg_knee": 175,
+    "tolerance": 10
+   }
+  },
+  "tracking": "manual",
+  "unilateral": false
+ },
+ "dragon_flag_progression": {
+  "display_name": "Dragon Flag Progression",
+  "is_hold": false,
+  "js_type": null,
+  "movement_pattern": "rotate",
+  "phases": {
+   "bottom": {
+    "body_elevation": 0.1,
+    "tolerance": 0.05
+   },
+   "lifting": {
+    "body_angle": 175,
+    "tolerance": 10
+   },
+   "lowering": {
+    "body_elevation": 0.4,
+    "tolerance": 0.15
+   },
+   "top": {
+    "body_elevation": 0.7,
+    "tolerance": 0.1
+   }
+  },
+  "tracking": "manual",
+  "unilateral": false
+ },
+ "drop_landing": {
+  "display_name": "Drop Landing",
+  "is_hold": false,
+  "js_type": null,
+  "movement_pattern": "",
+  "phases": {},
+  "tracking": "manual",
+  "unilateral": false
+ },
+ "drop_push_up": {
+  "display_name": "Drop Push-Up",
+  "is_hold": false,
+  "js_type": null,
+  "movement_pattern": "push",
+  "phases": {
+   "active": {
+    "avg_knee": 90,
+    "tolerance": 20
+   },
+   "elevated": {
+    "avg_knee": 90,
+    "tolerance": 20
+   },
+   "falling": {
+    "avg_knee": 90,
+    "tolerance": 20
+   },
+   "push": {
+    "avg_knee": 90,
+    "tolerance": 20
+   },
+   "start": {
+    "avg_knee": 90,
+    "tolerance": 20
+   },
+   "up": {
+    "avg_knee": 90,
+    "tolerance": 20
+   }
+  },
+  "tracking": "manual",
+  "unilateral": false
+ },
+ "dumbbell_rowing": {
+  "display_name": "Dumbbell Rowing",
+  "is_hold": false,
+  "js_type": "ROW_BENT_OVER",
+  "movement_pattern": "pull",
+  "phases": {
+   "hanging": {
+    "avg_elbow": 170,
+    "tolerance": 12
+   },
+   "lowering": {
+    "avg_elbow": 120,
+    "tolerance": 15
+   },
+   "pulling": {
+    "avg_elbow": 110,
+    "tolerance": 15
+   },
+   "top": {
+    "avg_elbow": 45,
+    "tolerance": 12
+   }
+  },
+  "tracking": "camera",
+  "unilateral": false
+ },
+ "dumbbell_walking_lunge": {
+  "display_name": "Dumbbell Walking Lunge",
+  "is_hold": false,
+  "js_type": null,
+  "movement_pattern": "",
+  "phases": {},
+  "tracking": "manual",
+  "unilateral": false
+ },
+ "elevated_push_up": {
+  "display_name": "Elevated Push-Up",
+  "is_hold": false,
+  "js_type": "PUSH_UP",
+  "movement_pattern": "push",
+  "phases": {
+   "down": {
+    "avg_elbow": [
+     90,
+     170
+    ],
+    "tolerance": 15
+   },
+   "up": {
+    "avg_elbow": [
+     90,
+     170
+    ],
+    "tolerance": 12
+   }
+  },
+  "tracking": "camera",
+  "unilateral": false
+ },
+ "elevated_table_row": {
+  "display_name": "Elevated Table Row",
+  "is_hold": false,
+  "js_type": "ROW",
+  "movement_pattern": "pull",
+  "phases": {
+   "lower": {
+    "avg_elbow": [
+     90,
+     170
+    ],
+    "tolerance": 15
+   },
+   "pull": {
+    "avg_elbow": 90,
+    "body_angle": 175,
+    "tolerance": 15
+   },
+   "start": {
+    "avg_elbow": 170,
+    "body_angle": 175,
+    "tolerance": 10
+   },
+   "top": {
+    "avg_elbow": 90,
+    "body_angle": 175,
+    "tolerance": 15
+   }
+  },
+  "tracking": "camera",
+  "unilateral": false
+ },
+ "explosive_push_up": {
+  "display_name": "Explosive Push-Up",
+  "is_hold": false,
+  "js_type": null,
+  "movement_pattern": "push",
+  "phases": {
+   "bottom": {
+    "elbow_angle": 90,
+    "tolerance": 15
+   },
+   "exploding": {
+    "elbow_angle": 160,
+    "tolerance": 15
+   },
+   "lowering": {
+    "elbow_angle": 130,
+    "tolerance": 20
+   },
+   "top": {
+    "elbow_angle": 175,
+    "tolerance": 10
+   }
+  },
+  "tracking": "manual",
+  "unilateral": false
+ },
+ "face_pull_band": {
+  "display_name": "Face Pull (Band)",
+  "is_hold": false,
+  "js_type": "PULL",
+  "movement_pattern": "pull",
+  "phases": {
+   "hanging": {
+    "avg_elbow": 170,
+    "tolerance": 15
+   },
+   "lowering": {
+    "avg_elbow": 100,
+    "tolerance": 20
+   },
+   "pulling": {
+    "avg_elbow": 100,
+    "tolerance": 20
+   },
+   "top": {
+    "avg_elbow": 55,
+    "tolerance": 15
+   }
+  },
+  "tracking": "camera",
+  "unilateral": false
+ },
+ "farmer_carry": {
+  "display_name": "Farmer Carry",
+  "is_hold": true,
+  "js_type": null,
+  "movement_pattern": "carry",
+  "phases": {},
+  "tracking": "manual",
+  "unilateral": false
+ },
+ "foam_rolling": {
+  "display_name": "Foam Rolling",
+  "is_hold": true,
+  "js_type": null,
+  "movement_pattern": "hinge",
+  "phases": {
+   "rolling": {
+    "movement": 3,
+    "tolerance": 5
+   }
+  },
+  "tracking": "manual",
+  "unilateral": false
+ },
+ "frog_stretch": {
+  "display_name": "Frog Stretch",
+  "is_hold": true,
+  "js_type": null,
+  "movement_pattern": "hinge",
+  "phases": {
+   "holding": {
+    "avg_knee": 170,
+    "tolerance": 20
+   },
+   "rest": {
+    "avg_knee": 170,
+    "tolerance": 20
+   }
+  },
+  "tracking": "manual",
+  "unilateral": false
+ },
+ "full_pull_up": {
+  "display_name": "Pull-Up",
+  "is_hold": false,
+  "js_type": "HANG",
+  "movement_pattern": "pull",
+  "phases": {
+   "hang": {
+    "avg_elbow": 175,
+    "tolerance": 10
+   },
+   "lower": {
+    "avg_elbow": 130,
+    "tolerance": 15
+   },
+   "pull": {
+    "avg_elbow": 100,
+    "tolerance": 15
+   },
+   "start": {
+    "avg_elbow": 175,
+    "tolerance": 10
+   },
+   "top": {
+    "avg_elbow": 60,
+    "chin_clear": 1,
+    "tolerance": 15
+   }
+  },
+  "tracking": "camera",
+  "unilateral": false
+ },
+ "full_squats": {
+  "display_name": "Full Squats",
+  "is_hold": false,
+  "js_overrides": {
+   "down": {
+    "knee": 90
+   },
+   "hold": {
+    "knee": 90
+   }
+  },
+  "js_type": "SQUAT",
+  "movement_pattern": "squat",
+  "phases": {
+   "ascending": {
+    "avg_knee": [
+     95,
+     175
+    ],
+    "tolerance": 15
+   },
+   "bottom": {
+    "avg_knee": 90,
+    "tolerance": 10
+   },
+   "descending": {
+    "avg_knee": [
+     95,
+     175
+    ],
+    "tolerance": 15
+   },
+   "standing": {
+    "avg_knee": 175,
+    "tolerance": 10
+   }
+  },
+  "tracking": "camera",
+  "unilateral": false
+ },
+ "glute_bridge": {
+  "display_name": "Glute Bridge",
+  "is_hold": false,
+  "js_type": "GLUTE_BRIDGE_SUPINE",
+  "movement_pattern": "hinge",
+  "phases": {
+   "lifting": {
+    "avg_hip": [
+     90,
+     170
+    ],
+    "avg_knee": [
+     90,
+     100
+    ],
+    "body_alignment": [
+     160,
+     170
+    ],
+    "tolerance": 12
+   },
+   "lowering": {
+    "avg_hip": [
+     90,
+     170
+    ],
+    "avg_knee": [
+     90,
+     100
+    ],
+    "tolerance": 12
+   },
+   "lying": {
+    "avg_hip": 90,
+    "avg_knee": 90,
+    "tolerance": 10
+   },
+   "top": {
+    "avg_hip": 170,
+    "avg_knee": 100,
+    "body_alignment": 170,
+    "tolerance": 8
+   }
+  },
+  "tracking": "camera",
+  "unilateral": false
+ },
+ "goblet_squat": {
+  "display_name": "Goblet Squat",
+  "is_hold": false,
+  "js_overrides": {
+   "down": {
+    "knee": 85
+   },
+   "hold": {
+    "knee": 85
+   }
+  },
+  "js_type": "GOBLET_SQUAT",
+  "movement_pattern": "squat",
+  "phases": {
+   "ascending": {
+    "avg_knee": 130,
+    "tolerance": 15
+   },
+   "bottom": {
+    "avg_knee": 85,
+    "tolerance": 12
+   },
+   "descending": {
+    "avg_knee": [
+     85,
+     175
+    ],
+    "tolerance": 15
+   },
+   "standing": {
+    "avg_knee": 175,
+    "tolerance": 10
+   }
+  },
+  "tracking": "camera",
+  "unilateral": false
+ },
+ "good_morning": {
+  "display_name": "Good Morning",
+  "is_hold": false,
+  "js_overrides": {
+   "down": {
+    "hip": 95
+   },
+   "start": {
+    "hip": 95
+   }
+  },
+  "js_type": "HINGE",
+  "movement_pattern": "hinge",
+  "phases": {
+   "bottom": {
+    "avg_hip": 95,
+    "tolerance": 15
+   },
+   "hinging": {
+    "avg_hip": 130,
+    "tolerance": 15
+   },
+   "returning": {
+    "avg_hip": 130,
+    "tolerance": 15
+   },
+   "standing": {
+    "avg_hip": 175,
+    "tolerance": 10
+   }
+  },
+  "tracking": "camera",
+  "unilateral": false
+ },
+ "groin_stretch_butterfly": {
+  "display_name": "Groin Stretch (Butterfly)",
+  "is_hold": true,
+  "js_type": null,
+  "movement_pattern": "hinge",
+  "phases": {
+   "holding": {
+    "avg_knee_drop": 60,
+    "feet_together": true,
+    "knee_width_ratio": 2.0,
+    "tolerance": 20
+   }
+  },
+  "tracking": "manual",
+  "unilateral": false
+ },
+ "hamstring_curls_standing": {
+  "display_name": "Hamstring Curls (Standing)",
+  "is_hold": false,
+  "js_type": null,
+  "movement_pattern": "hinge",
+  "phases": {
+   "curling": {
+    "tolerance": 12,
+    "working_hip": 165,
+    "working_knee": 120
+   },
+   "extending": {
+    "tolerance": 12,
+    "working_hip": 165,
+    "working_knee": 120
+   },
+   "straight": {
+    "tolerance": 8,
+    "working_hip": 170,
+    "working_knee": 170
+   },
+   "top": {
+    "tolerance": 12,
+    "working_hip": 165,
+    "working_knee": 85
+   }
+  },
+  "tracking": "manual",
+  "unilateral": true
+ },
+ "hamstring_stretch": {
+  "display_name": "Hamstring Stretch",
+  "is_hold": true,
+  "js_type": null,
+  "movement_pattern": "hinge",
+  "phases": {
+   "holding": {
+    "elevated_knee": 170,
+    "hip_flexion": 140,
+    "tolerance": 8
+   },
+   "ready": {
+    "elevated_knee": 165,
+    "hip_flexion": 160,
+    "tolerance": 10
+   }
+  },
+  "tracking": "manual",
+  "unilateral": false
+ },
+ "handstand_wall_hold": {
+  "display_name": "Handstand Wall Hold",
+  "is_hold": true,
+  "js_type": null,
+  "movement_pattern": "push",
+  "phases": {
+   "hold": {
+    "avg_elbow": 175,
+    "body_align": 175,
+    "tolerance": 10
+   },
+   "rest": {
+    "avg_elbow": 170,
+    "tolerance": 20
+   }
+  },
+  "tracking": "manual",
+  "unilateral": false
+ },
+ "hanging_leg_raise": {
+  "display_name": "Hanging Leg Raise",
+  "is_hold": false,
+  "js_type": null,
+  "movement_pattern": "rotate",
+  "phases": {
+   "hanging": {
+    "avg_hip_flex": 175,
+    "tolerance": 15
+   },
+   "lowering": {
+    "avg_hip_flex": 130,
+    "tolerance": 20
+   },
+   "raising": {
+    "avg_hip_flex": 130,
+    "tolerance": 20
+   },
+   "top": {
+    "avg_hip_flex": 90,
+    "tolerance": 15
+   }
+  },
+  "tracking": "manual",
+  "unilateral": false
+ },
+ "heavy_calf_raise": {
+  "display_name": "Heavy Calf Raise",
+  "is_hold": false,
+  "js_type": null,
+  "movement_pattern": "",
+  "phases": {},
+  "tracking": "manual",
+  "unilateral": false
+ },
+ "heel_drop": {
+  "display_name": "Heel Drop",
+  "is_hold": true,
+  "js_type": null,
+  "movement_pattern": "squat",
+  "phases": {
+   "holding": {
+    "avg_knee": 170,
+    "tolerance": 20
+   },
+   "rest": {
+    "avg_knee": 170,
+    "tolerance": 20
+   }
+  },
+  "tracking": "manual",
+  "unilateral": true
+ },
+ "heel_elevated_squat": {
+  "display_name": "Heel Elevated Squat",
+  "is_hold": false,
+  "js_overrides": {
+   "down": {
+    "knee": 80
+   },
+   "hold": {
+    "knee": 80
+   }
+  },
+  "js_type": "SQUAT",
+  "movement_pattern": "squat",
+  "phases": {
+   "ascending": {
+    "avg_knee": 125,
+    "tolerance": 15
+   },
+   "bottom": {
+    "avg_knee": 80,
+    "tolerance": 12
+   },
+   "descending": {
+    "avg_knee": [
+     80,
+     175
+    ],
+    "tolerance": 15
+   },
+   "standing": {
+    "avg_knee": 175,
+    "tolerance": 10
+   }
+  },
+  "tracking": "camera",
+  "unilateral": false
+ },
+ "heel_slides": {
+  "display_name": "Heel Slides",
+  "is_hold": false,
+  "js_type": null,
+  "movement_pattern": "hinge",
+  "phases": {
+   "bent": {
+    "avg_knee": 90,
+    "tolerance": 15
+   },
+   "holding": {
+    "avg_knee": 90,
+    "tolerance": 15
+   },
+   "returning": {
+    "avg_knee": [
+     90,
+     175
+    ],
+    "tolerance": 15
+   },
+   "sliding": {
+    "avg_knee": [
+     90,
+     175
+    ],
+    "tolerance": 15
+   },
+   "straight": {
+    "avg_knee": 175,
+    "tolerance": 8
+   }
+  },
+  "tracking": "manual",
+  "unilateral": false
+ },
+ "high_knees": {
+  "display_name": "High Knees",
+  "is_hold": false,
+  "js_type": null,
+  "movement_pattern": "squat",
+  "phases": {
+   "down": {
+    "active_hip_angle": 175,
+    "active_knee_height": 0,
+    "tolerance": 20
+   },
+   "raising": {
+    "active_hip_angle": [
+     75,
+     175
+    ],
+    "active_knee_height": [
+     0,
+     60
+    ],
+    "tolerance": 25
+   },
+   "up": {
+    "active_hip_angle": 75,
+    "active_knee_height": 60,
+    "tolerance": 20
+   }
+  },
+  "tracking": "manual",
+  "unilateral": false
+ },
+ "hindu_push_up": {
+  "display_name": "Hindu Push-Up",
+  "is_hold": false,
+  "js_type": null,
+  "movement_pattern": "push",
+  "phases": {
+   "cobra": {
+    "avg_elbow": 160,
+    "tolerance": 15
+   },
+   "diving": {
+    "avg_elbow": 100,
+    "tolerance": 20
+   },
+   "pike": {
+    "avg_elbow": 165,
+    "tolerance": 15
+   },
+   "returning": {
+    "avg_elbow": [
+     100,
+     165
+    ],
+    "tolerance": 20
+   }
+  },
+  "tracking": "manual",
+  "unilateral": false
+ },
+ "hindu_squat": {
+  "display_name": "Hindu Squat",
+  "is_hold": false,
+  "js_overrides": {
+   "down": {
+    "knee": 80
+   },
+   "hold": {
+    "knee": 80
+   }
+  },
+  "js_type": "SQUAT",
+  "movement_pattern": "squat",
+  "phases": {
+   "ascending": {
+    "avg_knee": 130,
+    "tolerance": 15
+   },
+   "bottom": {
+    "avg_knee": 80,
+    "tolerance": 15
+   },
+   "descending": {
+    "avg_knee": 130,
+    "tolerance": 15
+   },
+   "standing": {
+    "avg_knee": 175,
+    "tolerance": 10
+   }
+  },
+  "tracking": "camera",
+  "unilateral": false
+ },
+ "hinge_hold_assess": {
+  "display_name": "Hinge Hold Assess",
+  "is_hold": true,
+  "js_type": "HINGE_HOLD",
+  "movement_pattern": "",
+  "phases": {},
+  "tracking": "camera",
+  "unilateral": false
+ },
+ "hip_abduction_sideline": {
+  "display_name": "Hip Abduction (Sideline)",
+  "is_hold": false,
+  "js_type": null,
+  "movement_pattern": "hinge",
+  "phases": {
+   "down": {
+    "left_knee": 165,
+    "leg_separation": 40,
+    "tolerance": 10
+   },
+   "lifting": {
+    "left_knee": 165,
+    "leg_separation": 100,
+    "tolerance": 10
+   },
+   "lowering": {
+    "left_knee": 165,
+    "leg_separation": 100,
+    "tolerance": 10
+   },
+   "top": {
+    "left_knee": 165,
+    "leg_separation": 150,
+    "tolerance": 8
+   }
+  },
+  "tracking": "manual",
+  "unilateral": true
+ },
+ "hip_abduction_standing": {
+  "display_name": "Hip Abduction (Standing)",
+  "is_hold": false,
+  "js_type": null,
+  "movement_pattern": "hinge",
+  "phases": {
+   "holding": {
+    "max_abduction": 135,
+    "tolerance": 8
+   },
+   "lifted": {
+    "max_abduction": 135,
+    "tolerance": 10
+   },
+   "lifting": {
+    "max_abduction": [
+     90,
+     135
+    ],
+    "tolerance": 10
+   },
+   "lowering": {
+    "max_abduction": [
+     90,
+     135
+    ],
+    "tolerance": 10
+   },
+   "standing": {
+    "max_abduction": 90,
+    "tolerance": 10
+   }
+  },
+  "tracking": "manual",
+  "unilateral": true
+ },
+ "hip_cars": {
+  "display_name": "Hip CARs",
+  "is_hold": true,
+  "js_type": null,
+  "movement_pattern": "hinge",
+  "phases": {},
+  "tracking": "manual",
+  "unilateral": true
+ },
+ "hip_flexor_stretch": {
+  "display_name": "Hip Flexor Stretch",
+  "is_hold": true,
+  "js_type": null,
+  "movement_pattern": "hinge",
+  "phases": {
+   "holding": {
+    "back": 165,
+    "back_hip": 160,
+    "front_knee": 90,
+    "tolerance": 10
+   },
+   "ready": {
+    "back": 165,
+    "back_hip": 140,
+    "front_knee": 90,
+    "tolerance": 10
+   }
+  },
+  "tracking": "manual",
+  "unilateral": false
+ },
+ "hip_hinge_wall": {
+  "display_name": "Hip Hinge to Wall",
+  "is_hold": false,
+  "js_type": "HINGE",
+  "movement_pattern": "hinge",
+  "phases": {
+   "hinging": {
+    "avg_hip": 135,
+    "avg_knee": 160,
+    "tolerance": 15
+   },
+   "returning": {
+    "avg_hip": 135,
+    "avg_knee": 160,
+    "tolerance": 15
+   },
+   "standing": {
+    "avg_hip": 175,
+    "avg_knee": 170,
+    "tolerance": 10
+   },
+   "touch": {
+    "avg_hip": 100,
+    "avg_knee": 155,
+    "tolerance": 15
+   }
+  },
+  "tracking": "camera",
+  "unilateral": false
+ },
+ "hip_thrust_banded": {
+  "display_name": "Banded Hip Thrust",
+  "is_hold": false,
+  "js_type": null,
+  "movement_pattern": "hinge",
+  "phases": {
+   "bottom": {
+    "avg_hip": 95,
+    "tolerance": 15
+   },
+   "hinging": {
+    "avg_hip": 130,
+    "tolerance": 15
+   },
+   "returning": {
+    "avg_hip": 130,
+    "tolerance": 15
+   },
+   "standing": {
+    "avg_hip": 175,
+    "tolerance": 10
+   }
+  },
+  "tracking": "manual",
+  "unilateral": false
+ },
+ "hip_thrust_bodyweight": {
+  "display_name": "Hip Thrust (Bodyweight)",
+  "is_hold": false,
+  "js_type": null,
+  "movement_pattern": "hinge",
+  "phases": {
+   "holding": {
+    "avg_hip_ext": 175,
+    "avg_knee": 90,
+    "tolerance": 12
+   },
+   "lowered": {
+    "avg_hip_ext": 70,
+    "avg_knee": 90,
+    "tolerance": 15
+   },
+   "lowering": {
+    "avg_hip_ext": [
+     70,
+     175
+    ],
+    "avg_knee": 90,
+    "tolerance": 15
+   },
+   "rising": {
+    "avg_hip_ext": 120,
+    "avg_knee": 90,
+    "tolerance": 15
+   }
+  },
+  "tracking": "manual",
+  "unilateral": false
+ },
+ "hollow_body_hold": {
+  "display_name": "Hollow Body Hold",
+  "is_hold": true,
+  "js_type": null,
+  "movement_pattern": "rotate",
+  "phases": {},
+  "tracking": "manual",
+  "unilateral": false
+ },
+ "hollow_body_rock": {
+  "display_name": "Hollow Body Rock",
+  "is_hold": false,
+  "js_type": null,
+  "movement_pattern": "rotate",
+  "phases": {
+   "hold": {
+    "lumbar_contact": 160,
+    "tolerance": 15
+   },
+   "rocking_b": {
+    "shoulder_position": 0.55,
+    "tolerance": 0.05
+   },
+   "rocking_f": {
+    "shoulder_position": 0.45,
+    "tolerance": 0.05
+   }
+  },
+  "tracking": "manual",
+  "unilateral": false
+ },
+ "hurdle_hop": {
+  "display_name": "Hurdle Hop",
+  "is_hold": false,
+  "js_type": null,
+  "movement_pattern": "squat",
+  "phases": {
+   "airborne": {
+    "hip_height_ratio": 0.3,
+    "tolerance": 0.1
+   },
+   "grounded": {
+    "avg_knee": 145,
+    "tolerance": 25
+   },
+   "landing": {
+    "avg_knee": 125,
+    "tolerance": 20
+   }
+  },
+  "tracking": "manual",
+  "unilateral": false
+ },
+ "incline_push_up": {
+  "display_name": "Incline Push-Up",
+  "is_hold": false,
+  "js_overrides": {
+   "down": {
+    "elbow": 90
+   },
+   "hold": {
+    "elbow": 90
+   }
+  },
+  "js_type": "PUSH_UP",
+  "movement_pattern": "push",
+  "phases": {
+   "bottom": {
+    "avg_elbow": 90,
+    "hip_angle": 175,
+    "tolerance": 15
+   },
+   "down": {
+    "avg_elbow": 90,
+    "hip_angle": 175,
+    "tolerance": 15
+   },
+   "start": {
+    "avg_elbow": 170,
+    "hip_angle": 175,
+    "tolerance": 10
+   },
+   "up": {
+    "avg_elbow": 170,
+    "hip_angle": 175,
+    "tolerance": 10
+   }
+  },
+  "tracking": "camera",
+  "unilateral": false
+ },
+ "inverted_row": {
+  "display_name": "Inverted Row",
+  "is_hold": false,
+  "js_type": "ROW",
+  "movement_pattern": "pull",
+  "phases": {
+   "hanging": {
+    "avg_elbow": 170,
+    "tolerance": 15
+   },
+   "lowering": {
+    "avg_elbow": 100,
+    "tolerance": 20
+   },
+   "pulling": {
+    "avg_elbow": 100,
+    "tolerance": 20
+   },
+   "top": {
+    "avg_elbow": 50,
+    "tolerance": 15
+   }
+  },
+  "tracking": "camera",
+  "unilateral": false
+ },
+ "isometric_quad_set": {
+  "display_name": "Isometric Quad Set",
+  "is_hold": true,
+  "js_type": null,
+  "movement_pattern": "squat",
+  "phases": {
+   "holding": {
+    "avg_knee": 170,
+    "tolerance": 20
+   },
+   "rest": {
+    "avg_knee": 170,
+    "tolerance": 20
+   }
+  },
+  "tracking": "manual",
+  "unilateral": true
+ },
+ "isometric_shoulder_er": {
+  "display_name": "Isometric Shoulder ER",
+  "is_hold": true,
+  "js_type": null,
+  "movement_pattern": "pull",
+  "phases": {
+   "holding": {
+    "avg_knee": 170,
+    "tolerance": 20
+   },
+   "rest": {
+    "avg_knee": 170,
+    "tolerance": 20
+   }
+  },
+  "tracking": "manual",
+  "unilateral": true
+ },
+ "isometric_shoulder_ir": {
+  "display_name": "Isometric Shoulder IR",
+  "is_hold": true,
+  "js_type": null,
+  "movement_pattern": "push",
+  "phases": {
+   "holding": {
+    "avg_knee": 170,
+    "tolerance": 20
+   },
+   "rest": {
+    "avg_knee": 170,
+    "tolerance": 20
+   }
+  },
+  "tracking": "manual",
+  "unilateral": true
+ },
+ "it_band_stretch": {
+  "display_name": "IT Band Stretch",
+  "is_hold": true,
+  "js_type": null,
+  "movement_pattern": "lunge",
+  "phases": {
+   "holding": {
+    "both_feet_down": true,
+    "feet_close": true,
+    "lean_angle": 25,
+    "tolerance": 10
+   }
+  },
+  "tracking": "manual",
+  "unilateral": false
+ },
+ "jump_squats": {
+  "display_name": "Jump Squats",
+  "is_hold": false,
+  "js_type": "JUMP",
+  "movement_pattern": "squat",
+  "phases": {
+   "jumping": {
+    "avg_knee": 165,
+    "tolerance": 15
+   },
+   "landing": {
+    "avg_knee": 135,
+    "tolerance": 15
+   },
+   "squat_ready": {
+    "avg_knee": 145,
+    "tolerance": 12
+   },
+   "stabilized": {
+    "avg_knee": 145,
+    "tolerance": 10
+   }
+  },
+  "tracking": "camera",
+  "unilateral": false
+ },
+ "jumping_jacks": {
+  "display_name": "Jumping Jacks",
+  "is_hold": false,
+  "js_type": null,
+  "movement_pattern": "squat",
+  "phases": {
+   "apart": {
+    "arms_raised": true,
+    "feet_distance": 160,
+    "tolerance": 20
+   },
+   "jumping_in": {
+    "feet_distance": 100,
+    "tolerance": 30
+   },
+   "jumping_out": {
+    "feet_distance": 100,
+    "tolerance": 30
+   },
+   "together": {
+    "arms_raised": false,
+    "feet_distance": 40,
+    "tolerance": 20
+   }
+  },
+  "tracking": "manual",
+  "unilateral": false
+ },
+ "jumping_pull_up": {
+  "display_name": "Jumping Pull-Up",
+  "is_hold": false,
+  "js_type": "HANG",
+  "movement_pattern": "pull",
+  "phases": {
+   "hanging": {
+    "avg_elbow": 170,
+    "tolerance": 15
+   },
+   "lowering": {
+    "avg_elbow": 100,
+    "tolerance": 20
+   },
+   "pulling": {
+    "avg_elbow": [
+     30,
+     170
+    ],
+    "tolerance": 20
+   },
+   "top": {
+    "avg_elbow": 30,
+    "tolerance": 15
+   }
+  },
+  "tracking": "camera",
+  "unilateral": false
+ },
+ "jumping_rope_simulation": {
+  "display_name": "Jumping Rope Simulation",
+  "is_hold": false,
+  "js_type": null,
+  "movement_pattern": "squat",
+  "phases": {
+   "active": {
+    "avg_knee": 90,
+    "tolerance": 20
+   },
+   "hopping": {
+    "avg_knee": 90,
+    "tolerance": 20
+   },
+   "start": {
+    "avg_knee": 90,
+    "tolerance": 20
+   }
+  },
+  "tracking": "manual",
+  "unilateral": false
+ },
+ "kettlebell_swing": {
+  "display_name": "Kettlebell Swing",
+  "is_hold": false,
+  "js_type": null,
+  "movement_pattern": "",
+  "phases": {},
+  "tracking": "manual",
+  "unilateral": false
+ },
+ "knee_circles": {
+  "display_name": "Knee Circles",
+  "is_hold": true,
+  "js_type": null,
+  "movement_pattern": "squat",
+  "phases": {},
+  "tracking": "manual",
+  "unilateral": false
+ },
+ "knee_extension_sitting": {
+  "display_name": "Knee Extension (Sitting)",
+  "is_hold": false,
+  "js_type": null,
+  "movement_pattern": "squat",
+  "phases": {
+   "bent": {
+    "tolerance": 10,
+    "working_knee": 95
+   },
+   "extended": {
+    "tolerance": 8,
+    "working_knee": 165
+   },
+   "extending": {
+    "tolerance": 15,
+    "working_knee": 130
+   },
+   "flexing": {
+    "tolerance": 15,
+    "working_knee": 130
+   }
+  },
+  "tracking": "manual",
+  "unilateral": false
+ },
+ "knee_push_up": {
+  "display_name": "Knee Push-Up",
+  "is_hold": false,
+  "js_overrides": {
+   "down": {
+    "elbow": 90
+   },
+   "hold": {
+    "elbow": 90
+   }
+  },
+  "js_type": "PUSH_UP",
+  "movement_pattern": "push",
+  "phases": {
+   "bottom": {
+    "avg_elbow": 90,
+    "tolerance": 15,
+    "trunk_angle": 175
+   },
+   "down": {
+    "avg_elbow": 90,
+    "tolerance": 15,
+    "trunk_angle": 175
+   },
+   "start": {
+    "avg_elbow": 170,
+    "tolerance": 10,
+    "trunk_angle": 175
+   },
+   "up": {
+    "avg_elbow": 170,
+    "tolerance": 10,
+    "trunk_angle": 175
+   }
+  },
+  "tracking": "camera",
+  "unilateral": false
+ },
+ "l_sit_floor": {
+  "display_name": "L-Sit (Floor)",
+  "is_hold": true,
+  "js_type": null,
+  "movement_pattern": "rotate",
+  "phases": {
+   "holding": {
+    "avg_knee": 90,
+    "tolerance": 20
+   },
+   "setup": {
+    "avg_knee": 175,
+    "tolerance": 20
+   }
+  },
+  "tracking": "manual",
+  "unilateral": false
+ },
+ "l_sit_pull_up": {
+  "display_name": "L-Sit Pull-Up",
+  "is_hold": false,
+  "js_type": "HANG",
+  "movement_pattern": "pull",
+  "phases": {
+   "hang": {
+    "avg_elbow": 175,
+    "hip_angle": 90,
+    "tolerance": 10
+   },
+   "lower": {
+    "avg_elbow": [
+     60,
+     175
+    ],
+    "tolerance": 15
+   },
+   "pull": {
+    "avg_elbow": 100,
+    "hip_angle": 90,
+    "tolerance": 15
+   },
+   "start": {
+    "avg_elbow": 175,
+    "hip_angle": 90,
+    "tolerance": 10
+   },
+   "top": {
+    "avg_elbow": 60,
+    "chin_clear": 1,
+    "hip_angle": 90,
+    "tolerance": 15
+   }
+  },
+  "tracking": "camera",
+  "unilateral": false
+ },
+ "lateral_band_walks": {
+  "display_name": "Lateral Band Walks",
+  "is_hold": false,
+  "js_type": null,
+  "movement_pattern": "hinge",
+  "phases": {
+   "squat_position": {
+    "avg_knee": 145,
+    "knee_separation": "wide",
+    "left_knee": 145,
+    "right_knee": 145,
+    "tolerance": 12
+   },
+   "stepping": {
+    "avg_knee": 145,
+    "knee_separation": "wide",
+    "left_knee": 145,
+    "right_knee": 145,
+    "tolerance": 15
+   }
+  },
+  "tracking": "manual",
+  "unilateral": false
+ },
+ "lateral_bear_crawl": {
+  "display_name": "Lateral Bear Crawl",
+  "is_hold": true,
+  "js_type": null,
+  "movement_pattern": "carry",
+  "phases": {},
+  "tracking": "manual",
+  "unilateral": false
+ },
+ "lateral_bound": {
+  "display_name": "Lateral Bound",
+  "is_hold": false,
+  "js_type": "PLYO_LATERAL_BOUND_STICK",
+  "movement_pattern": "lunge",
+  "phases": {
+   "airborne": {
+    "avg_knee": 155,
+    "tolerance": 25
+   },
+   "landing": {
+    "landing_knee": 140,
+    "tolerance": 20
+   },
+   "loaded": {
+    "avg_knee": 150,
+    "tolerance": 20
+   }
+  },
+  "tracking": "camera",
+  "unilateral": true
+ },
+ "lateral_bound_and_stick": {
+  "display_name": "Lateral Bound and Stick",
+  "is_hold": false,
+  "js_type": "PLYO_LATERAL_BOUND_STICK",
+  "movement_pattern": "lunge",
+  "phases": {
+   "active": {
+    "avg_knee": 90,
+    "tolerance": 20
+   },
+   "airborne": {
+    "avg_knee": 90,
+    "tolerance": 20
+   },
+   "holding": {
+    "avg_knee": 90,
+    "tolerance": 20
+   },
+   "landing": {
+    "avg_knee": 90,
+    "tolerance": 20
+   },
+   "loaded": {
+    "avg_knee": 90,
+    "tolerance": 20
+   },
+   "start": {
+    "avg_knee": 90,
+    "tolerance": 20
+   }
+  },
+  "tracking": "camera",
+  "unilateral": true
+ },
+ "lateral_bound_stick": {
+  "display_name": "Lateral Bound Stick",
+  "is_hold": false,
+  "js_type": "PLYO_LATERAL_BOUND_STICK",
+  "movement_pattern": "",
+  "phases": {},
+  "tracking": "camera",
+  "unilateral": false
+ },
+ "lateral_gait_training": {
+  "display_name": "Lateral Gait Training",
+  "is_hold": false,
+  "js_type": null,
+  "movement_pattern": "lunge",
+  "phases": {
+   "center": {
+    "avg_knee": 175,
+    "feet_distance": 50,
+    "tolerance": 15
+   },
+   "stepping": {
+    "avg_knee": 170,
+    "feet_distance": 150,
+    "tolerance": 20
+   }
+  },
+  "tracking": "manual",
+  "unilateral": false
+ },
+ "lateral_hops": {
+  "display_name": "Lateral Hops",
+  "is_hold": false,
+  "js_type": null,
+  "movement_pattern": "lunge",
+  "phases": {
+   "landing": {
+    "stance_knee": 150,
+    "tolerance": 12
+   },
+   "stable": {
+    "stance_knee": 175,
+    "tolerance": 8
+   },
+   "standing": {
+    "stance_knee": 175,
+    "tolerance": 10
+   }
+  },
+  "tracking": "manual",
+  "unilateral": false
+ },
+ "lateral_lunges": {
+  "display_name": "Lateral Lunges",
+  "is_hold": false,
+  "js_type": "LUNGE",
+  "movement_pattern": "lunge",
+  "phases": {
+   "bottom": {
+    "back": 160,
+    "lunging_knee": 90,
+    "straight_knee": 175,
+    "tolerance": 10
+   },
+   "center": {
+    "back": 165,
+    "left_knee": 175,
+    "right_knee": 175,
+    "tolerance": 10
+   },
+   "returning": {
+    "back": 160,
+    "lunging_knee": 140,
+    "straight_knee": 175,
+    "tolerance": 12
+   },
+   "stepping_side": {
+    "back": 160,
+    "lunging_knee": 140,
+    "straight_knee": 175,
+    "tolerance": 12
+   }
+  },
+  "tracking": "camera",
+  "unilateral": true
+ },
+ "lateral_shuffle_drill": {
+  "display_name": "Lateral Shuffle Drill",
+  "is_hold": false,
+  "js_type": null,
+  "movement_pattern": "",
+  "phases": {},
+  "tracking": "manual",
+  "unilateral": false
+ },
+ "lateral_step_down": {
+  "display_name": "Lateral Step-Down",
+  "is_hold": false,
+  "js_overrides": {
+   "down": {
+    "knee": 90
+   },
+   "hold": {
+    "knee": 90
+   }
+  },
+  "js_type": "LUNGE",
+  "movement_pattern": "lunge",
+  "phases": {
+   "ascending": {
+    "front_knee": 130,
+    "tolerance": 15
+   },
+   "bottom": {
+    "front_knee": 90,
+    "tolerance": 15
+   },
+   "descending": {
+    "front_knee": 120,
+    "tolerance": 15
+   },
+   "standing": {
+    "front_knee": 170,
+    "tolerance": 10
+   }
+  },
+  "tracking": "camera",
+  "unilateral": true
+ },
+ "loaded_progressive_stretch": {
+  "display_name": "Loaded Progressive Stretch",
+  "is_hold": true,
+  "js_type": null,
+  "movement_pattern": "hinge",
+  "phases": {},
+  "tracking": "manual",
+  "unilateral": false
+ },
+ "lunge_hold_assess": {
+  "display_name": "Lunge Hold Assess",
+  "is_hold": true,
+  "js_type": "LUNGE_HOLD",
+  "movement_pattern": "",
+  "phases": {},
+  "tracking": "camera",
+  "unilateral": false
+ },
+ "lunges": {
+  "display_name": "Forward Lunges",
+  "is_hold": false,
+  "js_overrides": {
+   "down": {
+    "knee": 90
+   },
+   "hold": {
+    "knee": 90
+   }
+  },
+  "js_type": "LUNGE",
+  "movement_pattern": "lunge",
+  "phases": {
+   "bottom": {
+    "back_knee": 85,
+    "front_knee": 90,
+    "tolerance": 8
+   },
+   "lunge_down": {
+    "back_knee": 90,
+    "front_knee": 90,
+    "tolerance": 10
+   },
+   "lunge_up": {
+    "min_knee": 140,
+    "tolerance": 12
+   },
+   "standing": {
+    "min_knee": 165,
+    "tolerance": 10
+   }
+  },
+  "tracking": "camera",
+  "unilateral": true
+ },
+ "marching_on_spot": {
+  "display_name": "Marching on Spot",
+  "is_hold": false,
+  "js_type": null,
+  "movement_pattern": "squat",
+  "phases": {
+   "lifted": {
+    "lifted_hip": 85,
+    "standing_knee": 165,
+    "tolerance": 10
+   },
+   "lifting": {
+    "lifted_hip": [
+     85,
+     170
+    ],
+    "standing_knee": 165,
+    "tolerance": 12
+   },
+   "lowering": {
+    "lifted_hip": [
+     85,
+     170
+    ],
+    "standing_knee": 165,
+    "tolerance": 12
+   },
+   "standing": {
+    "lifted_hip": 170,
+    "standing_knee": 170,
+    "tolerance": 10
+   }
+  },
+  "tracking": "manual",
+  "unilateral": false
+ },
+ "medicine_ball_slam": {
+  "display_name": "Medicine Ball Slam",
+  "is_hold": false,
+  "js_type": null,
+  "movement_pattern": "hinge",
+  "phases": {
+   "catch": {
+    "arm_height": 0.2,
+    "tolerance": 0.1
+   },
+   "loading": {
+    "overhead_ext": 170,
+    "tolerance": 15
+   },
+   "overhead": {
+    "arm_height": 0.7,
+    "tolerance": 0.1
+   },
+   "ready": {
+    "hip_hinge": 120,
+    "tolerance": 20
+   },
+   "slamming": {
+    "hip_hinge": 100,
+    "tolerance": 20
+   }
+  },
+  "tracking": "manual",
+  "unilateral": false
+ },
+ "mini_squats_with_band": {
+  "display_name": "Mini Squats with Band",
+  "is_hold": false,
+  "js_overrides": {
+   "down": {
+    "knee": 145
+   },
+   "hold": {
+    "knee": 145
+   }
+  },
+  "js_type": "SQUAT_PARTIAL",
+  "movement_pattern": "squat",
+  "phases": {
+   "ascending": {
+    "avg_knee": 160,
+    "knee_width": "wide",
+    "tolerance": 10
+   },
+   "bottom": {
+    "avg_knee": 145,
+    "knee_width": "wide",
+    "tolerance": 8
+   },
+   "descending": {
+    "avg_knee": 155,
+    "knee_width": "wide",
+    "tolerance": 10
+   },
+   "standing": {
+    "avg_knee": 175,
+    "knee_width": "wide",
+    "tolerance": 8
+   }
+  },
+  "tracking": "camera",
+  "unilateral": false
+ },
+ "mountain_climbers": {
+  "display_name": "Mountain Climbers",
+  "is_hold": false,
+  "js_type": null,
+  "movement_pattern": "push",
+  "phases": {
+   "driving": {
+    "tolerance": 20,
+    "working_hip_flexion": 120
+   },
+   "peak": {
+    "tolerance": 15,
+    "working_hip_flexion": 70
+   },
+   "plank": {
+    "hip_height_diff": 20,
+    "left_hip_flexion": 160,
+    "right_hip_flexion": 160,
+    "tolerance": 15
+   },
+   "returning": {
+    "tolerance": 20,
+    "working_hip_flexion": [
+     70,
+     120
+    ]
+   }
+  },
+  "tracking": "manual",
+  "unilateral": false
+ },
+ "muscle_up_progression": {
+  "display_name": "Muscle-Up Progression",
+  "is_hold": false,
+  "js_type": null,
+  "movement_pattern": "pull",
+  "phases": {
+   "hanging": {
+    "avg_elbow": 170,
+    "tolerance": 15
+   },
+   "lowering": {
+    "avg_elbow": 100,
+    "tolerance": 20
+   },
+   "pulling": {
+    "avg_elbow": [
+     20,
+     170
+    ],
+    "tolerance": 20
+   },
+   "top": {
+    "avg_elbow": 20,
+    "tolerance": 15
+   }
+  },
+  "tracking": "manual",
+  "unilateral": false
+ },
+ "negative_pull_up": {
+  "display_name": "Negative Pull-Up",
+  "is_hold": false,
+  "js_type": "HANG",
+  "movement_pattern": "pull",
+  "phases": {
+   "bottom": {
+    "avg_elbow": 175,
+    "tolerance": 10
+   },
+   "descend": {
+    "avg_elbow": [
+     60,
+     175
+    ],
+    "tolerance": 15
+   },
+   "start": {
+    "avg_elbow": 60,
+    "tolerance": 15
+   },
+   "top": {
+    "avg_elbow": 60,
+    "tolerance": 15
+   }
+  },
+  "tracking": "camera",
+  "unilateral": false
+ },
+ "negative_push_up": {
+  "display_name": "Negative Push-Up",
+  "is_hold": false,
+  "js_type": null,
+  "movement_pattern": "push",
+  "phases": {
+   "down": {
+    "avg_elbow": [
+     90,
+     170
+    ],
+    "tolerance": 15
+   },
+   "up": {
+    "avg_elbow": [
+     90,
+     170
+    ],
+    "tolerance": 12
+   }
+  },
+  "tracking": "manual",
+  "unilateral": false
+ },
+ "negative_table_row": {
+  "display_name": "Negative Table Row",
+  "is_hold": false,
+  "js_type": null,
+  "movement_pattern": "pull",
+  "phases": {
+   "bottom": {
+    "avg_elbow": 170,
+    "body_align": 175,
+    "tolerance": 10
+   },
+   "descend": {
+    "avg_elbow": 135,
+    "body_align": 175,
+    "tolerance": 15
+   },
+   "start": {
+    "avg_elbow": 90,
+    "body_align": 175,
+    "tolerance": 15
+   }
+  },
+  "tracking": "manual",
+  "unilateral": false
+ },
+ "ninety_ninety_hip_switch": {
+  "display_name": "90/90 Hip Switch",
+  "is_hold": false,
+  "js_type": null,
+  "movement_pattern": "hinge",
+  "phases": {
+   "left_side": {
+    "hip_ir": 90,
+    "tolerance": 20
+   },
+   "right_side": {
+    "hip_er": 90,
+    "tolerance": 20
+   },
+   "switching": {
+    "hip_er": 135,
+    "tolerance": 20
+   }
+  },
+  "tracking": "manual",
+  "unilateral": false
+ },
+ "nordic_curl_partner": {
+  "display_name": "Nordic Curl (Partner Assisted)",
+  "is_hold": false,
+  "js_type": null,
+  "movement_pattern": "hinge",
+  "phases": {
+   "bottom": {
+    "avg_hip": 95,
+    "tolerance": 15
+   },
+   "hinging": {
+    "avg_hip": 130,
+    "tolerance": 15
+   },
+   "returning": {
+    "avg_hip": 130,
+    "tolerance": 15
+   },
+   "standing": {
+    "avg_hip": 175,
+    "tolerance": 10
+   }
+  },
+  "tracking": "manual",
+  "unilateral": false
+ },
+ "nordic_curl_weighted": {
+  "display_name": "Nordic Curl (Weighted)",
+  "is_hold": false,
+  "js_type": null,
+  "movement_pattern": "hinge",
+  "phases": {
+   "bottom": {
+    "avg_hip": 95,
+    "tolerance": 15
+   },
+   "hinging": {
+    "avg_hip": 130,
+    "tolerance": 15
+   },
+   "returning": {
+    "avg_hip": 130,
+    "tolerance": 15
+   },
+   "standing": {
+    "avg_hip": 175,
+    "tolerance": 10
+   }
+  },
+  "tracking": "manual",
+  "unilateral": false
+ },
+ "nordic_hamstring_curl": {
+  "display_name": "Nordic Hamstring Curl",
+  "is_hold": false,
+  "js_type": null,
+  "movement_pattern": "hinge",
+  "phases": {
+   "caught": {
+    "avg_body": 170,
+    "tolerance": 20
+   },
+   "falling": {
+    "avg_body": 175,
+    "tolerance": 15
+   },
+   "kneeling": {
+    "avg_body": 175,
+    "tolerance": 10
+   },
+   "returning": {
+    "avg_body": 175,
+    "tolerance": 15
+   }
+  },
+  "tracking": "manual",
+  "unilateral": false
+ },
+ "overhead_carry": {
+  "display_name": "Overhead Carry",
+  "is_hold": false,
+  "js_type": null,
+  "movement_pattern": "carry",
+  "phases": {
+   "active": {
+    "avg_knee": 90,
+    "tolerance": 20
+   },
+   "start": {
+    "avg_knee": 90,
+    "tolerance": 20
+   },
+   "walking": {
+    "avg_knee": 90,
+    "tolerance": 20
+   }
+  },
+  "tracking": "manual",
+  "unilateral": false
+ },
+ "pallof_press_dynamic": {
+  "display_name": "Pallof Press (Dynamic)",
+  "is_hold": false,
+  "js_type": null,
+  "movement_pattern": "rotate",
+  "phases": {
+   "extended": {
+    "elbow_angle": 170,
+    "tolerance": 10
+   },
+   "loaded": {
+    "elbow_angle": 90,
+    "tolerance": 20
+   },
+   "pressing": {
+    "elbow_angle": 150,
+    "tolerance": 20
+   },
+   "returning": {
+    "elbow_angle": 120,
+    "tolerance": 20
+   }
+  },
+  "tracking": "manual",
+  "unilateral": false
+ },
+ "pallof_press_isometric": {
+  "display_name": "Pallof Press (Isometric)",
+  "is_hold": true,
+  "js_type": null,
+  "movement_pattern": "rotate",
+  "phases": {},
+  "tracking": "manual",
+  "unilateral": false
+ },
+ "partial_squats": {
+  "display_name": "Partial Squats",
+  "is_hold": false,
+  "js_overrides": {
+   "down": {
+    "knee": 120
+   },
+   "hold": {
+    "knee": 120
+   }
+  },
+  "js_type": "SQUAT_PARTIAL",
+  "movement_pattern": "squat",
+  "phases": {
+   "ascending": {
+    "avg_knee": [
+     145,
+     175
+    ],
+    "tolerance": 15
+   },
+   "bottom": {
+    "avg_knee": 120,
+    "tolerance": 10
+   },
+   "descending": {
+    "avg_knee": [
+     145,
+     175
+    ],
+    "tolerance": 15
+   },
+   "standing": {
+    "avg_knee": 175,
+    "tolerance": 10
+   }
+  },
+  "tracking": "camera",
+  "unilateral": false
+ },
+ "patellar_mobilisation": {
+  "display_name": "Patellar Mobilisation",
+  "is_hold": true,
+  "js_type": null,
+  "movement_pattern": "squat",
+  "phases": {
+   "holding": {
+    "avg_knee": 170,
+    "tolerance": 20
+   },
+   "rest": {
+    "avg_knee": 170,
+    "tolerance": 20
+   }
+  },
+  "tracking": "manual",
+  "unilateral": true
+ },
+ "pause_squat": {
+  "display_name": "Pause Squat",
+  "is_hold": false,
+  "js_type": "SQUAT",
+  "movement_pattern": "squat",
+  "phases": {
+   "ascending": {
+    "avg_knee": [
+     90,
+     175
+    ],
+    "tolerance": 15
+   },
+   "descending": {
+    "avg_knee": [
+     90,
+     175
+    ],
+    "tolerance": 15
+   },
+   "pausing": {
+    "avg_knee": 90,
+    "tolerance": 12
+   },
+   "standing": {
+    "avg_knee": 175,
+    "tolerance": 10
+   }
+  },
+  "tracking": "camera",
+  "unilateral": false
+ },
+ "pendulum_exercise": {
+  "display_name": "Pendulum Exercise",
+  "is_hold": true,
+  "js_type": null,
+  "movement_pattern": "pull",
+  "phases": {
+   "holding": {
+    "avg_knee": 170,
+    "tolerance": 20
+   },
+   "rest": {
+    "avg_knee": 170,
+    "tolerance": 20
+   }
+  },
+  "tracking": "manual",
+  "unilateral": true
+ },
+ "perturbation_training": {
+  "display_name": "Perturbation Training",
+  "is_hold": false,
+  "js_type": null,
+  "movement_pattern": "lunge",
+  "phases": {
+   "perturbed": {
+    "tolerance": 20,
+    "trunk_displacement": 50
+   },
+   "recovering": {
+    "stance_knee": 155,
+    "tolerance": 20
+   },
+   "stable": {
+    "stance_knee": 170,
+    "tolerance": 15
+   }
+  },
+  "tracking": "manual",
+  "unilateral": true
+ },
+ "pigeon_stretch": {
+  "display_name": "Pigeon Stretch",
+  "is_hold": true,
+  "js_type": null,
+  "movement_pattern": "hinge",
+  "phases": {},
+  "tracking": "manual",
+  "unilateral": true
+ },
+ "pike_push_up": {
+  "display_name": "Pike Push-Up",
+  "is_hold": false,
+  "js_type": "PRESS_VERTICAL",
+  "movement_pattern": "push",
+  "phases": {
+   "bottom": {
+    "avg_elbow": 90,
+    "hip_angle": 80,
+    "tolerance": 15
+   },
+   "down": {
+    "avg_elbow": 90,
+    "hip_angle": 80,
+    "tolerance": 15
+   },
+   "start": {
+    "avg_elbow": 170,
+    "hip_angle": 80,
+    "tolerance": 10
+   },
+   "up": {
+    "avg_elbow": 170,
+    "hip_angle": 80,
+    "tolerance": 10
+   }
+  },
+  "tracking": "camera",
+  "unilateral": false
+ },
+ "pike_push_up_elevated": {
+  "display_name": "Pike Push-Up (Elevated)",
+  "is_hold": false,
+  "js_type": "PRESS_VERTICAL",
+  "movement_pattern": "push",
+  "phases": {
+   "bottom": {
+    "avg_elbow": 90,
+    "shoulder_angle": 100,
+    "tolerance": 15
+   },
+   "down": {
+    "avg_elbow": 90,
+    "shoulder_angle": 100,
+    "tolerance": 15
+   },
+   "start": {
+    "avg_elbow": 170,
+    "shoulder_angle": 95,
+    "tolerance": 10
+   },
+   "up": {
+    "avg_elbow": 170,
+    "shoulder_angle": 95,
+    "tolerance": 10
+   }
+  },
+  "tracking": "camera",
+  "unilateral": false
+ },
+ "pistol_squat": {
+  "display_name": "Pistol Squat",
+  "is_hold": false,
+  "js_overrides": {
+   "down": {
+    "workingKnee": 70
+   },
+   "hold": {
+    "workingKnee": 70
+   }
+  },
+  "js_type": "SQUAT_SINGLE",
+  "movement_pattern": "squat",
+  "phases": {
+   "ascending": {
+    "avg_knee": 130,
+    "tolerance": 15
+   },
+   "bottom": {
+    "avg_knee": 70,
+    "tolerance": 15
+   },
+   "descending": {
+    "avg_knee": 130,
+    "tolerance": 15
+   },
+   "standing": {
+    "avg_knee": 175,
+    "tolerance": 10
+   }
+  },
+  "tracking": "camera",
+  "unilateral": true
+ },
+ "planche_lean": {
+  "display_name": "Planche Lean",
+  "is_hold": true,
+  "js_type": null,
+  "movement_pattern": "push",
+  "phases": {
+   "holding": {
+    "lean_offset": 15,
+    "tolerance": 20
+   },
+   "setup": {
+    "lean_offset": 0,
+    "tolerance": 30
+   }
+  },
+  "tracking": "manual",
+  "unilateral": false
+ },
+ "plank_shoulder_tap": {
+  "display_name": "Plank Shoulder Tap",
+  "is_hold": false,
+  "js_type": null,
+  "movement_pattern": "rotate",
+  "phases": {
+   "plank": {
+    "avg_knee": 90,
+    "tolerance": 20
+   },
+   "tapping": {
+    "avg_knee": 90,
+    "tolerance": 20
+   }
+  },
+  "tracking": "manual",
+  "unilateral": false
+ },
+ "planks": {
+  "display_name": "Planks",
+  "is_hold": true,
+  "js_type": "PLANK",
+  "movement_pattern": "push",
+  "phases": {
+   "holding": {
+    "avg_back": 178,
+    "avg_elbow": 90,
+    "tolerance": 10
+   },
+   "setup": {
+    "avg_back": 175,
+    "avg_elbow": 90,
+    "tolerance": 15
+   }
+  },
+  "tracking": "camera",
+  "unilateral": false
+ },
+ "plyometric_lunge": {
+  "display_name": "Plyometric Lunge",
+  "is_hold": false,
+  "js_type": null,
+  "movement_pattern": "lunge",
+  "phases": {
+   "airborne": {
+    "avg_knee": 140,
+    "tolerance": 25
+   },
+   "landing": {
+    "min_knee": 100,
+    "tolerance": 20
+   },
+   "lunge_down": {
+    "min_knee": 90,
+    "tolerance": 15
+   }
+  },
+  "tracking": "manual",
+  "unilateral": true
+ },
+ "pnf_hamstring_stretch": {
+  "display_name": "PNF Hamstring Stretch",
+  "is_hold": true,
+  "js_type": null,
+  "movement_pattern": "hinge",
+  "phases": {
+   "holding": {
+    "avg_knee": 170,
+    "tolerance": 20
+   },
+   "rest": {
+    "avg_knee": 170,
+    "tolerance": 20
+   }
+  },
+  "tracking": "manual",
+  "unilateral": true
+ },
+ "pogo_jump_single_leg": {
+  "display_name": "Pogo Jump Single Leg",
+  "is_hold": false,
+  "js_type": null,
+  "movement_pattern": "",
+  "phases": {},
+  "tracking": "manual",
+  "unilateral": false
+ },
+ "power_skip": {
+  "display_name": "Power Skip",
+  "is_hold": false,
+  "js_type": null,
+  "movement_pattern": "lunge",
+  "phases": {
+   "active": {
+    "avg_knee": 90,
+    "tolerance": 20
+   },
+   "skip_left": {
+    "avg_knee": 90,
+    "tolerance": 20
+   },
+   "skip_right": {
+    "avg_knee": 90,
+    "tolerance": 20
+   },
+   "start": {
+    "avg_knee": 90,
+    "tolerance": 20
+   }
+  },
+  "tracking": "manual",
+  "unilateral": true
+ },
+ "prisoner_squat": {
+  "display_name": "Prisoner Squat",
+  "is_hold": false,
+  "js_overrides": {
+   "down": {
+    "knee": 90
+   },
+   "hold": {
+    "knee": 90
+   }
+  },
+  "js_type": "SQUAT",
+  "movement_pattern": "squat",
+  "phases": {
+   "ascending": {
+    "avg_knee": 130,
+    "tolerance": 15
+   },
+   "bottom": {
+    "avg_knee": 90,
+    "tolerance": 15
+   },
+   "descending": {
+    "avg_knee": 130,
+    "tolerance": 15
+   },
+   "standing": {
+    "avg_knee": 175,
+    "tolerance": 10
+   }
+  },
+  "tracking": "camera",
+  "unilateral": false
+ },
+ "prone_hip_extension": {
+  "display_name": "Prone Hip Extension",
+  "is_hold": false,
+  "js_type": null,
+  "movement_pattern": "hinge",
+  "phases": {
+   "lifting": {
+    "active_hip_ext": 160,
+    "tolerance": 15
+   },
+   "lowering": {
+    "active_hip_ext": 165,
+    "tolerance": 15
+   },
+   "peak": {
+    "active_hip_ext": 155,
+    "tolerance": 12
+   },
+   "resting": {
+    "active_hip_ext": 180,
+    "tolerance": 10
+   }
+  },
+  "tracking": "manual",
+  "unilateral": true
+ },
+ "prone_scorpion": {
+  "display_name": "Prone Scorpion",
+  "is_hold": true,
+  "js_type": null,
+  "movement_pattern": "rotate",
+  "phases": {
+   "holding": {
+    "avg_knee": 170,
+    "tolerance": 20
+   },
+   "rest": {
+    "avg_knee": 170,
+    "tolerance": 20
+   }
+  },
+  "tracking": "manual",
+  "unilateral": true
+ },
+ "prone_trap_raise": {
+  "display_name": "Prone Trap Raise",
+  "is_hold": true,
+  "js_type": null,
+  "movement_pattern": "pull",
+  "phases": {
+   "holding": {
+    "avg_knee": 170,
+    "tolerance": 20
+   },
+   "rest": {
+    "avg_knee": 170,
+    "tolerance": 20
+   }
+  },
+  "tracking": "manual",
+  "unilateral": false
+ },
+ "prone_y_t_w": {
+  "display_name": "Prone Y-T-W",
+  "is_hold": false,
+  "js_type": null,
+  "movement_pattern": "pull",
+  "phases": {
+   "hold": {
+    "avg_elevation": 90,
+    "tolerance": 15
+   },
+   "lift": {
+    "avg_elevation": [
+     20,
+     90
+    ],
+    "tolerance": 15
+   },
+   "lower": {
+    "avg_elevation": [
+     20,
+     90
+    ],
+    "tolerance": 15
+   },
+   "start": {
+    "avg_elevation": 20,
+    "tolerance": 15
+   }
+  },
+  "tracking": "manual",
+  "unilateral": false
+ },
+ "pseudo_planche_push_up": {
+  "display_name": "Pseudo Planche Push-Up",
+  "is_hold": false,
+  "js_type": null,
+  "movement_pattern": "push",
+  "phases": {
+   "bottom": {
+    "avg_elbow": 90,
+    "shoulder_angle": 20,
+    "tolerance": 15
+   },
+   "down": {
+    "avg_elbow": 90,
+    "shoulder_angle": 20,
+    "tolerance": 15
+   },
+   "start": {
+    "avg_elbow": 170,
+    "shoulder_angle": 30,
+    "tolerance": 10
+   },
+   "up": {
+    "avg_elbow": 170,
+    "shoulder_angle": 30,
+    "tolerance": 10
+   }
+  },
+  "tracking": "manual",
+  "unilateral": false
+ },
+ "push_up_plus": {
+  "display_name": "Push-Up Plus",
+  "is_hold": false,
+  "js_type": "PUSH_UP",
+  "movement_pattern": "push",
+  "phases": {
+   "down": {
+    "avg_elbow": 170,
+    "tolerance": 15
+   },
+   "up": {
+    "avg_elbow": 170,
+    "tolerance": 12
+   }
+  },
+  "tracking": "camera",
+  "unilateral": false
+ },
+ "push_ups": {
+  "display_name": "Push Ups",
+  "is_hold": false,
+  "js_overrides": {
+   "down": {
+    "elbow": 90
+   },
+   "hold": {
+    "elbow": 90
+   }
+  },
+  "js_type": "PUSH_UP",
+  "movement_pattern": "push",
+  "phases": {
+   "ascending": {
+    "avg_back": 175,
+    "avg_elbow": 140,
+    "tolerance": 15
+   },
+   "bottom": {
+    "avg_back": 175,
+    "avg_elbow": 90,
+    "tolerance": 10
+   },
+   "descending": {
+    "avg_back": 175,
+    "avg_elbow": 130,
+    "tolerance": 15
+   },
+   "up": {
+    "avg_back": 178,
+    "avg_elbow": 170,
+    "tolerance": 10
+   }
+  },
+  "tracking": "camera",
+  "unilateral": false
+ },
+ "quad_set_with_shr": {
+  "display_name": "Quad Set + SLR",
+  "is_hold": true,
+  "js_type": null,
+  "movement_pattern": "squat",
+  "phases": {
+   "holding": {
+    "avg_knee": 170,
+    "tolerance": 20
+   },
+   "rest": {
+    "avg_knee": 170,
+    "tolerance": 20
+   }
+  },
+  "tracking": "manual",
+  "unilateral": true
+ },
+ "quadriceps_stretch": {
+  "display_name": "Quadriceps Stretch",
+  "is_hold": false,
+  "js_type": null,
+  "movement_pattern": "squat",
+  "phases": {
+   "holding": {
+    "standing_knee": 165,
+    "stretch_knee": 50,
+    "tolerance": 10
+   },
+   "ready": {
+    "standing_knee": 165,
+    "tolerance": 10
+   },
+   "resting": {
+    "standing_knee": 165,
+    "tolerance": 10
+   }
+  },
+  "tracking": "manual",
+  "unilateral": false
+ },
+ "renegade_row": {
+  "display_name": "Renegade Row",
+  "is_hold": false,
+  "js_type": "ROW",
+  "movement_pattern": "pull",
+  "phases": {
+   "hanging": {
+    "avg_elbow": 170,
+    "tolerance": 15
+   },
+   "lowering": {
+    "avg_elbow": 100,
+    "tolerance": 20
+   },
+   "pulling": {
+    "avg_elbow": 100,
+    "tolerance": 20
+   },
+   "top": {
+    "avg_elbow": 50,
+    "tolerance": 15
+   }
+  },
+  "tracking": "camera",
+  "unilateral": true
+ },
+ "reverse_hyperextension": {
+  "display_name": "Reverse Hyperextension",
+  "is_hold": false,
+  "js_type": null,
+  "movement_pattern": "hinge",
+  "phases": {
+   "bottom": {
+    "avg_hip": 95,
+    "tolerance": 15
+   },
+   "hinging": {
+    "avg_hip": 130,
+    "tolerance": 15
+   },
+   "returning": {
+    "avg_hip": 130,
+    "tolerance": 15
+   },
+   "standing": {
+    "avg_hip": 175,
+    "tolerance": 10
+   }
+  },
+  "tracking": "manual",
+  "unilateral": false
+ },
+ "reverse_lunges": {
+  "display_name": "Reverse Lunges",
+  "is_hold": false,
+  "js_overrides": {
+   "down": {
+    "knee": 90
+   },
+   "hold": {
+    "knee": 90
+   }
+  },
+  "js_type": "LUNGE",
+  "movement_pattern": "lunge",
+  "phases": {
+   "bottom": {
+    "back_knee": 90,
+    "front_knee": 90,
+    "tolerance": 10
+   },
+   "returning": {
+    "back_knee": 120,
+    "front_knee": 130,
+    "tolerance": 12
+   },
+   "standing": {
+    "left_knee": 175,
+    "right_knee": 175,
+    "tolerance": 10
+   },
+   "stepping_back": {
+    "back_knee": 155,
+    "front_knee": 160,
+    "tolerance": 12
+   }
+  },
+  "tracking": "camera",
+  "unilateral": true
+ },
+ "ring_push_up": {
+  "display_name": "Ring Push-Up",
+  "is_hold": false,
+  "js_type": "PUSH_UP",
+  "movement_pattern": "push",
+  "phases": {
+   "down": {
+    "avg_elbow": [
+     90,
+     168
+    ],
+    "tolerance": 15
+   },
+   "up": {
+    "avg_elbow": [
+     90,
+     168
+    ],
+    "tolerance": 12
+   }
+  },
+  "tracking": "camera",
+  "unilateral": false
+ },
+ "ring_row": {
+  "display_name": "Ring Row",
+  "is_hold": false,
+  "js_type": "ROW",
+  "movement_pattern": "pull",
+  "phases": {
+   "hanging": {
+    "avg_elbow": 170,
+    "tolerance": 15
+   },
+   "lowering": {
+    "avg_elbow": 100,
+    "tolerance": 20
+   },
+   "pulling": {
+    "avg_elbow": 100,
+    "tolerance": 20
+   },
+   "top": {
+    "avg_elbow": 50,
+    "tolerance": 15
+   }
+  },
+  "tracking": "camera",
+  "unilateral": false
+ },
+ "rotational_swings": {
+  "display_name": "Rotational Swings",
+  "is_hold": false,
+  "js_type": null,
+  "movement_pattern": "rotate",
+  "phases": {
+   "center": {
+    "rotation": 5,
+    "tolerance": 10
+   },
+   "peak": {
+    "rotation": 45,
+    "tolerance": 10
+   },
+   "rotating": {
+    "rotation": [
+     5,
+     45
+    ],
+    "tolerance": 15
+   }
+  },
+  "tracking": "manual",
+  "unilateral": false
+ },
+ "rotational_throw": {
+  "display_name": "Rotational Throw",
+  "is_hold": false,
+  "js_type": null,
+  "movement_pattern": "rotate",
+  "phases": {
+   "follow_through": {
+    "arm_drive": 160,
+    "tolerance": 15
+   },
+   "hip_drive": {
+    "hip_rotation": 100,
+    "tolerance": 20
+   },
+   "loaded": {
+    "hip_rotation": 150,
+    "tolerance": 20
+   },
+   "release": {
+    "shoulder_rotation": 100,
+    "tolerance": 20
+   }
+  },
+  "tracking": "manual",
+  "unilateral": false
+ },
+ "russian_twist_bw": {
+  "display_name": "Russian Twist",
+  "is_hold": false,
+  "js_type": null,
+  "movement_pattern": "rotate",
+  "phases": {
+   "center": {
+    "tolerance": 20,
+    "torso_lean": 135
+   },
+   "rotating_l": {
+    "left_rotation": 45,
+    "tolerance": 20
+   },
+   "rotating_r": {
+    "right_rotation": 45,
+    "tolerance": 20
+   }
+  },
+  "tracking": "manual",
+  "unilateral": false
+ },
+ "scapular_pull": {
+  "display_name": "Scapular Pull",
+  "is_hold": false,
+  "js_type": null,
+  "movement_pattern": "pull",
+  "phases": {
+   "depress": {
+    "avg_elbow": 175,
+    "shoulder_pos": 145,
+    "tolerance": 15
+   },
+   "hang": {
+    "avg_elbow": 175,
+    "shoulder_pos": 175,
+    "tolerance": 10
+   },
+   "release": {
+    "avg_elbow": 175,
+    "shoulder_pos": [
+     145,
+     175
+    ],
+    "tolerance": 15
+   },
+   "retract": {
+    "avg_elbow": 175,
+    "shoulder_pos": 155,
+    "tolerance": 15
+   },
+   "start": {
+    "avg_elbow": 175,
+    "shoulder_pos": 175,
+    "tolerance": 10
+   }
+  },
+  "tracking": "manual",
+  "unilateral": false
+ },
+ "scapular_setting": {
+  "display_name": "Scapular Setting",
+  "is_hold": true,
+  "js_type": null,
+  "movement_pattern": "pull",
+  "phases": {
+   "holding": {
+    "avg_knee": 170,
+    "tolerance": 20
+   },
+   "rest": {
+    "avg_knee": 170,
+    "tolerance": 20
+   }
+  },
+  "tracking": "manual",
+  "unilateral": false
+ },
+ "seated_hamstring_curl": {
+  "display_name": "Seated Hamstring Curl",
+  "is_hold": true,
+  "js_type": null,
+  "movement_pattern": "hinge",
+  "phases": {
+   "holding": {
+    "avg_knee": 170,
+    "tolerance": 20
+   },
+   "rest": {
+    "avg_knee": 170,
+    "tolerance": 20
+   }
+  },
+  "tracking": "manual",
+  "unilateral": true
+ },
+ "seated_hip_flexion": {
+  "display_name": "Seated Hip Flexion",
+  "is_hold": true,
+  "js_type": null,
+  "movement_pattern": "hinge",
+  "phases": {
+   "holding": {
+    "avg_knee": 170,
+    "tolerance": 20
+   },
+   "rest": {
+    "avg_knee": 170,
+    "tolerance": 20
+   }
+  },
+  "tracking": "manual",
+  "unilateral": true
+ },
+ "seated_spinal_twist": {
+  "display_name": "Seated Spinal Twist",
+  "is_hold": true,
+  "js_type": null,
+  "movement_pattern": "rotate",
+  "phases": {
+   "holding": {
+    "avg_knee": 170,
+    "tolerance": 20
+   },
+   "rest": {
+    "avg_knee": 170,
+    "tolerance": 20
+   }
+  },
+  "tracking": "manual",
+  "unilateral": true
+ },
+ "serratus_wall_push": {
+  "display_name": "Serratus Wall Push",
+  "is_hold": true,
+  "js_type": null,
+  "movement_pattern": "push",
+  "phases": {
+   "holding": {
+    "avg_knee": 170,
+    "tolerance": 20
+   },
+   "rest": {
+    "avg_knee": 170,
+    "tolerance": 20
+   }
+  },
+  "tracking": "manual",
+  "unilateral": false
+ },
+ "short_arc_quad": {
+  "display_name": "Short Arc Quad",
+  "is_hold": true,
+  "js_type": null,
+  "movement_pattern": "squat",
+  "phases": {
+   "holding": {
+    "avg_knee": 170,
+    "tolerance": 20
+   },
+   "rest": {
+    "avg_knee": 170,
+    "tolerance": 20
+   }
+  },
+  "tracking": "manual",
+  "unilateral": true
+ },
+ "shoulder_cars": {
+  "display_name": "Shoulder CARs",
+  "is_hold": true,
+  "js_type": null,
+  "movement_pattern": "pull",
+  "phases": {},
+  "tracking": "manual",
+  "unilateral": true
+ },
+ "shoulder_stretch": {
+  "display_name": "Shoulder Stretch",
+  "is_hold": true,
+  "js_type": null,
+  "movement_pattern": "pull",
+  "phases": {
+   "holding": {
+    "arm_overhead": true,
+    "stretching_elbow": 80,
+    "tolerance": 15
+   }
+  },
+  "tracking": "manual",
+  "unilateral": false
+ },
+ "shoulder_tap_push_up": {
+  "display_name": "Shoulder Tap Push-Up",
+  "is_hold": false,
+  "js_type": "PUSH_UP",
+  "movement_pattern": "push",
+  "phases": {
+   "down": {
+    "avg_elbow": [
+     90,
+     170
+    ],
+    "tolerance": 15
+   },
+   "up": {
+    "avg_elbow": [
+     90,
+     170
+    ],
+    "tolerance": 12
+   }
+  },
+  "tracking": "camera",
+  "unilateral": false
+ },
+ "shuttle_run": {
+  "display_name": "Shuttle Run",
+  "is_hold": false,
+  "js_type": null,
+  "movement_pattern": "lunge",
+  "phases": {
+   "active": {
+    "avg_knee": 90,
+    "tolerance": 20
+   },
+   "decelerating": {
+    "avg_knee": 90,
+    "tolerance": 20
+   },
+   "sprinting": {
+    "avg_knee": 90,
+    "tolerance": 20
+   },
+   "start": {
+    "avg_knee": 90,
+    "tolerance": 20
+   },
+   "turning": {
+    "avg_knee": 90,
+    "tolerance": 20
+   }
+  },
+  "tracking": "manual",
+  "unilateral": false
+ },
+ "side_lying_external_rotation": {
+  "display_name": "Side-Lying External Rotation",
+  "is_hold": true,
+  "js_type": null,
+  "movement_pattern": "pull",
+  "phases": {
+   "holding": {
+    "avg_knee": 170,
+    "tolerance": 20
+   },
+   "rest": {
+    "avg_knee": 170,
+    "tolerance": 20
+   }
+  },
+  "tracking": "manual",
+  "unilateral": true
+ },
+ "side_plank": {
+  "display_name": "Side Plank",
+  "is_hold": true,
+  "js_type": "SIDE_PLANK",
+  "movement_pattern": "rotate",
+  "phases": {},
+  "tracking": "camera",
+  "unilateral": true
+ },
+ "side_plank_hip_dip": {
+  "display_name": "Side Plank Hip Dip",
+  "is_hold": true,
+  "js_type": null,
+  "movement_pattern": "rotate",
+  "phases": {
+   "bottom": {
+    "body_line": 100,
+    "tolerance": 20
+   },
+   "dipping": {
+    "body_line": 130,
+    "tolerance": 20
+   },
+   "raising": {
+    "body_line": 145,
+    "tolerance": 20
+   },
+   "top": {
+    "body_line": 175,
+    "tolerance": 15
+   }
+  },
+  "tracking": "manual",
+  "unilateral": true
+ },
+ "side_plank_rotation": {
+  "display_name": "Side Plank with Rotation",
+  "is_hold": true,
+  "js_type": null,
+  "movement_pattern": "rotate",
+  "phases": {
+   "plank": {
+    "body_line": 180,
+    "tolerance": 20
+   },
+   "return": {
+    "body_line": 180,
+    "tolerance": 20
+   },
+   "threading": {
+    "arm_thread_angle": 50,
+    "tolerance": 20
+   }
+  },
+  "tracking": "manual",
+  "unilateral": true
+ },
+ "side_step_downs": {
+  "display_name": "Side Step Downs",
+  "is_hold": false,
+  "js_type": "LUNGE",
+  "movement_pattern": "lunge",
+  "phases": {
+   "ascending": {
+    "hip": 155,
+    "knee": 150,
+    "tolerance": 15
+   },
+   "descending": {
+    "hip": 145,
+    "knee": 140,
+    "tolerance": 15
+   },
+   "top": {
+    "hip": 175,
+    "knee": 175,
+    "tolerance": 10
+   },
+   "touch": {
+    "hip": 120,
+    "knee": 110,
+    "tolerance": 12
+   }
+  },
+  "tracking": "camera",
+  "unilateral": true
+ },
+ "side_step_ups": {
+  "display_name": "Side Step Ups",
+  "is_hold": false,
+  "js_type": "LUNGE",
+  "movement_pattern": "lunge",
+  "phases": {
+   "descending": {
+    "hip": [
+     90,
+     175
+    ],
+    "knee": [
+     90,
+     175
+    ],
+    "tolerance": 15
+   },
+   "ground": {
+    "hip": 175,
+    "knee": 175,
+    "tolerance": 10
+   },
+   "placing": {
+    "hip": 90,
+    "knee": 90,
+    "tolerance": 15
+   },
+   "pushing": {
+    "hip": [
+     90,
+     175
+    ],
+    "knee": [
+     90,
+     175
+    ],
+    "tolerance": 15
+   },
+   "top": {
+    "hip": 175,
+    "knee": 175,
+    "tolerance": 10
+   }
+  },
+  "tracking": "camera",
+  "unilateral": true
+ },
+ "side_to_side_hops": {
+  "display_name": "Side to Side Hops",
+  "is_hold": false,
+  "js_type": null,
+  "movement_pattern": "lunge",
+  "phases": {
+   "center": {
+    "avg_knee": 165,
+    "displacement": 0,
+    "tolerance": 15
+   },
+   "hopping_left": {
+    "displacement": 0,
+    "tolerance": 30
+   },
+   "hopping_right": {
+    "displacement": 0,
+    "tolerance": 30
+   },
+   "left": {
+    "avg_knee": 155,
+    "displacement": -60,
+    "tolerance": 20
+   },
+   "right": {
+    "avg_knee": 155,
+    "displacement": 60,
+    "tolerance": 20
+   }
+  },
+  "tracking": "manual",
+  "unilateral": false
+ },
+ "sideways_walking": {
+  "display_name": "Sideways Walking",
+  "is_hold": false,
+  "js_type": null,
+  "movement_pattern": "lunge",
+  "phases": {
+   "ready": {
+    "avg_knee": 145,
+    "foot_separation": 40,
+    "tolerance": 10
+   },
+   "returning": {
+    "avg_knee": 145,
+    "foot_separation": [
+     40,
+     85
+    ],
+    "tolerance": 10
+   },
+   "stepped": {
+    "avg_knee": 145,
+    "foot_separation": 85,
+    "tolerance": 10
+   },
+   "stepping": {
+    "avg_knee": 145,
+    "foot_separation": 80,
+    "tolerance": 12
+   }
+  },
+  "tracking": "manual",
+  "unilateral": false
+ },
+ "single_arm_farmer_heavy": {
+  "display_name": "Heavy Suitcase Carry",
+  "is_hold": true,
+  "js_type": null,
+  "movement_pattern": "carry",
+  "phases": {},
+  "tracking": "manual",
+  "unilateral": true
+ },
+ "single_arm_plank": {
+  "display_name": "Single Arm Plank",
+  "is_hold": true,
+  "js_type": "PLANK",
+  "movement_pattern": "rotate",
+  "phases": {},
+  "tracking": "camera",
+  "unilateral": true
+ },
+ "single_arm_pull_up_prog": {
+  "display_name": "Single Arm Pull-Up Progression",
+  "is_hold": false,
+  "js_type": "HANG",
+  "movement_pattern": "pull",
+  "phases": {
+   "hang": {
+    "avg_elbow": 175,
+    "hip_swing": 175,
+    "tolerance": 10
+   },
+   "lower": {
+    "avg_elbow": 130,
+    "hip_swing": 170,
+    "tolerance": 15
+   },
+   "pull": {
+    "avg_elbow": 100,
+    "hip_swing": 170,
+    "tolerance": 15
+   },
+   "start": {
+    "avg_elbow": 175,
+    "hip_swing": 175,
+    "tolerance": 10
+   },
+   "top": {
+    "avg_elbow": 60,
+    "chin_clear": 1,
+    "tolerance": 15
+   }
+  },
+  "tracking": "camera",
+  "unilateral": true
+ },
+ "single_arm_push_up_prog": {
+  "display_name": "Single Arm Push-Up Progression",
+  "is_hold": false,
+  "js_type": null,
+  "movement_pattern": "push",
+  "phases": {
+   "down": {
+    "active_elbow": [
+     90,
+     168
+    ],
+    "tolerance": 18
+   },
+   "up": {
+    "active_elbow": [
+     90,
+     168
+    ],
+    "tolerance": 12
+   }
+  },
+  "tracking": "manual",
+  "unilateral": true
+ },
+ "single_arm_push_up_progression": {
+  "display_name": "Single Arm Push-Up",
+  "is_hold": false,
+  "js_type": null,
+  "movement_pattern": "push",
+  "phases": {
+   "down": {
+    "active_elbow": [
+     90,
+     168
+    ],
+    "tolerance": 18
+   },
+   "up": {
+    "active_elbow": [
+     90,
+     168
+    ],
+    "tolerance": 12
+   }
+  },
+  "tracking": "manual",
+  "unilateral": true
+ },
+ "single_arm_single_leg_plank": {
+  "display_name": "Single Arm Single Leg Plank",
+  "is_hold": true,
+  "js_type": "PLANK",
+  "movement_pattern": "rotate",
+  "phases": {},
+  "tracking": "camera",
+  "unilateral": true
+ },
+ "single_arm_towel_row": {
+  "display_name": "Single Arm Towel Row",
+  "is_hold": false,
+  "js_type": "ROW",
+  "movement_pattern": "pull",
+  "phases": {
+   "hanging": {
+    "avg_elbow": 170,
+    "tolerance": 15
+   },
+   "lowering": {
+    "avg_elbow": 100,
+    "tolerance": 20
+   },
+   "pulling": {
+    "avg_elbow": 100,
+    "tolerance": 20
+   },
+   "top": {
+    "avg_elbow": 50,
+    "tolerance": 15
+   }
+  },
+  "tracking": "camera",
+  "unilateral": true
+ },
+ "single_leg_balance": {
+  "display_name": "Single Leg Balance",
+  "is_hold": true,
+  "js_type": "BALANCE",
+  "movement_pattern": "lunge",
+  "phases": {
+   "holding": {
+    "lifted_knee": 90,
+    "stance_knee": 175,
+    "sway": 0,
+    "tolerance": 12
+   }
+  },
+  "tracking": "camera",
+  "unilateral": true
+ },
+ "single_leg_bound": {
+  "display_name": "Single Leg Bound",
+  "is_hold": false,
+  "js_type": null,
+  "movement_pattern": "lunge",
+  "phases": {
+   "airborne": {
+    "hip_height_ratio": 0.3,
+    "tolerance": 0.1
+   },
+   "landing": {
+    "left_knee_land": 110,
+    "tolerance": 20
+   },
+   "loaded": {
+    "left_knee_land": 130,
+    "tolerance": 20
+   },
+   "stick": {
+    "left_knee_land": 90,
+    "tolerance": 15
+   }
+  },
+  "tracking": "manual",
+  "unilateral": true
+ },
+ "single_leg_calf_raise": {
+  "display_name": "Single Leg Calf Raise",
+  "is_hold": false,
+  "js_type": null,
+  "movement_pattern": "",
+  "phases": {},
+  "tracking": "manual",
+  "unilateral": false
+ },
+ "single_leg_dead_bug": {
+  "display_name": "Single Leg Dead Bug",
+  "is_hold": false,
+  "js_type": "DEAD_BUG",
+  "movement_pattern": "rotate",
+  "phases": {
+   "extending": {
+    "left_hip_flex": [
+     90,
+     170
+    ],
+    "tolerance": 15
+   },
+   "return": {
+    "left_hip_flex": 90,
+    "tolerance": 15
+   },
+   "start": {
+    "left_hip_flex": 90,
+    "right_hip_flex": 90,
+    "tolerance": 15
+   }
+  },
+  "tracking": "camera",
+  "unilateral": false
+ },
+ "single_leg_eyes_closed": {
+  "display_name": "Single Leg Eyes Closed",
+  "is_hold": true,
+  "js_type": "BALANCE",
+  "movement_pattern": "lunge",
+  "phases": {},
+  "tracking": "camera",
+  "unilateral": true
+ },
+ "single_leg_glute_bridge": {
+  "display_name": "Single Leg Glute Bridge",
+  "is_hold": false,
+  "js_type": null,
+  "movement_pattern": "hinge",
+  "phases": {
+   "lifting": {
+    "extended_knee": 175,
+    "hip_lift": 140,
+    "tolerance": 12,
+    "working_knee": 95
+   },
+   "lowering": {
+    "extended_knee": 175,
+    "hip_lift": 120,
+    "tolerance": 12,
+    "working_knee": 95
+   },
+   "lying": {
+    "extended_knee": 175,
+    "hip_lift": 0,
+    "tolerance": 10,
+    "working_knee": 90
+   },
+   "top": {
+    "body_alignment": 170,
+    "extended_knee": 175,
+    "hip_lift": 170,
+    "tolerance": 8,
+    "working_knee": 100
+   }
+  },
+  "tracking": "manual",
+  "unilateral": true
+ },
+ "single_leg_hip_thrust": {
+  "display_name": "Single Leg Hip Thrust",
+  "is_hold": false,
+  "js_type": null,
+  "movement_pattern": "hinge",
+  "phases": {
+   "holding": {
+    "active_hip_ext": 175,
+    "tolerance": 12
+   },
+   "lowered": {
+    "active_hip_ext": 70,
+    "tolerance": 15
+   },
+   "lowering": {
+    "active_hip_ext": [
+     70,
+     175
+    ],
+    "tolerance": 15
+   },
+   "rising": {
+    "active_hip_ext": 120,
+    "tolerance": 15
+   }
+  },
+  "tracking": "manual",
+  "unilateral": true
+ },
+ "single_leg_hop_and_stick": {
+  "display_name": "Single Leg Hop and Stick",
+  "is_hold": false,
+  "js_type": "PLYO_SL_LANDING",
+  "movement_pattern": "lunge",
+  "phases": {
+   "airborne": {
+    "hip_height_ratio": 0.35,
+    "tolerance": 0.1
+   },
+   "landing": {
+    "left_knee_land": 110,
+    "tolerance": 20
+   },
+   "loaded": {
+    "left_knee_land": 130,
+    "tolerance": 20
+   },
+   "sticking": {
+    "left_knee_land": 100,
+    "tolerance": 15
+   }
+  },
+  "tracking": "camera",
+  "unilateral": true
+ },
+ "single_leg_hop_forward": {
+  "display_name": "Single Leg Hop Forward",
+  "is_hold": false,
+  "js_type": "PLYO_SL_HOP_FORWARD",
+  "movement_pattern": "lunge",
+  "phases": {
+   "active": {
+    "avg_knee": 90,
+    "tolerance": 20
+   },
+   "airborne": {
+    "avg_knee": 90,
+    "tolerance": 20
+   },
+   "landing": {
+    "avg_knee": 90,
+    "tolerance": 20
+   },
+   "loading": {
+    "avg_knee": 90,
+    "tolerance": 20
+   },
+   "start": {
+    "avg_knee": 90,
+    "tolerance": 20
+   }
+  },
+  "tracking": "camera",
+  "unilateral": true
+ },
+ "single_leg_hop_lateral": {
+  "display_name": "Single Leg Lateral Hop",
+  "is_hold": false,
+  "js_type": "PLYO_SL_HOP_LATERAL",
+  "movement_pattern": "lunge",
+  "phases": {
+   "holding": {
+    "avg_knee": 170,
+    "tolerance": 20
+   },
+   "rest": {
+    "avg_knee": 170,
+    "tolerance": 20
+   }
+  },
+  "tracking": "camera",
+  "unilateral": true
+ },
+ "single_leg_landing": {
+  "display_name": "Single Leg Landing",
+  "is_hold": false,
+  "js_type": "PLYO_SL_LANDING",
+  "movement_pattern": "lunge",
+  "phases": {
+   "airborne": {
+    "avg_knee": 140,
+    "tolerance": 25
+   },
+   "holding": {
+    "landing_knee": 140,
+    "tolerance": 20
+   },
+   "landing": {
+    "landing_knee": 140,
+    "tolerance": 20
+   },
+   "ready": {
+    "landing_knee": 170,
+    "tolerance": 15
+   }
+  },
+  "tracking": "camera",
+  "unilateral": true
+ },
+ "single_leg_rdl": {
+  "display_name": "Single Leg RDL",
+  "is_hold": false,
+  "js_type": "SL_RDL",
+  "movement_pattern": "hinge",
+  "phases": {
+   "bottom": {
+    "back_leg_knee": 175,
+    "hip_hinge": 85,
+    "stance_knee": 165,
+    "tolerance": 10
+   },
+   "hinging": {
+    "back_leg_knee": 175,
+    "hip_hinge": [
+     20,
+     85
+    ],
+    "stance_knee": [
+     165,
+     175
+    ],
+    "tolerance": 12
+   },
+   "rising": {
+    "back_leg_knee": 175,
+    "hip_hinge": [
+     20,
+     85
+    ],
+    "stance_knee": [
+     165,
+     175
+    ],
+    "tolerance": 12
+   },
+   "standing": {
+    "back_leg_knee": 175,
+    "hip_hinge": 20,
+    "stance_knee": 175,
+    "tolerance": 10
+   }
+  },
+  "tracking": "camera",
+  "unilateral": true
+ },
+ "single_leg_reach": {
+  "display_name": "Single Leg Reach",
+  "is_hold": false,
+  "js_type": null,
+  "movement_pattern": "lunge",
+  "phases": {
+   "reaching": {
+    "reach_distance": 0.3,
+    "tolerance": 0.1
+   },
+   "returning": {
+    "stance_knee": 165,
+    "tolerance": 15
+   },
+   "standing": {
+    "stance_knee": 165,
+    "tolerance": 15
+   }
+  },
+  "tracking": "manual",
+  "unilateral": true
+ },
+ "single_leg_slider_curl": {
+  "display_name": "Single Leg Slider Curl",
+  "is_hold": false,
+  "js_type": null,
+  "movement_pattern": "hinge",
+  "phases": {
+   "bottom": {
+    "avg_hip": 75,
+    "tolerance": 15
+   },
+   "hinging": {
+    "avg_hip": 130,
+    "tolerance": 15
+   },
+   "returning": {
+    "avg_hip": 130,
+    "tolerance": 15
+   },
+   "standing": {
+    "avg_hip": 175,
+    "tolerance": 10
+   }
+  },
+  "tracking": "manual",
+  "unilateral": true
+ },
+ "single_leg_squat_to_box": {
+  "display_name": "Single Leg Squat to Box",
+  "is_hold": false,
+  "js_overrides": {
+   "down": {
+    "workingKnee": 105
+   },
+   "hold": {
+    "workingKnee": 105
+   }
+  },
+  "js_type": "SQUAT_SINGLE",
+  "movement_pattern": "squat",
+  "phases": {
+   "ascending": {
+    "avg_knee": 130,
+    "tolerance": 15
+   },
+   "bottom": {
+    "avg_knee": 105,
+    "tolerance": 15
+   },
+   "descending": {
+    "avg_knee": 130,
+    "tolerance": 15
+   },
+   "standing": {
+    "avg_knee": 175,
+    "tolerance": 10
+   }
+  },
+  "tracking": "camera",
+  "unilateral": true
+ },
+ "single_leg_squats": {
+  "display_name": "Single Leg Squats",
+  "is_hold": false,
+  "js_type": "SQUAT_SINGLE",
+  "movement_pattern": "squat",
+  "phases": {
+   "ascending": {
+    "back": 160,
+    "knee": 155,
+    "tolerance": 15
+   },
+   "bottom": {
+    "back": 155,
+    "knee": 100,
+    "tolerance": 10
+   },
+   "descending": {
+    "back": 160,
+    "knee": 135,
+    "tolerance": 15
+   },
+   "standing": {
+    "back": 165,
+    "knee": 175,
+    "tolerance": 10
+   }
+  },
+  "tracking": "camera",
+  "unilateral": true
+ },
+ "sissy_squat": {
+  "display_name": "Sissy Squat",
+  "is_hold": false,
+  "js_type": null,
+  "movement_pattern": "squat",
+  "phases": {
+   "ascending": {
+    "avg_knee": 130,
+    "tolerance": 15
+   },
+   "bottom": {
+    "avg_knee": 60,
+    "tolerance": 15
+   },
+   "descending": {
+    "avg_knee": 130,
+    "tolerance": 15
+   },
+   "standing": {
+    "avg_knee": 175,
+    "tolerance": 10
+   }
+  },
+  "tracking": "manual",
+  "unilateral": false
+ },
+ "sit_to_stand": {
+  "display_name": "Sit to Stand",
+  "is_hold": false,
+  "js_type": "SQUAT",
+  "movement_pattern": "squat",
+  "phases": {
+   "sitting": {
+    "avg_knee": 90,
+    "tolerance": 15
+   },
+   "sitting_down": {
+    "avg_knee": 120,
+    "tolerance": 15
+   },
+   "standing": {
+    "avg_knee": 175,
+    "tolerance": 10
+   },
+   "standing_up": {
+    "avg_knee": 135,
+    "tolerance": 15
+   }
+  },
+  "tracking": "camera",
+  "unilateral": false
+ },
+ "skater_squat": {
+  "display_name": "Skater Squat",
+  "is_hold": false,
+  "js_overrides": {
+   "down": {
+    "workingKnee": 90
+   },
+   "hold": {
+    "workingKnee": 90
+   }
+  },
+  "js_type": "SQUAT_SINGLE",
+  "movement_pattern": "squat",
+  "phases": {
+   "ascending": {
+    "avg_knee": 130,
+    "tolerance": 15
+   },
+   "bottom": {
+    "avg_knee": 90,
+    "tolerance": 15
+   },
+   "descending": {
+    "avg_knee": 130,
+    "tolerance": 15
+   },
+   "standing": {
+    "avg_knee": 175,
+    "tolerance": 10
+   }
+  },
+  "tracking": "camera",
+  "unilateral": true
+ },
+ "skaters": {
+  "display_name": "Skaters",
+  "is_hold": false,
+  "js_type": null,
+  "movement_pattern": "lunge",
+  "phases": {
+   "jumping_left": {
+    "displacement": 0,
+    "tolerance": 40
+   },
+   "jumping_right": {
+    "displacement": 0,
+    "tolerance": 40
+   },
+   "left_stance": {
+    "displacement": -60,
+    "left_knee": 155,
+    "tolerance": 20,
+    "weight_bearing": "left"
+   },
+   "right_stance": {
+    "displacement": 60,
+    "right_knee": 155,
+    "tolerance": 20,
+    "weight_bearing": "right"
+   }
+  },
+  "tracking": "manual",
+  "unilateral": false
+ },
+ "skipping_lunge": {
+  "display_name": "Skipping Lunge",
+  "is_hold": false,
+  "js_type": null,
+  "movement_pattern": "lunge",
+  "phases": {
+   "ascending": {
+    "front_knee": 130,
+    "tolerance": 15
+   },
+   "bottom": {
+    "front_knee": 90,
+    "tolerance": 15
+   },
+   "descending": {
+    "front_knee": 120,
+    "tolerance": 15
+   },
+   "standing": {
+    "front_knee": 170,
+    "tolerance": 10
+   }
+  },
+  "tracking": "manual",
+  "unilateral": true
+ },
+ "slider_reverse_lunge": {
+  "display_name": "Slider Reverse Lunge",
+  "is_hold": false,
+  "js_overrides": {
+   "down": {
+    "knee": 90
+   },
+   "hold": {
+    "knee": 90
+   }
+  },
+  "js_type": "LUNGE",
+  "movement_pattern": "lunge",
+  "phases": {
+   "ascending": {
+    "front_knee": 130,
+    "tolerance": 15
+   },
+   "bottom": {
+    "front_knee": 90,
+    "tolerance": 15
+   },
+   "descending": {
+    "front_knee": 120,
+    "tolerance": 15
+   },
+   "standing": {
+    "front_knee": 170,
+    "tolerance": 10
+   }
+  },
+  "tracking": "camera",
+  "unilateral": true
+ },
+ "sliding_leg_curl": {
+  "display_name": "Sliding Leg Curl",
+  "is_hold": false,
+  "js_type": null,
+  "movement_pattern": "hinge",
+  "phases": {
+   "bridge": {
+    "avg_hip_ext": 160,
+    "avg_knee": 170,
+    "tolerance": 15
+   },
+   "curling": {
+    "avg_hip_ext": 160,
+    "avg_knee": 120,
+    "tolerance": 15
+   },
+   "extending": {
+    "avg_hip_ext": 158,
+    "avg_knee": 120,
+    "tolerance": 15
+   },
+   "peak": {
+    "avg_hip_ext": 155,
+    "avg_knee": 70,
+    "tolerance": 15
+   }
+  },
+  "tracking": "manual",
+  "unilateral": false
+ },
+ "spanish_squat": {
+  "display_name": "Spanish Squat",
+  "is_hold": true,
+  "js_type": "SQUAT_HOLD",
+  "movement_pattern": "squat",
+  "phases": {
+   "holding": {
+    "avg_knee": 120,
+    "back_wall_contact": true,
+    "knee_width": "neutral",
+    "tolerance": 10
+   }
+  },
+  "tracking": "camera",
+  "unilateral": false
+ },
+ "spiderman_push_up": {
+  "display_name": "Spiderman Push-Up",
+  "is_hold": false,
+  "js_type": "PUSH_UP",
+  "movement_pattern": "push",
+  "phases": {
+   "down": {
+    "avg_elbow": [
+     90,
+     170
+    ],
+    "tolerance": 15
+   },
+   "up": {
+    "avg_elbow": [
+     90,
+     170
+    ],
+    "tolerance": 12
+   }
+  },
+  "tracking": "camera",
+  "unilateral": false
+ },
+ "split_squat_jump": {
+  "display_name": "Split Squat Jump",
+  "is_hold": false,
+  "js_type": null,
+  "movement_pattern": "lunge",
+  "phases": {
+   "active": {
+    "avg_knee": 90,
+    "tolerance": 20
+   },
+   "airborne": {
+    "avg_knee": 90,
+    "tolerance": 20
+   },
+   "landing": {
+    "avg_knee": 90,
+    "tolerance": 20
+   },
+   "lunge": {
+    "avg_knee": 90,
+    "tolerance": 20
+   },
+   "start": {
+    "avg_knee": 90,
+    "tolerance": 20
+   }
+  },
+  "tracking": "manual",
+  "unilateral": true
+ },
+ "split_squat_static": {
+  "display_name": "Split Squat (Static)",
+  "is_hold": false,
+  "js_overrides": {
+   "down": {
+    "knee": 90
+   },
+   "hold": {
+    "knee": 90
+   }
+  },
+  "js_type": "LUNGE",
+  "movement_pattern": "lunge",
+  "phases": {
+   "ascending": {
+    "front_knee": 130,
+    "tolerance": 15
+   },
+   "bottom": {
+    "front_knee": 90,
+    "tolerance": 12
+   },
+   "descending": {
+    "front_knee": [
+     90,
+     170
+    ],
+    "tolerance": 15
+   },
+   "standing": {
+    "front_knee": 170,
+    "tolerance": 10
+   }
+  },
+  "tracking": "camera",
+  "unilateral": true
+ },
+ "sprint_in_place": {
+  "display_name": "Sprint in Place",
+  "is_hold": false,
+  "js_type": null,
+  "movement_pattern": "squat",
+  "phases": {
+   "driving": {
+    "tolerance": 20,
+    "working_hip_flexion": 120
+   },
+   "lowering": {
+    "tolerance": 20,
+    "working_hip_flexion": [
+     85,
+     160
+    ]
+   },
+   "peak": {
+    "tolerance": 15,
+    "working_hip_flexion": 85
+   },
+   "stance": {
+    "tolerance": 15,
+    "working_hip_flexion": 160
+   }
+  },
+  "tracking": "manual",
+  "unilateral": false
+ },
+ "sprint_start": {
+  "display_name": "Sprint Start",
+  "is_hold": false,
+  "js_type": null,
+  "movement_pattern": "lunge",
+  "phases": {
+   "exploding": {
+    "tolerance": 20,
+    "trunk_lean": 130
+   },
+   "set": {
+    "lead_knee": 90,
+    "tolerance": 20
+   },
+   "sprinting": {
+    "avg_knee": 145,
+    "tolerance": 20
+   }
+  },
+  "tracking": "manual",
+  "unilateral": false
+ },
+ "squat_hold_assess": {
+  "display_name": "Squat Hold Assess",
+  "is_hold": true,
+  "js_type": "SQUAT_HOLD",
+  "movement_pattern": "",
+  "phases": {},
+  "tracking": "camera",
+  "unilateral": false
+ },
+ "squat_jump_turn": {
+  "display_name": "Squat Jump with Turn",
+  "is_hold": false,
+  "js_type": null,
+  "movement_pattern": "squat",
+  "phases": {
+   "active": {
+    "avg_knee": 90,
+    "tolerance": 20
+   },
+   "airborne": {
+    "avg_knee": 90,
+    "tolerance": 20
+   },
+   "landing": {
+    "avg_knee": 90,
+    "tolerance": 20
+   },
+   "loaded": {
+    "avg_knee": 90,
+    "tolerance": 20
+   },
+   "start": {
+    "avg_knee": 90,
+    "tolerance": 20
+   }
+  },
+  "tracking": "manual",
+  "unilateral": false
+ },
+ "squat_pulse": {
+  "display_name": "Squat Pulse",
+  "is_hold": false,
+  "js_type": null,
+  "movement_pattern": "squat",
+  "phases": {
+   "ascending": {
+    "avg_knee": 130,
+    "tolerance": 15
+   },
+   "bottom": {
+    "avg_knee": 90,
+    "tolerance": 15
+   },
+   "descending": {
+    "avg_knee": 130,
+    "tolerance": 15
+   },
+   "standing": {
+    "avg_knee": 175,
+    "tolerance": 10
+   }
+  },
+  "tracking": "manual",
+  "unilateral": false
+ },
+ "staggered_push_up": {
+  "display_name": "Staggered Push-Up",
+  "is_hold": false,
+  "js_type": "PUSH_UP",
+  "movement_pattern": "push",
+  "phases": {
+   "down": {
+    "avg_elbow": [
+     90,
+     170
+    ],
+    "tolerance": 15
+   },
+   "up": {
+    "avg_elbow": [
+     90,
+     170
+    ],
+    "tolerance": 12
+   }
+  },
+  "tracking": "camera",
+  "unilateral": false
+ },
+ "star_excursion": {
+  "display_name": "Star Excursion Balance",
+  "is_hold": false,
+  "js_type": null,
+  "movement_pattern": "lunge",
+  "phases": {
+   "reaching": {
+    "reach_distance": 0.25,
+    "tolerance": 0.1
+   },
+   "returning": {
+    "stance_knee": 162,
+    "tolerance": 15
+   },
+   "standing": {
+    "stance_knee": 162,
+    "tolerance": 15
+   }
+  },
+  "tracking": "manual",
+  "unilateral": true
+ },
+ "static_glutei": {
+  "display_name": "Static Glute Activation",
+  "is_hold": true,
+  "js_type": null,
+  "movement_pattern": "hinge",
+  "phases": {
+   "holding": {
+    "avg_hip_ext": 175,
+    "hip_symmetry": 8,
+    "tolerance": 8
+   },
+   "ready": {
+    "avg_hip_ext": 170,
+    "hip_symmetry": 10,
+    "tolerance": 10
+   }
+  },
+  "tracking": "manual",
+  "unilateral": false
+ },
+ "static_hip_adductors": {
+  "display_name": "Static Hip Adductors",
+  "is_hold": true,
+  "js_type": null,
+  "movement_pattern": "hinge",
+  "phases": {
+   "holding": {
+    "avg_knee": 95,
+    "knee_separation": 25,
+    "tolerance": 8
+   },
+   "ready": {
+    "avg_knee": 95,
+    "knee_separation": 60,
+    "tolerance": 10
+   }
+  },
+  "tracking": "manual",
+  "unilateral": false
+ },
+ "static_quadriceps": {
+  "display_name": "Static Quadriceps",
+  "is_hold": false,
+  "js_type": null,
+  "movement_pattern": "rotate",
+  "phases": {
+   "holding": {
+    "tolerance": 8,
+    "working_elevation": 80,
+    "working_knee": 170
+   },
+   "lifting": {
+    "tolerance": 10,
+    "working_elevation": 80,
+    "working_knee": 170
+   },
+   "resting": {
+    "tolerance": 10,
+    "working_elevation": 30,
+    "working_knee": 170
+   }
+  },
+  "tracking": "manual",
+  "unilateral": false
+ },
+ "step_downs": {
+  "display_name": "Step Downs",
+  "is_hold": false,
+  "js_type": "LUNGE",
+  "movement_pattern": "lunge",
+  "phases": {
+   "bottom": {
+    "hip_level": 10,
+    "lowering_knee": 160,
+    "stance_knee": 120,
+    "tolerance": 10
+   },
+   "lowering": {
+    "hip_level": 0,
+    "lowering_knee": 165,
+    "stance_knee": 135,
+    "tolerance": 12
+   },
+   "raising": {
+    "hip_level": 5,
+    "lowering_knee": 170,
+    "stance_knee": 155,
+    "tolerance": 10
+   },
+   "standing": {
+    "hip_level": 0,
+    "lowering_knee": 175,
+    "stance_knee": 175,
+    "tolerance": 8
+   }
+  },
+  "tracking": "camera",
+  "unilateral": true
+ },
+ "step_up_with_knee_drive": {
+  "display_name": "Step-Up with Knee Drive",
+  "is_hold": false,
+  "js_type": "STEP_UPS",
+  "movement_pattern": "lunge",
+  "phases": {
+   "ascending": {
+    "front_knee": 130,
+    "tolerance": 15
+   },
+   "bottom": {
+    "front_knee": 90,
+    "tolerance": 15
+   },
+   "descending": {
+    "front_knee": 120,
+    "tolerance": 15
+   },
+   "standing": {
+    "front_knee": 170,
+    "tolerance": 10
+   }
+  },
+  "tracking": "camera",
+  "unilateral": true
+ },
+ "step_ups": {
+  "display_name": "Step Ups",
+  "is_hold": false,
+  "js_type": "STEP_UPS",
+  "movement_pattern": "lunge",
+  "phases": {
+   "descending": {
+    "hip_level": 5,
+    "lead_knee": 150,
+    "tolerance": 10,
+    "trail_knee": 170
+   },
+   "ground": {
+    "hip_level": 0,
+    "lead_knee": 90,
+    "tolerance": 10,
+    "trail_knee": 175
+   },
+   "pushing": {
+    "hip_level": 0,
+    "lead_knee": 140,
+    "tolerance": 12,
+    "trail_knee": 165
+   },
+   "top": {
+    "hip_level": 0,
+    "lead_knee": 175,
+    "tolerance": 8,
+    "trail_knee": 175
+   }
+  },
+  "tracking": "camera",
+  "unilateral": true
+ },
+ "straight_leg_raises": {
+  "display_name": "Straight Leg Raises",
+  "is_hold": false,
+  "js_type": null,
+  "movement_pattern": "hinge",
+  "phases": {
+   "down": {
+    "knee_angle": 175,
+    "lift_angle": 0,
+    "tolerance": 8
+   },
+   "lifting": {
+    "knee_angle": 175,
+    "lift_angle": [
+     0,
+     45
+    ],
+    "tolerance": 10
+   },
+   "lowering": {
+    "knee_angle": 175,
+    "lift_angle": [
+     0,
+     45
+    ],
+    "tolerance": 10
+   },
+   "top": {
+    "knee_angle": 175,
+    "lift_angle": 45,
+    "tolerance": 8
+   }
+  },
+  "tracking": "manual",
+  "unilateral": false
+ },
+ "suitcase_carry": {
+  "display_name": "Suitcase Carry",
+  "is_hold": true,
+  "js_type": null,
+  "movement_pattern": "carry",
+  "phases": {},
+  "tracking": "manual",
+  "unilateral": true
+ },
+ "sumo_squat": {
+  "display_name": "Sumo Squat",
+  "is_hold": false,
+  "js_overrides": {
+   "down": {
+    "knee": 90
+   },
+   "hold": {
+    "knee": 90
+   }
+  },
+  "js_type": "SQUAT",
+  "movement_pattern": "squat",
+  "phases": {
+   "ascending": {
+    "avg_knee": 130,
+    "tolerance": 15
+   },
+   "bottom": {
+    "avg_knee": 90,
+    "tolerance": 12
+   },
+   "descending": {
+    "avg_knee": [
+     90,
+     175
+    ],
+    "tolerance": 15
+   },
+   "standing": {
+    "avg_knee": 175,
+    "tolerance": 10
+   }
+  },
+  "tracking": "camera",
+  "unilateral": false
+ },
+ "superman_hold": {
+  "display_name": "Superman Hold",
+  "is_hold": true,
+  "js_type": null,
+  "movement_pattern": "pull",
+  "phases": {
+   "hold": {
+    "arm_elevation": 80,
+    "hip_extension": 175,
+    "tolerance": 15
+   },
+   "rest": {
+    "arm_elevation": 15,
+    "tolerance": 20
+   }
+  },
+  "tracking": "manual",
+  "unilateral": false
+ },
+ "supine_hip_abduction": {
+  "display_name": "Supine Hip Abduction",
+  "is_hold": true,
+  "js_type": null,
+  "movement_pattern": "lunge",
+  "phases": {
+   "holding": {
+    "avg_knee": 170,
+    "tolerance": 20
+   },
+   "rest": {
+    "avg_knee": 170,
+    "tolerance": 20
+   }
+  },
+  "tracking": "manual",
+  "unilateral": true
+ },
+ "table_row": {
+  "display_name": "Table Row",
+  "is_hold": false,
+  "js_type": "ROW",
+  "movement_pattern": "pull",
+  "phases": {
+   "lower": {
+    "avg_elbow": [
+     90,
+     170
+    ],
+    "tolerance": 15
+   },
+   "pull": {
+    "avg_elbow": 90,
+    "body_align": 175,
+    "tolerance": 15
+   },
+   "start": {
+    "avg_elbow": 170,
+    "body_align": 175,
+    "tolerance": 10
+   },
+   "top": {
+    "avg_elbow": 90,
+    "body_align": 175,
+    "tolerance": 15
+   }
+  },
+  "tracking": "camera",
+  "unilateral": false
+ },
+ "tandem_walking": {
+  "display_name": "Tandem Walking",
+  "is_hold": false,
+  "js_type": null,
+  "movement_pattern": "lunge",
+  "phases": {
+   "ready": {
+    "foot_separation": 30,
+    "tolerance": 10
+   },
+   "stable": {
+    "foot_separation": 35,
+    "tolerance": 10
+   },
+   "stepping": {
+    "foot_separation": 50,
+    "tolerance": 12
+   }
+  },
+  "tracking": "manual",
+  "unilateral": false
+ },
+ "tempo_squat": {
+  "display_name": "Tempo Squat",
+  "is_hold": false,
+  "js_overrides": {
+   "down": {
+    "knee": 90
+   },
+   "hold": {
+    "knee": 90
+   }
+  },
+  "js_type": "SQUAT",
+  "movement_pattern": "squat",
+  "phases": {
+   "ascending": {
+    "avg_knee": 130,
+    "tolerance": 15
+   },
+   "bottom": {
+    "avg_knee": 90,
+    "tolerance": 15
+   },
+   "descending": {
+    "avg_knee": 130,
+    "tolerance": 15
+   },
+   "standing": {
+    "avg_knee": 175,
+    "tolerance": 10
+   }
+  },
+  "tracking": "camera",
+  "unilateral": false
+ },
+ "terminal_knee_extension": {
+  "display_name": "Terminal Knee Extension",
+  "is_hold": false,
+  "js_type": null,
+  "movement_pattern": "squat",
+  "phases": {
+   "bent": {
+    "avg_knee": 155,
+    "tolerance": 10
+   },
+   "extending": {
+    "avg_knee": 170,
+    "tolerance": 10
+   },
+   "holding": {
+    "avg_knee": 178,
+    "tolerance": 5
+   },
+   "locked": {
+    "avg_knee": 178,
+    "tolerance": 5
+   },
+   "returning": {
+    "avg_knee": 165,
+    "tolerance": 10
+   }
+  },
+  "tracking": "manual",
+  "unilateral": false
+ },
+ "thoracic_rotation": {
+  "display_name": "Thoracic Rotation",
+  "is_hold": false,
+  "js_type": null,
+  "movement_pattern": "rotate",
+  "phases": {
+   "neutral": {
+    "shoulder_rotation": 90,
+    "tolerance": 20
+   },
+   "rotating_l": {
+    "shoulder_rotation": 50,
+    "tolerance": 20
+   },
+   "rotating_r": {
+    "shoulder_rotation": 130,
+    "tolerance": 20
+   }
+  },
+  "tracking": "manual",
+  "unilateral": false
+ },
+ "towel_row": {
+  "display_name": "Towel Row",
+  "is_hold": false,
+  "js_type": "ROW",
+  "movement_pattern": "pull",
+  "phases": {
+   "lower": {
+    "avg_elbow": [
+     90,
+     170
+    ],
+    "tolerance": 15
+   },
+   "pull": {
+    "avg_elbow": 90,
+    "tolerance": 15,
+    "trunk_angle": 50
+   },
+   "start": {
+    "avg_elbow": 170,
+    "tolerance": 15,
+    "trunk_angle": 50
+   },
+   "top": {
+    "avg_elbow": 90,
+    "tolerance": 15,
+    "trunk_angle": 50
+   }
+  },
+  "tracking": "camera",
+  "unilateral": false
+ },
+ "trap_bar_deadlift": {
+  "display_name": "Trap Bar Deadlift",
+  "is_hold": false,
+  "js_type": "HINGE",
+  "movement_pattern": "",
+  "phases": {},
+  "tracking": "camera",
+  "unilateral": false
+ },
+ "tricep_extensions": {
+  "display_name": "Tricep Extensions",
+  "is_hold": false,
+  "js_type": null,
+  "movement_pattern": "push",
+  "phases": {
+   "bent": {
+    "avg_elbow": 45,
+    "tolerance": 12
+   },
+   "extending": {
+    "avg_elbow": [
+     45,
+     170
+    ],
+    "tolerance": 15
+   },
+   "flexing": {
+    "avg_elbow": [
+     45,
+     170
+    ],
+    "tolerance": 15
+   },
+   "straight": {
+    "avg_elbow": 170,
+    "tolerance": 10
+   }
+  },
+  "tracking": "manual",
+  "unilateral": false
+ },
+ "trunk_rotation_stretch": {
+  "display_name": "Trunk Rotation Stretch",
+  "is_hold": true,
+  "js_type": null,
+  "movement_pattern": "rotate",
+  "phases": {
+   "holding": {
+    "rotation_angle": 50,
+    "tolerance": 15,
+    "upright": true
+   }
+  },
+  "tracking": "manual",
+  "unilateral": false
+ },
+ "tuck_jumps": {
+  "display_name": "Tuck Jumps",
+  "is_hold": false,
+  "js_type": "PLYO_TUCK_JUMPS",
+  "movement_pattern": "squat",
+  "phases": {
+   "jumping": {
+    "tolerance": 30,
+    "vertical_displacement": -50
+   },
+   "landing": {
+    "avg_knee": 130,
+    "tolerance": 20
+   },
+   "loading": {
+    "avg_knee": 130,
+    "tolerance": 20
+   },
+   "standing": {
+    "avg_knee": 170,
+    "tolerance": 15,
+    "vertical_displacement": 0
+   },
+   "tucked": {
+    "avg_hip_flexion": 80,
+    "avg_knee": 80,
+    "in_air": true,
+    "tolerance": 20
+   }
+  },
+  "tracking": "camera",
+  "unilateral": false
+ },
+ "turkish_get_up": {
+  "display_name": "Turkish Get-Up",
+  "is_hold": false,
+  "js_type": null,
+  "movement_pattern": "rotate",
+  "phases": {
+   "active": {
+    "avg_knee": 90,
+    "tolerance": 20
+   },
+   "elbow": {
+    "avg_knee": 90,
+    "tolerance": 20
+   },
+   "hand": {
+    "avg_knee": 90,
+    "tolerance": 20
+   },
+   "knee": {
+    "avg_knee": 90,
+    "tolerance": 20
+   },
+   "lying": {
+    "avg_knee": 90,
+    "tolerance": 20
+   },
+   "standing": {
+    "avg_knee": 90,
+    "tolerance": 20
+   },
+   "start": {
+    "avg_knee": 90,
+    "tolerance": 20
+   }
+  },
+  "tracking": "manual",
+  "unilateral": true
+ },
+ "typewriter_push_up": {
+  "display_name": "Typewriter Push-Up",
+  "is_hold": false,
+  "js_type": null,
+  "movement_pattern": "push",
+  "phases": {
+   "down": {
+    "avg_elbow": [
+     90,
+     170
+    ],
+    "tolerance": 15
+   },
+   "up": {
+    "avg_elbow": [
+     90,
+     170
+    ],
+    "tolerance": 12
+   }
+  },
+  "tracking": "manual",
+  "unilateral": false
+ },
+ "waiter_carry": {
+  "display_name": "Waiter Carry",
+  "is_hold": true,
+  "js_type": null,
+  "movement_pattern": "carry",
+  "phases": {},
+  "tracking": "manual",
+  "unilateral": true
+ },
+ "waiter_farmer_combined": {
+  "display_name": "Waiter + Farmer Carry",
+  "is_hold": true,
+  "js_type": null,
+  "movement_pattern": "carry",
+  "phases": {},
+  "tracking": "manual",
+  "unilateral": false
+ },
+ "walking_lunge": {
+  "display_name": "Walking Lunge",
+  "is_hold": false,
+  "js_type": null,
+  "movement_pattern": "lunge",
+  "phases": {
+   "bottom": {
+    "min_knee": 90,
+    "tolerance": 15
+   },
+   "driving": {
+    "min_knee": 140,
+    "tolerance": 15
+   },
+   "standing": {
+    "avg_knee": 170,
+    "tolerance": 12
+   },
+   "stepping": {
+    "min_knee": 130,
+    "tolerance": 15
+   }
+  },
+  "tracking": "manual",
+  "unilateral": true
+ },
+ "wall_angel": {
+  "display_name": "Wall Angel",
+  "is_hold": true,
+  "js_type": null,
+  "movement_pattern": "pull",
+  "phases": {
+   "holding": {
+    "avg_knee": 170,
+    "tolerance": 20
+   },
+   "rest": {
+    "avg_knee": 170,
+    "tolerance": 20
+   }
+  },
+  "tracking": "manual",
+  "unilateral": false
+ },
+ "wall_drive_hold": {
+  "display_name": "Wall Drive Hold",
+  "is_hold": true,
+  "js_type": null,
+  "movement_pattern": "",
+  "phases": {},
+  "tracking": "manual",
+  "unilateral": false
+ },
+ "wall_handstand_push_up": {
+  "display_name": "Wall Handstand Push-Up",
+  "is_hold": false,
+  "js_type": null,
+  "movement_pattern": "push",
+  "phases": {
+   "bottom": {
+    "avg_elbow": 90,
+    "body_align": 175,
+    "tolerance": 15
+   },
+   "down": {
+    "avg_elbow": 90,
+    "body_align": 175,
+    "tolerance": 15
+   },
+   "start": {
+    "avg_elbow": 170,
+    "body_align": 175,
+    "tolerance": 10
+   },
+   "up": {
+    "avg_elbow": 170,
+    "body_align": 175,
+    "tolerance": 10
+   }
+  },
+  "tracking": "manual",
+  "unilateral": false
+ },
+ "wall_push_up": {
+  "display_name": "Wall Push-Up",
+  "is_hold": false,
+  "js_overrides": {
+   "down": {
+    "elbow": 90
+   },
+   "hold": {
+    "elbow": 90
+   }
+  },
+  "js_type": "WALL_PUSH_UP",
+  "movement_pattern": "push",
+  "phases": {
+   "bottom": {
+    "avg_elbow": 90,
+    "tolerance": 15
+   },
+   "down": {
+    "avg_elbow": 90,
+    "tolerance": 15
+   },
+   "start": {
+    "avg_elbow": 170,
+    "tolerance": 10
+   },
+   "up": {
+    "avg_elbow": 170,
+    "tolerance": 10
+   }
+  },
+  "tracking": "camera",
+  "unilateral": false
+ },
+ "wall_sit": {
+  "display_name": "Wall Sit",
+  "is_hold": true,
+  "js_type": "SQUAT_HOLD",
+  "movement_pattern": "squat",
+  "phases": {
+   "complete": {
+    "avg_knee": 90,
+    "tolerance": 12
+   },
+   "holding": {
+    "avg_knee": 90,
+    "tolerance": 12
+   },
+   "setup": {
+    "avg_knee": 130,
+    "tolerance": 20
+   }
+  },
+  "tracking": "camera",
+  "unilateral": false
+ },
+ "wall_slide": {
+  "display_name": "Wall Slide",
+  "is_hold": true,
+  "js_type": null,
+  "movement_pattern": "pull",
+  "phases": {
+   "holding": {
+    "avg_knee": 170,
+    "tolerance": 20
+   },
+   "rest": {
+    "avg_knee": 170,
+    "tolerance": 20
+   }
+  },
+  "tracking": "manual",
+  "unilateral": false
+ },
+ "weighted_pull_up": {
+  "display_name": "Weighted Pull-Up",
+  "is_hold": false,
+  "js_type": "HANG",
+  "movement_pattern": "pull",
+  "phases": {
+   "hang": {
+    "avg_elbow": 175,
+    "hip_swing": 175,
+    "tolerance": 10
+   },
+   "lower": {
+    "avg_elbow": 130,
+    "hip_swing": 170,
+    "tolerance": 15
+   },
+   "pull": {
+    "avg_elbow": 100,
+    "hip_swing": 170,
+    "tolerance": 15
+   },
+   "start": {
+    "avg_elbow": 175,
+    "hip_swing": 175,
+    "tolerance": 10
+   },
+   "top": {
+    "avg_elbow": 60,
+    "chin_clear": 1,
+    "tolerance": 15
+   }
+  },
+  "tracking": "camera",
+  "unilateral": false
+ },
+ "wide_grip_push_up": {
+  "display_name": "Wide Grip Push-Up",
+  "is_hold": false,
+  "js_overrides": {
+   "down": {
+    "elbow": 90
+   },
+   "hold": {
+    "elbow": 90
+   }
+  },
+  "js_type": "PUSH_UP",
+  "movement_pattern": "push",
+  "phases": {
+   "bottom": {
+    "avg_elbow": 90,
+    "tolerance": 15,
+    "width_ratio": 1.4
+   },
+   "down": {
+    "avg_elbow": 90,
+    "tolerance": 15,
+    "width_ratio": 1.4
+   },
+   "start": {
+    "avg_elbow": 170,
+    "tolerance": 10,
+    "width_ratio": 1.4
+   },
+   "up": {
+    "avg_elbow": 170,
+    "tolerance": 10,
+    "width_ratio": 1.4
+   }
+  },
+  "tracking": "camera",
+  "unilateral": false
+ },
+ "windshield_wiper": {
+  "display_name": "Windshield Wipers",
+  "is_hold": false,
+  "js_type": null,
+  "movement_pattern": "rotate",
+  "phases": {
+   "active": {
+    "avg_knee": 90,
+    "tolerance": 20
+   },
+   "left": {
+    "avg_knee": 90,
+    "tolerance": 20
+   },
+   "right": {
+    "avg_knee": 90,
+    "tolerance": 20
+   },
+   "start": {
+    "avg_knee": 90,
+    "tolerance": 20
+   }
+  },
+  "tracking": "manual",
+  "unilateral": false
+ },
+ "worlds_greatest_stretch": {
+  "display_name": "World's Greatest Stretch",
+  "is_hold": false,
+  "js_type": null,
+  "movement_pattern": "lunge",
+  "phases": {
+   "hamstring": {
+    "front_knee": 165,
+    "tolerance": 15
+   },
+   "lunge": {
+    "front_knee": 90,
+    "tolerance": 20
+   },
+   "returning": {
+    "front_knee": 90,
+    "tolerance": 20
+   },
+   "rotating": {
+    "rotation_reach": 170,
+    "tolerance": 15
+   }
+  },
+  "tracking": "manual",
+  "unilateral": true
+ },
+ "wrist_forearm_stretch": {
+  "display_name": "Wrist & Forearm Stretch",
+  "is_hold": true,
+  "js_type": null,
+  "movement_pattern": "push",
+  "phases": {
+   "holding": {
+    "arm_extended": true,
+    "stretching_elbow": 175,
+    "tolerance": 10
+   }
+  },
+  "tracking": "manual",
+  "unilateral": false
+ }
+}

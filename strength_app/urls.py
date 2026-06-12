@@ -75,7 +75,11 @@ urlpatterns = [
     path('v1/profile/',                                     views_progress.v1_profile,              name='v1_profile'),
     path('v1/test-exercises/',                              views_session.v1_test_list,             name='v1_test_list'),
     path('v1/test-exercise/<str:exercise_id>/',             views_session.v1_test_exercise,         name='v1_test_exercise'),
-    path('api/analyze-frame/',                              views.analyze_frame,                    name='analyze_frame'),
+    # R2-W1-7: api/analyze-frame/ ROUTE REMOVED. The live patient path is
+    # client-side MediaPipe JS (v1_exercise_execute.html + exercise_targets
+    # .json); nothing fetched this endpoint, and the view scored every
+    # exercise with squat (knee-angle) logic — D5. The view function is
+    # retained in views.py, fenced, for the desktop/dev runner context.
 
     # ========================================================================
     # COACH DASHBOARD
