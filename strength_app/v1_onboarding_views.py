@@ -1138,11 +1138,18 @@ def _log_red_flag_change(patient, old_flags, new_flags, old_stop, new_stop):
             link.notes = (link.notes or '') + stamp
             link.save(update_fields=['notes'])
         if patient.user_id:
-            from therapist_app.models import TherapistPatientLink
+            from therapist_app.models import TherapistPatientLink, Alert
             for tlink in TherapistPatientLink.objects.filter(
                     patient=patient.user, status='active'):
                 tlink.notes = (tlink.notes or '') + stamp
                 tlink.save(update_fields=['notes'])
+                # R2-T2: reviewable alert alongside the note stamp
+                Alert.objects.create(
+                    link=tlink, alert_type='red_flag',
+                    message='Patient cleared their absolute-stop flag '
+                            '(self-service). Review the audit trail before '
+                            'their next session.',
+                )
     except Exception:
         logging.getLogger(__name__).warning(
             'Could not append stop-clear note to professional links for %s',

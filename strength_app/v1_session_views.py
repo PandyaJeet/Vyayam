@@ -176,11 +176,21 @@ def _notify_linked_professionals_of_pain(patient, result):
             link.notes = (link.notes or '') + stamp
             link.save(update_fields=['notes'])
         if patient.user_id:
-            from therapist_app.models import TherapistPatientLink
+            from therapist_app.models import TherapistPatientLink, Alert
             for tlink in TherapistPatientLink.objects.filter(
                     patient=patient.user, status='active'):
                 tlink.notes = (tlink.notes or '') + stamp
                 tlink.save(update_fields=['notes'])
+                # R2-T2: real, reviewable alert (the note stamp stays as a
+                # redundant trail)
+                Alert.objects.create(
+                    link=tlink, alert_type='pain',
+                    message=(f"Pain during session: "
+                             f"{result.get('exercise_name', 'exercise')} — "
+                             f"{result.get('pain_type', 'pain')} "
+                             f"{result.get('pain_severity', 0)}/10 "
+                             f"({result.get('pain_location', 'unspecified location')})."),
+                )
     except Exception:
         logger.warning('pain flag note failed for %s', patient.patient_id,
                        exc_info=True)

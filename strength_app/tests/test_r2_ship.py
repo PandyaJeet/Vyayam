@@ -535,3 +535,118 @@ class TestR2W3ProfileEdit(TestCase):
         self.patient.refresh_from_db()
         self.assertEqual(set(self.patient.equipment_available_json), {'dumbbells', 'bands'})
         self.assertNotIn('v1_session', self.client.session)
+
+
+# ════════════════════════════════════════════════════════════════════════
+# W4 — therapist-POV features
+# ════════════════════════════════════════════════════════════════════════
+
+class TestR2W4Therapist(TestCase):
+    """T1 triage / T2 alerts / T3 copy week / T7 visit notes / U1 reset."""
+
+    def setUp(self):
+        from django.contrib.auth.models import User
+        from therapist_app.models import Therapist, TherapistPatientLink
+        self.therapist_user = User.objects.create_user(username='dr_r2', password='pass')
+        self.therapist = Therapist.objects.create(user=self.therapist_user, full_name='Dr. R2')
+        self.patient_user = User.objects.create_user(username='pt_r2', password='pass')
+        self.link = TherapistPatientLink.objects.create(
+            therapist=self.therapist, patient=self.patient_user,
+            status='active', full_name='Linked Patient',
+        )
+        self.client.force_login(self.therapist_user)
+
+    def test_r2_t2_pain_alert_created_on_sharp_pain(self):
+        from django.contrib.auth.hashers import make_password
+        from therapist_app.models import Alert
+        from strength_app.v1_session_views import _notify_linked_professionals_of_pain
+        profile = PatientProfile.objects.create(
+            patient_id='P9201', name='Linked Patient', phone='9000009201',
+            age=30, goals='Rehab', user=self.patient_user,
+            password=make_password('x1234567'),
+        )
+        _notify_linked_professionals_of_pain(profile, {
+            'exercise_name': 'Lunges', 'pain_type': 'sharp',
+            'pain_severity': 8, 'pain_location': 'left_knee',
+        })
+        alert = Alert.objects.get(link=self.link)
+        self.assertEqual(alert.alert_type, 'pain')
+        self.assertIn('Lunges', alert.message)
+        self.assertFalse(alert.is_reviewed)
+
+    def test_r2_t2_inbox_lists_and_mark_reviewed(self):
+        from therapist_app.models import Alert
+        alert = Alert.objects.create(link=self.link, alert_type='pain', message='test pain')
+        resp = self.client.get('/therapist/alerts/')
+        self.assertContains(resp, 'test pain')
+        resp = self.client.post(f'/therapist/alerts/{alert.pk}/reviewed/')
+        self.assertEqual(resp.status_code, 302)
+        alert.refresh_from_db()
+        self.assertTrue(alert.is_reviewed)
+
+    def test_r2_t2_other_therapists_alert_blocked(self):
+        from django.contrib.auth.models import User
+        from therapist_app.models import Therapist, TherapistPatientLink, Alert
+        other_user = User.objects.create_user(username='dr_other', password='pass')
+        other = Therapist.objects.create(user=other_user, full_name='Dr. Other')
+        other_pt = User.objects.create_user(username='pt_other', password='pass')
+        other_link = TherapistPatientLink.objects.create(
+            therapist=other, patient=other_pt, status='active')
+        foreign = Alert.objects.create(link=other_link, alert_type='pain', message='not yours')
+        resp = self.client.post(f'/therapist/alerts/{foreign.pk}/reviewed/')
+        self.assertEqual(resp.status_code, 404)
+        resp = self.client.get('/therapist/alerts/')
+        self.assertNotContains(resp, 'not yours')
+
+    def test_r2_t1_dashboard_orders_alerted_patient_first(self):
+        from django.contrib.auth.models import User
+        from therapist_app.models import TherapistPatientLink, Alert
+        quiet_pt = User.objects.create_user(username='pt_quiet', password='pass')
+        TherapistPatientLink.objects.create(
+            therapist=self.therapist, patient=quiet_pt,
+            status='active', full_name='AAA Quiet',  # would sort first by name
+        )
+        Alert.objects.create(link=self.link, alert_type='pain', message='attention')
+        resp = self.client.get('/therapist/dashboard/')
+        html = resp.content.decode()
+        self.assertLess(html.index('Linked Patient'), html.index('AAA Quiet'),
+                        'patient with unreviewed alert must sort first')
+
+    def test_r2_t3_copy_week_clones_items_as_draft(self):
+        from django.utils import timezone
+        from therapist_app.models import Prescription, PrescriptionItem
+        rx = Prescription.objects.create(link=self.link, week_number=1,
+                                         published_at=timezone.now())
+        PrescriptionItem.objects.create(
+            prescription=rx, order=0, exercise_id='full_squats',
+            exercise_name='Full Squats', sets=3, reps=10)
+        PrescriptionItem.objects.create(
+            prescription=rx, order=1, exercise_id='planks',
+            exercise_name='Planks', sets=3, reps=1)
+        resp = self.client.post(f'/therapist/patient/{self.link.id}/program/copy-week/')
+        self.assertEqual(resp.status_code, 302)
+        clone = Prescription.objects.get(link=self.link, week_number=2)
+        self.assertIsNone(clone.published_at)
+        self.assertEqual(clone.items.count(), 2)
+        self.assertEqual(clone.items.first().exercise_id, 'full_squats')
+
+    def test_r2_t7_visit_note_created_and_listed(self):
+        resp = self.client.post(f'/therapist/patient/{self.link.id}/notes/add/',
+                                {'note': 'ROM improving; progress lunges next week.'})
+        self.assertEqual(resp.status_code, 302)
+        resp = self.client.get(f'/therapist/patient/{self.link.id}/?tab=notes')
+        self.assertContains(resp, 'ROM improving')
+
+    def test_r2_u1_therapist_reset_issues_temp_password(self):
+        from django.contrib.auth.hashers import make_password
+        profile = PatientProfile.objects.create(
+            patient_id='P9202', name='Linked Patient', phone='9000009202',
+            age=30, goals='Rehab', user=self.patient_user,
+            password=make_password('original1'),
+        )
+        resp = self.client.post(f'/therapist/patient/{self.link.id}/reset-password/')
+        self.assertEqual(resp.status_code, 302)
+        profile.refresh_from_db()
+        self.assertTrue(profile.must_change_password)
+        from django.contrib.auth.hashers import check_password
+        self.assertFalse(check_password('original1', profile.password))

@@ -35,6 +35,11 @@
     <div class="t-stat__val t-stat__val--warn">{{ reports_due }}</div>
     <div class="t-stat__lbl">Reports due this week</div>
   </div>
+  <!-- R2-T2: unreviewed alerts -->
+  <a class="t-stat" href="{% url 'therapist_alerts' %}" style="text-decoration:none;color:inherit;">
+    <div class="t-stat__val {% if unreviewed_alerts %}t-stat__val--err{% endif %}">{{ unreviewed_alerts }}</div>
+    <div class="t-stat__lbl">Unreviewed alerts</div>
+  </a>
 </div>
 
 <div style="display:flex; justify-content:space-between; align-items:center; margin:18px 0 12px;">

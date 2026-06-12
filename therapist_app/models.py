@@ -343,3 +343,48 @@ class ProgressReport(models.Model):
 
     def __str__(self):
         return f"{self.link.display_name} · {self.title}"
+
+
+class Alert(models.Model):
+    """R2-T2: a surfaced, reviewable event for the therapist — replaces the
+    append-a-line-to-link.notes pattern as the PRIMARY surface (the note
+    stamps remain as a redundant trail). Created by the patient app on
+    sharp-pain reports (DA-F2) and red-flag clears (DA-C5)."""
+
+    ALERT_TYPES = [
+        ('pain', 'Sharp / high pain during session'),
+        ('red_flag', 'Red-flag change'),
+        ('missed', 'Missed sessions'),
+        ('other', 'Other'),
+    ]
+
+    link = models.ForeignKey(TherapistPatientLink, on_delete=models.CASCADE,
+                             related_name='alerts')
+    alert_type = models.CharField(max_length=12, choices=ALERT_TYPES, default='other')
+    message = models.TextField()
+    is_reviewed = models.BooleanField(default=False)
+    reviewed_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['is_reviewed', '-created_at']
+        indexes = [models.Index(fields=['link', 'is_reviewed'])]
+
+    def __str__(self):
+        state = 'reviewed' if self.is_reviewed else 'NEW'
+        return f"[{state}] {self.get_alert_type_display()} — {self.link.display_name}"
+
+
+class VisitNote(models.Model):
+    """R2-T7: free-text dated clinical note per patient (therapist-only)."""
+
+    link = models.ForeignKey(TherapistPatientLink, on_delete=models.CASCADE,
+                             related_name='visit_notes')
+    note = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.link.display_name} · note {self.created_at:%Y-%m-%d}"

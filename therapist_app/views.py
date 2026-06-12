@@ -18,7 +18,7 @@ from django.contrib.auth.models import User
 from django.db import transaction
 
 logger = logging.getLogger(__name__)
-from django.http import HttpResponseBadRequest, JsonResponse
+from django.http import HttpResponseBadRequest, JsonResponse, Http404
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.utils.html import escape
@@ -297,9 +297,29 @@ def dashboard(request):
         .order_by('status', 'full_name')
     )
     cards = [_link_card(link) for link in links]
+
+    # R2-T1: triage ordering — "who do I need to look at?" answered on
+    # screen one. Unreviewed alerts (sharp pain / red-flag changes) first,
+    # then red compliance, then flagged, then everyone else.
+    from .models import Alert
+    alert_counts = {}
+    for row in (Alert.objects
+                .filter(link__in=links, is_reviewed=False)
+                .values('link_id')):
+        alert_counts[row['link_id']] = alert_counts.get(row['link_id'], 0) + 1
+    for c in cards:
+        c['alert_count'] = alert_counts.get(c['link'].id, 0)
+    cards.sort(key=lambda c: (
+        -c['alert_count'],
+        0 if c['status_tone'] == 'red' else 1,
+        0 if c['flags'] else 1,
+        c['name'],
+    ))
+
     active = [c for c in cards if not c['pending']]
     flagged = [c for c in active if c['flags']]
     today_count = sum(1 for c in active if c['last_session'] == 'Today')
+    unreviewed_alerts = sum(alert_counts.values())
 
     ctx = {
         'therapist': therapist,
@@ -307,10 +327,109 @@ def dashboard(request):
         'active_count': len(active),
         'flagged_count': len(flagged),
         'today_count': today_count,
+        'unreviewed_alerts': unreviewed_alerts,  # R2-T2 badge
         'reports_due': 2,  # placeholder until we wire real report scheduling
         'active_section': 'dashboard',
     }
     return render(request, 'therapist_app/dashboard.html', ctx)
+
+
+# ============================================================================
+# R2-T2: ALERTS INBOX
+# ============================================================================
+
+@therapist_required
+def alerts_inbox(request):
+    """Global list of patient alerts, unreviewed first."""
+    therapist = request.user.therapist
+    from .models import Alert
+    alerts = (
+        Alert.objects
+        .filter(link__therapist=therapist)
+        .select_related('link')[:200]
+    )
+    return render(request, 'therapist_app/alerts_inbox.html', {
+        'therapist': therapist,
+        'alerts': alerts,
+        'unreviewed_count': sum(1 for a in alerts if not a.is_reviewed),
+        'active_section': 'alerts',
+    })
+
+
+@therapist_required
+@require_POST
+def alert_mark_reviewed(request, alert_id):
+    from .models import Alert
+    alert = Alert.objects.filter(
+        pk=alert_id, link__therapist=request.user.therapist
+    ).first()
+    if alert is None:
+        raise Http404
+    alert.is_reviewed = True
+    alert.reviewed_at = timezone.now()
+    alert.save(update_fields=['is_reviewed', 'reviewed_at'])
+    return redirect(request.POST.get('next') or '/therapist/alerts/')
+
+
+# ============================================================================
+# R2-T3: COPY LAST WEEK'S PROGRAM
+# ============================================================================
+
+@therapist_required
+@require_POST
+def copy_previous_week(request, link_id):
+    """Clone the most recent week's prescription into a new draft for the
+    next week — the single biggest time-saver in any prescription tool."""
+    therapist = request.user.therapist
+    link = get_linked_patient_or_404(therapist, link_id)
+
+    source = link.prescriptions.order_by('-week_number').first()
+    if source is None or not source.items.exists():
+        flash.error(request, "Nothing to copy yet — build this patient's first week in the program tab.")
+        return redirect(f"/therapist/patient/{link.id}/?tab=program")
+
+    target_week = source.week_number + 1
+    target, created = Prescription.objects.get_or_create(
+        link=link, week_number=target_week,
+    )
+    if target.items.exists():
+        flash.error(request, f"Week {target_week} already has exercises — edit it directly instead of overwriting.")
+        return redirect(f"/therapist/patient/{link.id}/?tab=program")
+
+    for item in source.items.all():
+        PrescriptionItem.objects.create(
+            prescription=target, order=item.order,
+            exercise_id=item.exercise_id, exercise_name=item.exercise_name,
+            movement_pattern=item.movement_pattern,
+            sets=item.sets, reps=item.reps, load=item.load,
+            rest_seconds=item.rest_seconds, tempo=item.tempo, notes=item.notes,
+        )
+    # new week starts as an unpublished draft
+    target.published_at = None
+    target.notes_for_patient = source.notes_for_patient
+    target.save(update_fields=['published_at', 'notes_for_patient'])
+
+    flash.success(request, f"Copied week {source.week_number} into a week {target_week} draft — review and publish.")
+    return redirect(f"/therapist/patient/{link.id}/?tab=program")
+
+
+# ============================================================================
+# R2-T7: VISIT NOTES
+# ============================================================================
+
+@therapist_required
+@require_POST
+def add_visit_note(request, link_id):
+    therapist = request.user.therapist
+    link = get_linked_patient_or_404(therapist, link_id)
+    note = (request.POST.get('note') or '').strip()
+    if not note:
+        flash.error(request, 'Note cannot be empty.')
+    else:
+        from .models import VisitNote
+        VisitNote.objects.create(link=link, note=note[:5000])
+        flash.success(request, 'Note saved.')
+    return redirect(f"/therapist/patient/{link.id}/?tab=notes")
 
 
 @therapist_required
@@ -540,7 +659,7 @@ def simulate_accept_invite(request, link_id):
 # Patient detail (tabbed)
 # ---------------------------------------------------------------------------
 
-VALID_TABS = ('today', 'builder', 'progress', 'history', 'messages', 'reports')
+VALID_TABS = ('today', 'builder', 'progress', 'history', 'messages', 'reports', 'notes')  # R2-T7
 
 
 @therapist_required
@@ -639,6 +758,8 @@ def patient_detail(request, link_id):
         'active_section': 'patients',
         'health_profile': health_profile,
         'patient_profile': patient_profile,
+        'visit_notes': list(link.visit_notes.all()[:50]),       # R2-T7
+        'patient_alerts': list(link.alerts.all()[:20]),         # R2-T2
         'session_logs': session_logs,
         'last_completed_log': last_completed_log,
         'progress_charts': progress_charts,

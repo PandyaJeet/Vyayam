@@ -26,4 +26,8 @@ urlpatterns = [
     path('patient/<uuid:link_id>/messages/send/', views.send_message, name='therapist_send_message'),
     path('patient/<uuid:link_id>/reports/generate/', views.generate_report, name='therapist_generate_report'),
     path('patient/<uuid:link_id>/reset-password/', views.reset_patient_password, name='therapist_reset_patient_password'),  # R2-U1
+    path('alerts/', views.alerts_inbox, name='therapist_alerts'),                                                            # R2-T2
+    path('alerts/<int:alert_id>/reviewed/', views.alert_mark_reviewed, name='therapist_alert_reviewed'),                     # R2-T2
+    path('patient/<uuid:link_id>/program/copy-week/', views.copy_previous_week, name='therapist_copy_week'),                 # R2-T3
+    path('patient/<uuid:link_id>/notes/add/', views.add_visit_note, name='therapist_add_visit_note'),                        # R2-T7
 ]

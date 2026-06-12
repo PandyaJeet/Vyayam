@@ -45,6 +45,10 @@
         <i class="fas fa-th-large" style="width:18px; font-size:.88rem;"></i>
         <span class="label">Dashboard</span>
       </a>
+      <a class="t-nav-item {% if active_section == 'alerts' %}is-active{% endif %}" href="{% url 'therapist_alerts' %}">
+        <i class="fas fa-bell" style="width:18px; font-size:.88rem;"></i>
+        <span class="label">Alerts</span>
+      </a>
       <a class="t-nav-item {% if active_section == 'patients' %}is-active{% endif %}" href="{% url 'therapist_patient_list' %}">
         <i class="fas fa-users" style="width:18px; font-size:.88rem;"></i>
         <span class="label">Patients</span>

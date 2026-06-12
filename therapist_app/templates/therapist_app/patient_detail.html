@@ -44,7 +44,25 @@
   <a class="t-tab {% if tab == 'history' %}is-active{% endif %}" href="?tab=history">Session History</a>
   <a class="t-tab {% if tab == 'messages' %}is-active{% endif %}" href="?tab=messages">Messages</a>
   <a class="t-tab {% if tab == 'reports' %}is-active{% endif %}" href="?tab=reports">Reports</a>
+  <a class="t-tab {% if tab == 'notes' %}is-active{% endif %}" href="?tab=notes">Visit Notes</a>
 </div>
+
+{# ---- R2-T2: unreviewed alerts strip (visible on every tab) ---- #}
+{% if patient_alerts %}
+{% for alert in patient_alerts %}{% if not alert.is_reviewed %}
+<div style="background:#fdecea;border:1px solid rgba(186,26,26,.3);border-radius:10px;padding:10px 14px;margin:10px 0;display:flex;align-items:center;justify-content:space-between;gap:12px;">
+  <div style="font-size:.85rem;">
+    <strong style="color:#8c1414;"><i class="fas fa-bell"></i> {{ alert.get_alert_type_display }}</strong>
+    <span style="color:#5a3a3a;"> — {{ alert.message }} <em>({{ alert.created_at|date:"j M, H:i" }})</em></span>
+  </div>
+  <form method="post" action="{% url 'therapist_alert_reviewed' alert.id %}" style="margin:0;">
+    {% csrf_token %}
+    <input type="hidden" name="next" value="/therapist/patient/{{ link.id }}/">
+    <button type="submit" class="t-btn t-btn--outline t-btn--sm">Mark reviewed</button>
+  </form>
+</div>
+{% endif %}{% endfor %}
+{% endif %}
 
 {# ---- TODAY TAB ---- #}
 {% if tab == 'today' %}
@@ -144,6 +162,11 @@
         <div class="submeta"><span id="builder-count">{{ rx_items|length }}</span> exercises · drag to reorder · click any field to edit</div>
       </div>
       <div class="t-builder-actions">
+        <!-- R2-T3: clone the latest week into a new draft -->
+        <form method="post" action="{% url 'therapist_copy_week' link.id %}" style="display:inline;margin:0;">
+          {% csrf_token %}
+          <button type="submit" class="t-btn t-btn--outline t-btn--sm"><i class="fas fa-copy"></i> Copy last week</button>
+        </form>
         <span id="builder-dirty" class="t-pill t-pill--warn" style="display:none;"><i class="fas fa-circle"></i> Unsaved</span>
         <button type="button" class="t-btn t-btn--ghost t-btn--sm" id="builder-reset"><i class="fas fa-undo"></i> Reset</button>
         <button type="button" class="t-btn t-btn--sm" id="builder-publish"><i class="fas fa-check"></i> Publish to patient</button>
@@ -530,6 +553,30 @@
 </div>
 {% endif %}
 
+
+{# ---- R2-T7: VISIT NOTES TAB ---- #}
+{% if tab == 'notes' %}
+<div class="t-card" style="max-width:760px;">
+  <div class="t-card-title"><span>Visit notes</span><span class="t-pill">{{ visit_notes|length }}</span></div>
+  <form method="post" action="{% url 'therapist_add_visit_note' link.id %}" style="margin-bottom:18px;">
+    {% csrf_token %}
+    <textarea name="note" rows="3" required placeholder="Clinical note for today's visit — observations, plan changes, follow-ups…"
+      style="width:100%;border:1px solid var(--outline,#ccc);border-radius:10px;padding:10px 12px;font:inherit;"></textarea>
+    <div style="margin-top:8px;text-align:right;">
+      <button type="submit" class="t-btn t-btn--sm"><i class="fas fa-plus"></i> Add note</button>
+    </div>
+  </form>
+  {% for n in visit_notes %}
+  <div style="border-top:1px solid rgba(0,0,0,.07);padding:12px 2px;">
+    <div style="font-size:.75rem;color:#777;margin-bottom:4px;">{{ n.created_at|date:"D, j M Y · H:i" }}</div>
+    <div style="font-size:.9rem;white-space:pre-wrap;">{{ n.note }}</div>
+  </div>
+  {% empty %}
+  <p style="font-size:.85rem;color:#777;">No visit notes yet — the first one you add appears here with its date.</p>
+  {% endfor %}
+</div>
+{% endif %}
+
 {# ---- EDIT PATIENT DETAILS MODAL ---- #}
 <div id="edit-details-modal" class="t-modal" style="display:none;">
   <div class="t-modal__backdrop" data-close-modal></div>
@@ -611,7 +658,7 @@
         </div>
         <div class="t-field" style="grid-column:1/-1;">
           <label>Goals</label>
-          <textarea class="t-input" name="goals" rows="3" placeholder="Return to running pain-free; restore single-leg control…">{{ health_profile.goals|default:patient_profile.goals|default:'' }}</textarea>
+          <textarea class="t-input" name="goals" rows="3" placeholder="Return to running pain-free; restore single-leg control…">{% if health_profile %}{{ health_profile.goals }}{% elif patient_profile %}{{ patient_profile.goals }}{% endif %}</textarea>
         </div>
       </div>
       <div class="t-modal__foot">
