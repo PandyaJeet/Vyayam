@@ -38,6 +38,8 @@ FIXED in commit `R2-W5`.
 | Patient A → patient B's report / stretch PDF / match | 404 (owner-filtered `get_object_or_404`) | group3/group4 + view filters |
 | Therapist 1 → therapist 2's link | 404 | `test_get_linked_patient_or_404_blocks_other_therapist` |
 | Therapist 1 → therapist 2's alert | 404 | `test_r2_t2_other_therapists_alert_blocked` |
+| Patient B → patient A's session report | 404 | `test_r3_report_ui.TestR3IDORMatrix.test_other_patient_404s` |
+| Therapist 2 → therapist 1's session report | 404 (link firewall + link-scoped lookup) | `test_r3_report_ui.TestR3IDORMatrix.test_other_therapist_404s` |
 | Coach without active link → athlete | 404 | coach views `get_object_or_404(CoachPatientLink, …)` |
 | Anonymous → any patient/therapist route | redirect to login / 401 | `_require_patient` / decorators |
 
