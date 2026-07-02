@@ -1,0 +1,157 @@
+{% comment %}
+R3: THE session report — one include, both audiences (locked decision 1).
+Context: `report` = the immutable report_json dict of a SessionReport.
+HTML context only: every value renders through Django autoescape; nothing
+report-derived enters inline JS (there is no script in this file).
+{% endcomment %}
+<style>
+  .sr-doc { max-width: 820px; margin: 0 auto; color: #1a1c1c; font-size: .9rem; line-height: 1.55; }
+  .sr-doc h1 { font-size: 1.35rem; font-weight: 800; letter-spacing: -.02em; margin: 0 0 2px; }
+  .sr-meta { color: #666; font-size: .8rem; margin-bottom: 14px; }
+  .sr-chip { display: inline-block; padding: 2px 10px; border-radius: 999px; font-size: .72rem; font-weight: 700; }
+  .sr-chip--ok { background: #e8f5ee; color: #0c6c3f; }
+  .sr-chip--warn { background: #fff3e6; color: #9a4d00; }
+  .sr-chip--stop { background: #fdecea; color: #8c1414; }
+  .sr-safety { background: #fdecea; border: 1px solid rgba(186,26,26,.35); border-left: 5px solid #b3261e; border-radius: 10px; padding: 12px 16px; margin: 0 0 16px; }
+  .sr-safety div { color: #6e1410; font-weight: 600; font-size: .88rem; margin: 3px 0; }
+  .sr-narrative { background: #f6f8f7; border-radius: 12px; padding: 14px 18px; margin-bottom: 18px; font-size: .95rem; }
+  .sr-ex { border: 1px solid #e5e7e5; border-radius: 12px; padding: 14px 16px; margin-bottom: 14px; page-break-inside: avoid; }
+  .sr-ex h3 { font-size: 1.02rem; font-weight: 800; margin: 0; display: inline; }
+  .sr-mode { font-size: .68rem; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: #555; background: #eef1ef; border-radius: 999px; padding: 2px 9px; margin-left: 8px; vertical-align: 2px; }
+  .sr-ex-sub { color: #555; font-size: .8rem; margin: 4px 0 10px; }
+  .sr-table { width: 100%; border-collapse: collapse; font-size: .82rem; margin: 6px 0 4px; }
+  .sr-table th { text-align: left; color: #666; font-weight: 700; font-size: .7rem; letter-spacing: .04em; text-transform: uppercase; padding: 4px 8px; border-bottom: 1px solid #e5e7e5; }
+  .sr-table td { padding: 5px 8px; border-bottom: 1px solid #f0f2f0; }
+  .sr-note { font-size: .8rem; color: #444; margin: 4px 0; }
+  .sr-pain { background: #fff7ed; border-left: 3px solid #d97706; border-radius: 8px; padding: 7px 12px; margin: 6px 0; font-size: .82rem; color: #6b3a09; }
+  .sr-section { margin: 18px 0 8px; font-size: .78rem; font-weight: 800; letter-spacing: .08em; color: #555; text-transform: uppercase; }
+  .sr-list { margin: 0; padding-left: 18px; }
+  .sr-list li { margin: 4px 0; }
+  .sr-footer { margin-top: 22px; padding-top: 12px; border-top: 1px solid #e5e7e5; color: #777; font-size: .74rem; font-style: italic; }
+  @media print {
+    header, nav, footer, button, .no-print { display: none !important; }
+    .sr-doc { max-width: none; font-size: 11pt; }
+    body { background: #fff !important; }
+  }
+</style>
+
+<div class="sr-doc">
+  <h1>Session report — {{ report.header.patient_name }}</h1>
+  <div class="sr-meta">
+    {{ report.header.date }} · Week {{ report.header.week_number }} ·
+    Session {{ report.header.session_number }} ·
+    {{ report.header.duration_mmss }} total ·
+    {{ report.header.exercises_done }}/{{ report.header.exercises_total }} exercises
+    ({{ report.header.completion_pct }}%)
+    {% if report.header.status == 'complete' %}
+      <span class="sr-chip sr-chip--ok">Completed</span>
+    {% elif report.header.status == 'ended_early_pain' %}
+      <span class="sr-chip sr-chip--stop">Ended early — pain</span>
+    {% else %}
+      <span class="sr-chip sr-chip--warn">Partial</span>
+    {% endif %}
+  </div>
+
+  {% if report.safety %}
+  <div class="sr-safety">
+    {% for s in report.safety %}<div>⚠ {{ s.text }}</div>{% endfor %}
+  </div>
+  {% endif %}
+
+  <div class="sr-narrative">{{ report.narrative }}</div>
+
+  {% for ex in report.exercises %}
+  <div class="sr-ex">
+    <h3>{{ ex.name }}</h3><span class="sr-mode">{{ ex.mode }}</span>
+    <div class="sr-ex-sub">
+      Prescribed {{ ex.prescribed.sets }}×{{ ex.prescribed.reps }}
+      {% if ex.prescribed.load %} · {{ ex.prescribed.load }}{% endif %}
+      {% if ex.prescribed.tempo %} · tempo {{ ex.prescribed.tempo }}{% endif %}
+      · achieved {{ ex.achieved.sets }} set{{ ex.achieved.sets|pluralize }}
+      {% if ex.time.elapsed_mmss %} · {{ ex.time.elapsed_mmss }} elapsed{% endif %}
+      {% if ex.time.working_mmss %} · {{ ex.time.working_mmss }} working{% endif %}
+      {% if ex.demo_viewed %} · watched demo{% endif %}
+    </div>
+
+    {% if ex.skipped %}
+      <div class="sr-pain">Skipped — {{ ex.skipped }}.</div>
+    {% endif %}
+
+    {% if ex.sets %}
+    <table class="sr-table">
+      <thead>
+        <tr><th>Set</th><th>Reps</th><th>Form</th><th>Depth (best/avg)</th><th>Tempo</th><th>Rest</th></tr>
+      </thead>
+      <tbody>
+        {% for s in ex.sets %}
+        <tr>
+          <td>{{ s.set_number }}</td>
+          <td>{{ s.reps }}{% if s.hold_seconds %} · {{ s.hold_seconds }}s hold{% endif %}{% if s.self_reported %} (self-reported){% endif %}</td>
+          <td>{% if s.form_avg is not None %}{{ s.form_avg }}%{% else %}—{% endif %}</td>
+          <td>{% if s.depth_best is not None %}{{ s.depth_best }}° / {{ s.depth_avg }}°{% else %}—{% endif %}</td>
+          <td>{% if s.tempo_pct is not None %}{{ s.tempo_pct }}%{% else %}—{% endif %}</td>
+          <td>
+            {% if s.rest_extended_seconds %}+{{ s.rest_extended_seconds }}s extended{% endif %}
+            {% if s.rest_cut_short %}{% if s.rest_extended_seconds %} · {% endif %}cut short{% endif %}
+            {% if s.pause_seconds %}{% if s.rest_extended_seconds or s.rest_cut_short %} · {% endif %}paused {{ s.pause_seconds }}s{% endif %}
+            {% if not s.rest_extended_seconds and not s.rest_cut_short and not s.pause_seconds %}as prescribed{% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% endif %}
+
+    {% if ex.tempo and ex.tempo.dominant_miss %}
+      <div class="sr-note">Tempo adherence {{ ex.tempo.pct }}% — tends to be
+        {{ ex.tempo.dominant_miss.direction }} on the {{ ex.tempo.dominant_miss.phase }} phase
+        ({{ ex.tempo.dominant_miss.avg_actual }}s vs {{ ex.tempo.dominant_miss.prescribed }}s prescribed).</div>
+    {% elif ex.tempo %}
+      <div class="sr-note">Tempo adherence {{ ex.tempo.pct }}%.</div>
+    {% endif %}
+
+    {% for cue in ex.cues %}
+      <div class="sr-note">Coaching: “{{ cue.text }}” — fired {{ cue.fired }}×, {{ cue.note }}.</div>
+    {% endfor %}
+
+    {% for p in ex.pain %}
+      <div class="sr-pain">Pain: {{ p.text }} —
+        {% if p.outcome == 'continued' %}noted, session continued{% elif p.outcome == 'exercise_skipped' %}exercise skipped{% else %}session stopped{% endif %}.</div>
+    {% endfor %}
+
+    {% if ex.feedback %}
+      <div class="sr-note">Patient rated it: {{ ex.feedback }}.</div>
+    {% endif %}
+  </div>
+  {% endfor %}
+
+  {% if report.patterns %}
+  <div class="sr-section">Patterns this session</div>
+  <ul class="sr-list">
+    {% for p in report.patterns %}<li>{{ p.evidence }}</li>{% endfor %}
+  </ul>
+  {% endif %}
+
+  {% if report.trends %}
+  <div class="sr-section">Against recent sessions</div>
+  <ul class="sr-list">
+    {% for t in report.trends %}<li>{{ t.evidence }}</li>{% endfor %}
+  </ul>
+  {% endif %}
+
+  {% if report.messages %}
+  <div class="sr-section">Messages sent during the session</div>
+  <ul class="sr-list">
+    {% for m in report.messages %}<li><strong>{{ m.time }}</strong> — {{ m.body }}</li>{% endfor %}
+  </ul>
+  {% endif %}
+
+  {% if report.review_points %}
+  <div class="sr-section">For review</div>
+  <ul class="sr-list">
+    {% for r in report.review_points %}<li>{{ r }}</li>{% endfor %}
+  </ul>
+  {% endif %}
+
+  <div class="sr-footer">{{ report.footer }}</div>
+</div>
