@@ -5323,10 +5323,13 @@ async function startCamera() {
 
   function postRestEvent(kind, seconds) {
     if (!LIBRARY_MODE) return;
+    // Semantics (matches the guided screen): extensions/skips belong to the
+    // rest AFTER the just-finished set (completedSets); a pause belongs to
+    // the set currently in progress (completedSets + 1).
     postJSON(REST_EVENT_URL, {
       kind: kind,
       seconds: seconds,
-      set_number: completedSets + 1,
+      set_number: (kind === 'pause') ? completedSets + 1 : Math.max(1, completedSets),
     });
   }
 
