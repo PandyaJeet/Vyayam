@@ -18,7 +18,7 @@ from django.contrib.auth.models import User
 from django.db import transaction
 
 logger = logging.getLogger(__name__)
-from django.http import HttpResponseBadRequest, JsonResponse, Http404
+from django.http import FileResponse, HttpResponseBadRequest, JsonResponse, Http404
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.utils.html import escape
@@ -403,6 +403,7 @@ def copy_previous_week(request, link_id):
             movement_pattern=item.movement_pattern,
             sets=item.sets, reps=item.reps, load=item.load,
             rest_seconds=item.rest_seconds, tempo=item.tempo, notes=item.notes,
+            pain_stop_threshold=item.pain_stop_threshold,
         )
     # new week starts as an unpublished draft
     target.published_at = None
@@ -628,6 +629,7 @@ def simulate_accept_invite(request, link_id):
                 'therapist_managed': True,
                 'gate_test_completed': True,
                 'prescription_mode': 'therapist_manual',
+                'must_change_password': True,
             },
         )
         if not created:
@@ -638,6 +640,7 @@ def simulate_accept_invite(request, link_id):
                 therapist_managed=True,
                 gate_test_completed=True,
                 prescription_mode='therapist_manual',
+                must_change_password=True,
             )
     except Exception as exc:
         logger.error("PatientProfile creation failed for link %s: %s", link.id, exc)
@@ -734,7 +737,7 @@ def patient_detail(request, link_id):
         'current_week': current_week,
         'rx': rx,
         'rx_items': rx_items,
-        'rx_items_json': json.dumps([
+        'rx_items_data': [
             {
                 'id': i.id,
                 'order': i.order,
@@ -747,9 +750,10 @@ def patient_detail(request, link_id):
                 'rest_seconds': i.rest_seconds,
                 'tempo': i.tempo,
                 'notes': i.notes,
+                'pain_stop_threshold': i.pain_stop_threshold,
             }
             for i in rx_items
-        ]),
+        ],
         'catalog': EXERCISES,
         'history_sessions': history_sessions,
         'history_seed': history_seed,
@@ -931,6 +935,7 @@ def save_program(request, link_id):
                     rest_seconds=_safe_int(item.get('rest_seconds') or item.get('rest'), 60, 0, 600),
                     tempo=str(item.get('tempo') or ''),
                     notes=str(item.get('notes') or ''),
+                    pain_stop_threshold=(_safe_int(item.get('pain_stop_threshold'), 0, 0, 10) or None),
                 )
         rx.save()
 
@@ -1026,3 +1031,21 @@ def generate_report(request, link_id):
         flash.error(request, "Report row created but PDF rendering failed.")
 
     return redirect(f"/therapist/patient/{link.id}/?tab=reports")
+
+
+@therapist_required
+def download_report(request, report_id):
+    """E-2: stream a progress-report PDF only to the therapist who owns the link.
+    Replaces the raw /media/ link, which had no auth/ownership gate."""
+    therapist = request.user.therapist
+    report = get_object_or_404(
+        ProgressReport, id=report_id, link__therapist=therapist
+    )
+    if not report.pdf:
+        raise Http404("No PDF for this report.")
+    return FileResponse(
+        report.pdf.open('rb'),
+        as_attachment=True,
+        filename=f"{report.title.replace(' ', '_')}.pdf",
+        content_type='application/pdf',
+    )

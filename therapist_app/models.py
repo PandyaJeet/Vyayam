@@ -182,6 +182,10 @@ class PrescriptionItem(models.Model):
     rest_seconds = models.IntegerField(default=60)
     tempo = models.CharField(max_length=40, blank=True, default='')
     notes = models.TextField(blank=True, default='')
+    # Pain (0-10) at or above which THIS exercise auto-skips mid-session.
+    # Blank = "therapist unsure" -> fall back to settings.PAIN_STOP_THRESHOLD_DEFAULT
+    # (constant added in Phase 2). Therapist sets this per exercise.
+    pain_stop_threshold = models.PositiveSmallIntegerField(null=True, blank=True)
 
     class Meta:
         ordering = ['order', 'id']
@@ -191,10 +195,13 @@ class PrescriptionItem(models.Model):
 
 
 class TherapistMessage(models.Model):
-    """A single message in the therapist↔patient async chat."""
+    """A single message in the therapist↔patient async chat.
+    A null sender together with is_system=True marks a system-generated
+    message (e.g. an automated pain report)."""
 
     link = models.ForeignKey(TherapistPatientLink, on_delete=models.CASCADE, related_name='messages')
-    sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name='therapist_messages_sent')
+    sender = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, related_name='therapist_messages_sent')
+    is_system = models.BooleanField(default=False)
     body = models.TextField()
     sent_at = models.DateTimeField(auto_now_add=True)
     read_at = models.DateTimeField(null=True, blank=True)
@@ -203,11 +210,12 @@ class TherapistMessage(models.Model):
         ordering = ['sent_at']
 
     def __str__(self):
-        return f"{self.sender.username} @ {self.sent_at:%Y-%m-%d %H:%M}: {self.body[:40]}"
+        who = self.sender.username if self.sender else 'system'
+        return f"{who} @ {self.sent_at:%Y-%m-%d %H:%M}: {self.body[:40]}"
 
     @property
     def is_from_therapist(self):
-        return hasattr(self.sender, 'therapist')
+        return self.sender is not None and hasattr(self.sender, 'therapist')
 
 
 class TherapistPatientHealthProfile(models.Model):
@@ -388,3 +396,31 @@ class VisitNote(models.Model):
 
     def __str__(self):
         return f"{self.link.display_name} · note {self.created_at:%Y-%m-%d}"
+
+
+class TherapistActionLog(models.Model):
+    """A therapist's response to a pain event — the 'action' half of
+    pain->action training pairs, and an audit trail of prescription changes."""
+    ACTION_CHOICES = [
+        ('reduced_sets', 'Reduced sets'),
+        ('reduced_reps', 'Reduced reps'),
+        ('reduced_load', 'Reduced load'),
+        ('changed_threshold', 'Changed pain threshold'),
+        ('message', 'Sent message'),
+        ('no_change', 'No change'),
+    ]
+    link = models.ForeignKey(TherapistPatientLink, on_delete=models.CASCADE, related_name='action_logs')
+    therapist = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='action_logs')
+    pain_event = models.ForeignKey('strength_app.PainEvent', on_delete=models.SET_NULL, null=True, blank=True, related_name='therapist_actions')
+    prescription_item = models.ForeignKey(PrescriptionItem, on_delete=models.SET_NULL, null=True, blank=True, related_name='action_logs')
+    action_type = models.CharField(max_length=20, choices=ACTION_CHOICES)
+    old_value = models.CharField(max_length=80, blank=True, default='')
+    new_value = models.CharField(max_length=80, blank=True, default='')
+    note = models.TextField(blank=True, default='')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.action_type} on link {self.link_id}"

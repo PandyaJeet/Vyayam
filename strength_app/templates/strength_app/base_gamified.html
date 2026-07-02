@@ -96,6 +96,34 @@
 </head>
 <body class="{% block body_class %}bg-surface text-on-surface min-h-screen pb-32{% endblock %}">
 
+  <!-- C-6: CSRF helper + fetch auto-inject (parity with base.html) -->
+  <script>
+    function getCsrfToken() {
+        var cookie = document.cookie.split(';').find(function(c) {
+            return c.trim().startsWith('csrftoken=');
+        });
+        return cookie ? cookie.split('=')[1] : '';
+    }
+    var getCsrf = getCsrfToken;
+    var _originalFetch = window.fetch;
+    window.fetch = function(url, options) {
+        options = options || {};
+        if (options.method && options.method.toUpperCase() !== 'GET') {
+            options.headers = options.headers || {};
+            if (options.headers instanceof Headers) {
+                if (!options.headers.has('X-CSRFToken')) {
+                    options.headers.set('X-CSRFToken', getCsrfToken());
+                }
+            } else {
+                if (!options.headers['X-CSRFToken']) {
+                    options.headers['X-CSRFToken'] = getCsrfToken();
+                }
+            }
+        }
+        return _originalFetch(url, options);
+    };
+  </script>
+
   {% block header %}
   <header class="bg-zinc-50/85 backdrop-blur-md sticky top-0 z-50 border-b border-outline-variant/25">
     <div class="flex items-center w-full px-5 py-3.5">

@@ -1,4 +1,5 @@
 {% extends 'strength_app/base_gamified.html' %}
+{% load static %}
 {% block title %}Conditioning — VYAYAM{% endblock %}
 {% block bottom_nav %}{% endblock %}
 
@@ -149,6 +150,17 @@
 {% endblock %}
 
 {% block extra_scripts %}
+<!-- Phase F: friendlier voice -->
+<script src="{% static 'strength_app/js/voice_core.js' %}"></script>
+<script>
+  // Phase F: one speech helper — best voice, rate 0.95, pitch 1.0.
+  function coachSay(text) {
+    if (!window.speechSynthesis) return;
+    var u = new SpeechSynthesisUtterance(text);
+    VyayamVoice.applyTo(u);
+    speechSynthesis.speak(u);
+  }
+</script>
 <script>
 (function(){
   const type = '{{ protocol.protocol.type }}';
@@ -234,11 +246,7 @@
     btnPause.style.display = '';
     paused = false;
     timer = setInterval(tick, 1000);
-    if (window.speechSynthesis) {
-      const u = new SpeechSynthesisUtterance('Round ' + (currentRound + 1) + '. Go!');
-      u.rate = 0.9;
-      speechSynthesis.speak(u);
-    }
+    coachSay('Round ' + (currentRound + 1) + '. Go!');
   }
 
   function startRestPhase() {
@@ -251,11 +259,7 @@
     currentRound++;
     paused = false;
     timer = setInterval(tick, 1000);
-    if (window.speechSynthesis) {
-      const u = new SpeechSynthesisUtterance('Rest. Recover your breathing.');
-      u.rate = 0.9;
-      speechSynthesis.speak(u);
-    }
+    coachSay('Rest. Recover your breathing.');
   }
 
   // ── RSA logic ──
@@ -296,11 +300,7 @@
     } else if (type === 'sprint_intervals') {
       if (rsaPhase === 'rest_sprint') {
         rsaPhase = 'sprint';
-        if (window.speechSynthesis) {
-          const u = new SpeechSynthesisUtterance('Sprint! Go!');
-          u.rate = 1.0;
-          speechSynthesis.speak(u);
-        }
+        coachSay('Sprint! Go!');
         display.textContent = 'GO!';
         if (phaseLabel) { phaseLabel.textContent = 'SPRINT ' + currentSprint + ' — ALL OUT!'; phaseLabel.className = 'phase-label phase-work'; }
         btnStart.style.display = '';
@@ -323,11 +323,7 @@
             btnPause.style.display = '';
             paused = false;
             timer = setInterval(tick, 1000);
-            if (window.speechSynthesis) {
-              const u = new SpeechSynthesisUtterance('Set complete. Full rest.');
-              u.rate = 0.9;
-              speechSynthesis.speak(u);
-            }
+            coachSay('Set complete. Full rest.');
             return;
           }
           startSprintRest();
@@ -336,11 +332,7 @@
         };
         btnPause.style.display = 'none';
       } else if (rsaPhase === 'rest_set') {
-        if (window.speechSynthesis) {
-          const u = new SpeechSynthesisUtterance('Set ' + currentSet + '. Get ready.');
-          u.rate = 0.9;
-          speechSynthesis.speak(u);
-        }
+        coachSay('Set ' + currentSet + '. Get ready.');
         startSprintRest();
       }
     }
@@ -352,11 +344,7 @@
     btnStart.style.display = 'none';
     btnPause.style.display = 'none';
     if (btnDone) btnDone.style.display = '';
-    if (window.speechSynthesis) {
-      const u = new SpeechSynthesisUtterance('Conditioning session complete. Well done.');
-      u.rate = 0.9;
-      speechSynthesis.speak(u);
-    }
+    coachSay('Conditioning session complete. Well done.');
   }
 })();
 </script>

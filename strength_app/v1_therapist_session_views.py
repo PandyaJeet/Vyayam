@@ -18,15 +18,18 @@ from datetime import date, timedelta
 
 from django.contrib import messages as flash
 from django.db.models import Avg, Count
-from django.http import Http404
+from django.http import Http404, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 
-from .models import PatientProfile
+from django.conf import settings
+from .models import PatientProfile, PainEvent
+from .rate_limiter import rate_limit
 from therapist_app.exercise_catalog import EXERCISES_BY_ID
 from therapist_app.models import (
+    Alert,
     Prescription,
     PrescriptionItem,
     SessionLog,
@@ -244,6 +247,7 @@ def therapist_session_exercise(request, idx):
         'total_exercises': len(items),
         'is_last_exercise': is_last,
         'feedback_url': reverse('therapist_session_feedback', args=[idx]),
+        'report_pain_url': reverse('therapist_session_report_pain', args=[idx]),
         'today_url': reverse('therapist_session_today'),
     }
     return render(request, 'strength_app/therapist_session_exercise.html', ctx)
@@ -262,7 +266,13 @@ def _render_v2_ghost(request, patient, enriched, idx, total, is_last):
     content = EXERCISE_CONTENT.get(v2_key) or EXERCISE_CONTENT_GAP.get(v2_key) or {}
 
     tempo = str(item.tempo or meta.get('tempo', '3-1-2-0'))
-    tempo_parts = tempo.split('-')
+    # Normalise en/em dashes to real hyphens so dash-separated tempos still split.
+    # Parts stay as strings; the template quotes + parseInt's them, so no tempo value
+    # (numbers, '—', 'Hold', …) can ever emit invalid inline JS.
+    # NB: keep these as STRINGS, never ints — the tempo *display* cells render them
+    # through Django's `|default:N` filter (`value or arg`), and an int 0 is falsy so
+    # it would be swallowed by the default (e.g. 4-0-1-0 would show 4-1-1-0). '0' is truthy.
+    tempo_parts = tempo.replace('–', '-').replace('—', '-').split('-')
     while len(tempo_parts) < 4:
         tempo_parts.append('0')
 
@@ -295,6 +305,10 @@ def _render_v2_ghost(request, patient, enriched, idx, total, is_last):
         'library_mode':       True,
         'library_return_url': feedback_url,
         'therapist_mode':     True,
+        'report_pain_url':    reverse('therapist_session_report_pain', args=[idx]),
+        # C2: the therapist's per-exercise cue, shown as escaped HTML on the
+        # camera screen (never injected into an inline JS block).
+        'therapist_note':     item.notes,
     }
     return render(request, 'strength_app/v1_exercise_execute.html', ctx)
 
@@ -357,6 +371,149 @@ def therapist_session_feedback(request, idx):
         'difficulty_choices': SessionLogItem.DIFFICULTY_CHOICES,
     }
     return render(request, 'strength_app/therapist_session_feedback.html', ctx)
+
+
+def _record_pain(link, patient, *, exercise_id, exercise_name, pain_type,
+                 severity, set_number, threshold, outcome):
+    """Phase 2: log a PainEvent, post a SYSTEM message to the therapist chat
+    (every time), and raise an Alert (only on skip/pause). Returns the body."""
+    when = timezone.localtime().strftime('%d %b %Y at %I:%M %p')
+    where = f"set {set_number}" if set_number else "a set"
+    ptype = (pain_type or '').strip()
+    ptype_txt = ptype or 'unspecified'
+    name = patient.name or 'Patient'
+    if outcome == 'session_paused':
+        body = (f"⚠ HIGH PAIN — {name} reported {ptype_txt} pain {severity}/10 on "
+                f"{exercise_name} ({where}) on {when}. Session paused.")
+    elif outcome == 'exercise_skipped':
+        body = (f"{name} reported {ptype_txt} pain {severity}/10 on {exercise_name} "
+                f"({where}) on {when}. Above their usual level ({threshold}) — "
+                f"exercise skipped, session continued.")
+    else:
+        body = (f"{name} reported {ptype_txt} pain {severity}/10 on {exercise_name} "
+                f"({where}) on {when}. Below the stop threshold ({threshold}) — continued.")
+
+    PainEvent.objects.create(
+        patient=patient, exercise_id=exercise_id or '', exercise_name=exercise_name or '',
+        set_number=set_number or None, pain_type=ptype, pain_severity=severity,
+        threshold_applied=threshold, outcome=outcome,
+    )
+    # Tiers: <= usual pain -> report only (PainEvent already saved, no ping);
+    # above usual (skip) -> system message; >= 8 (pause) -> message + alert.
+    if outcome in ('exercise_skipped', 'session_paused'):
+        TherapistMessage.objects.create(link=link, sender=None, is_system=True, body=body)
+    if outcome == 'session_paused':
+        # F1 (deploy review): dedupe — an unreviewed pain Alert for the same
+        # exercise within the last 10 minutes already has the therapist's
+        # attention; suppress ONLY the duplicate Alert row (the PainEvent and
+        # system message above are always recorded) to prevent inbox flooding
+        # and alarm fatigue.
+        duplicate = Alert.objects.filter(
+            link=link,
+            alert_type='pain',
+            is_reviewed=False,
+            created_at__gte=timezone.now() - timedelta(minutes=10),
+            message__contains=exercise_name or '',
+        ).exists() if exercise_name else False
+        if not duplicate:
+            Alert.objects.create(link=link, alert_type='pain', message=body)
+    return body
+
+
+# F1 (deploy review): 15/min allows every legitimate use (a few reports per
+# exercise) while killing loops that would flood PainEvents/messages/alerts.
+@rate_limit(max_attempts=15, window_seconds=60, key_prefix='report_pain')
+@require_POST
+def therapist_session_report_pain(request, idx):
+    """Phase 2: real-time pain report from the exercise screen. Applies the
+    two-tier rule and tells the client to continue / skip the exercise / pause."""
+    patient, err = _require_patient(request)
+    if err:
+        return JsonResponse({'error': 'auth'}, status=401)
+
+    link = _active_link(patient)
+    rx = _latest_published_prescription(link)
+    if rx is None or link is None:
+        return JsonResponse({'error': 'no_active_prescription'}, status=400)
+
+    state = _get_session_state(request)
+    if not state or state.get('rx_id') != rx.id:
+        return JsonResponse({'error': 'session_expired'}, status=400)
+
+    items = _enriched_items(rx)
+    if idx < 0 or idx >= len(items):
+        return JsonResponse({'error': 'bad_index'}, status=400)
+
+    try:
+        data = json.loads(request.body or '{}')
+    except ValueError:
+        data = {}
+    try:
+        severity = max(0, min(10, int(data.get('severity'))))
+    except (TypeError, ValueError):
+        return JsonResponse({'error': 'severity_required'}, status=400)
+    pain_type = str(data.get('pain_type') or '')[:20]
+    try:
+        set_number = int(data.get('set_number'))
+    except (TypeError, ValueError):
+        set_number = None
+
+    item = items[idx]['item']
+    threshold = item.pain_stop_threshold or getattr(settings, 'PAIN_STOP_THRESHOLD_DEFAULT', 5)
+    pause_at = getattr(settings, 'PAIN_SESSION_PAUSE_THRESHOLD', 8)
+
+    if severity >= pause_at:
+        outcome = 'session_paused'
+    elif severity > threshold:
+        # threshold = the patient's USUAL pain on this exercise; skip only ABOVE it
+        outcome = 'exercise_skipped'
+    else:
+        outcome = 'continued'
+
+    if outcome in ('exercise_skipped', 'session_paused'):
+        log_ids = state.get('log_item_ids') or []
+        if idx < len(log_ids):
+            li = SessionLogItem.objects.filter(id=log_ids[idx]).first()
+            if li:
+                li.pain = severity
+                li.sets_completed = set_number or li.sets_completed
+                li.completed_at = timezone.now()
+                li.save()
+
+    _record_pain(link, patient,
+                 exercise_id=getattr(item, 'exercise_id', ''),
+                 exercise_name=item.exercise_name, pain_type=pain_type,
+                 severity=severity, set_number=set_number, threshold=threshold,
+                 outcome=outcome)
+
+    # G1b: the patient-facing guidance is written HERE, mirroring
+    # _record_pain's tiers, so the exercise screen and the therapist chat
+    # can never disagree. (Clinical wording — flag for the physio mentor.)
+    if outcome == 'session_paused':
+        return JsonResponse({
+            'action': 'pause',
+            'next_url': reverse('v1_pain_stop'),
+            'guidance': ("Stop for today. Pain this severe — whatever the "
+                         "type — is a signal to rest. Your physiotherapist "
+                         "has been alerted and will follow up."),
+        })
+    if outcome == 'exercise_skipped':
+        nxt = (reverse('therapist_session_complete') if idx + 1 >= len(items)
+               else reverse('therapist_session_exercise', args=[idx + 1]))
+        return JsonResponse({
+            'action': 'skip',
+            'next_url': nxt,
+            'guidance': ("That's above your usual level on this exercise, so "
+                         "we're skipping the rest of it. Your physiotherapist "
+                         "has been notified — the session continues with the "
+                         "next exercise."),
+        })
+    return JsonResponse({
+        'action': 'continue',
+        'guidance': ("Noted and shared with your physiotherapist. This is "
+                     "within your usual range for this exercise — carry on, "
+                     "and report again if it climbs."),
+    })
 
 
 def therapist_session_complete(request):

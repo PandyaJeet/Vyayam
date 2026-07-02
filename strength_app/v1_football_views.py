@@ -69,6 +69,9 @@ def football_assessment(request):
     if err:
         return err
 
+    if not patient.athlete_tier_eligible:
+        return redirect('v1_session_overview')
+
     if request.method == 'POST':
         request.session['football_test_results'] = {}
         request.session['football_season_phase'] = request.POST.get('season_phase', 'in_season')
@@ -89,6 +92,9 @@ def football_assessment_execute(request, test_index):
     patient, err = _get_patient(request)
     if err:
         return err
+
+    if not patient.athlete_tier_eligible:
+        return redirect('v1_session_overview')
 
     if test_index >= len(FOOTBALL_ASSESSMENT_TESTS):
         return redirect('football_assessment_results')
@@ -132,6 +138,15 @@ def football_save_test_result(request):
         return JsonResponse({'error': 'Authentication required'}, status=401)
     if request.method != 'POST':
         return JsonResponse({'error': 'POST required'}, status=405)
+
+    # Athlete-tier guard (parity with the navigational football views): an
+    # ineligible authenticated patient must not write assessment state by
+    # POSTing directly to this AJAX endpoint.
+    patient = PatientProfile.objects.filter(
+        patient_id=request.session['patient_id']
+    ).first()
+    if patient is None or not patient.athlete_tier_eligible:
+        return JsonResponse({'error': 'Not eligible'}, status=403)
 
     try:
         data = json.loads(request.body)
@@ -228,6 +243,9 @@ def football_assessment_results(request):
     patient, err = _get_patient(request)
     if err:
         return err
+
+    if not patient.athlete_tier_eligible:
+        return redirect('v1_session_overview')
 
     results = request.session.get('football_test_results', {})
     if not results:
@@ -397,6 +415,9 @@ def match_calendar(request):
     if err:
         return err
 
+    if not patient.athlete_tier_eligible:
+        return redirect('v1_session_overview')
+
     from .models import MatchDate
     from datetime import date, timedelta
 
@@ -418,6 +439,9 @@ def match_add(request):
     patient, err = _get_patient(request)
     if err:
         return err
+
+    if not patient.athlete_tier_eligible:
+        return redirect('v1_session_overview')
 
     if request.method != 'POST':
         return redirect('match_calendar')
@@ -448,6 +472,9 @@ def match_delete(request, match_id):
     if err:
         return err
 
+    if not patient.athlete_tier_eligible:
+        return redirect('v1_session_overview')
+
     if request.method != 'POST':
         return redirect('match_calendar')
 
@@ -464,4 +491,6 @@ def football_nordic_camera_test(request):
     patient, err = _get_patient(request)
     if err:
         return err
+    if not patient.athlete_tier_eligible:
+        return redirect('v1_session_overview')
     return render(request, 'strength_app/football_nordic_camera_test.html', {})

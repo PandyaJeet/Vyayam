@@ -60,11 +60,35 @@
   </div>
 </div>
 
+<div style="display:flex; gap:10px; margin-bottom:10px;">
+  <button type="button" id="report-pain-btn" class="ts-btn" style="flex:1; justify-content:center; background:#fff; color:#b42318; border:1px solid #f1c4bf;">
+    Report pain
+  </button>
+</div>
 <form method="get" action="{{ feedback_url }}" style="display:flex; gap:10px;">
   <button type="submit" class="ts-btn" style="flex:1; justify-content:center;">
     Done · log feedback <span class="material-symbols-outlined">arrow_forward</span>
   </button>
 </form>
+
+<div id="pain-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:50; align-items:flex-end; justify-content:center;">
+  <div style="background:#fff; width:100%; max-width:520px; border-radius:16px 16px 0 0; padding:18px 18px 24px;">
+    <div style="font-weight:800; font-size:1.05rem; margin-bottom:4px;">Report pain</div>
+    <div style="font-size:.8rem; color:#666; margin-bottom:14px;">Tell us what you're feeling so your therapist can help.</div>
+    <div style="font-size:.78rem; font-weight:700; color:#444; margin-bottom:6px;">What does it feel like?</div>
+    <div id="pain-type-row" style="display:flex; gap:8px; margin-bottom:16px; flex-wrap:wrap;">
+      <button type="button" class="pain-type" data-type="sharp" style="flex:1; padding:10px; border:1px solid #d4d8d4; border-radius:10px; background:#fff; cursor:pointer; font-weight:600;">Sharp</button>
+      <button type="button" class="pain-type" data-type="dull" style="flex:1; padding:10px; border:1px solid #d4d8d4; border-radius:10px; background:#fff; cursor:pointer; font-weight:600;">Dull / ache</button>
+      <button type="button" class="pain-type" data-type="tight" style="flex:1; padding:10px; border:1px solid #d4d8d4; border-radius:10px; background:#fff; cursor:pointer; font-weight:600;">Tight</button>
+    </div>
+    <div style="font-size:.78rem; font-weight:700; color:#444; margin-bottom:6px;">How strong is it? (0 = none, 10 = worst)</div>
+    <div id="pain-scale-row" style="display:grid; grid-template-columns:repeat(6,1fr); gap:6px; margin-bottom:18px;"></div>
+    <div style="display:flex; gap:10px;">
+      <button type="button" id="pain-cancel" style="flex:1; padding:12px; border:1px solid #d4d8d4; border-radius:10px; background:#fff; cursor:pointer; font-weight:700;">Cancel</button>
+      <button type="button" id="pain-submit" style="flex:2; padding:12px; border:none; border-radius:10px; background:#b42318; color:#fff; cursor:pointer; font-weight:800; opacity:.5;" disabled>Submit</button>
+    </div>
+  </div>
+</div>
 {% endblock %}
 
 {% block extra_scripts %}
@@ -132,6 +156,66 @@
   document.getElementById('rest-skip').addEventListener('click', () => {
     if (restInterval) clearInterval(restInterval);
     document.getElementById('rest-timer').style.display = 'none';
+  });
+
+  // ── Phase 2: real-time pain reporting ──────────────────────────────
+  const CSRF = "{{ csrf_token }}";
+  const REPORT_URL = "{{ report_pain_url }}";
+  const modal = document.getElementById('pain-modal');
+  const submitBtn = document.getElementById('pain-submit');
+  const scaleRow = document.getElementById('pain-scale-row');
+  let selType = '';
+  let selSeverity = null;
+  function refreshSubmit() {
+    submitBtn.disabled = (selSeverity === null);
+    submitBtn.style.opacity = submitBtn.disabled ? '.5' : '1';
+  }
+  for (let i = 0; i <= 10; i++) {
+    const b = document.createElement('button');
+    b.type = 'button'; b.textContent = i;
+    b.style.cssText = 'padding:10px;border:1px solid #d4d8d4;border-radius:8px;background:#fff;cursor:pointer;font-weight:700;';
+    b.addEventListener('click', () => {
+      selSeverity = i;
+      scaleRow.querySelectorAll('button').forEach(x => { x.style.background='#fff'; x.style.color='#000'; x.style.borderColor='#d4d8d4'; });
+      b.style.background='#b42318'; b.style.color='#fff'; b.style.borderColor='#b42318';
+      refreshSubmit();
+    });
+    scaleRow.appendChild(b);
+  }
+  document.querySelectorAll('.pain-type').forEach(btn => {
+    btn.addEventListener('click', () => {
+      selType = btn.dataset.type;
+      document.querySelectorAll('.pain-type').forEach(x => { x.style.background='#fff'; x.style.borderColor='#d4d8d4'; });
+      btn.style.background='#fde7e4'; btn.style.borderColor='#b42318';
+    });
+  });
+  document.getElementById('report-pain-btn').addEventListener('click', () => {
+    selType=''; selSeverity=null; refreshSubmit();
+    document.querySelectorAll('.pain-type').forEach(x => { x.style.background='#fff'; x.style.borderColor='#d4d8d4'; });
+    scaleRow.querySelectorAll('button').forEach(x => { x.style.background='#fff'; x.style.color='#000'; x.style.borderColor='#d4d8d4'; });
+    modal.style.display = 'flex';
+  });
+  document.getElementById('pain-cancel').addEventListener('click', () => { modal.style.display='none'; });
+  submitBtn.addEventListener('click', async () => {
+    if (selSeverity === null) return;
+    submitBtn.disabled = true;
+    try {
+      const resp = await fetch(REPORT_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF },
+        body: JSON.stringify({ severity: selSeverity, pain_type: selType, set_number: completed + 1 })
+      });
+      const out = await resp.json();
+      if (out.action === 'skip' || out.action === 'pause') {
+        window.location = out.next_url;
+      } else {
+        modal.style.display = 'none';
+        alert('Thanks — logged. Your therapist has been notified. You can keep going.');
+      }
+    } catch (e) {
+      submitBtn.disabled = false;
+      alert('Could not send. Check your connection and try again.');
+    }
   });
 
   render();

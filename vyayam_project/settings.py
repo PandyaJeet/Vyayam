@@ -115,6 +115,12 @@ STATICFILES_DIRS = [
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
+# Pain (0-10) at/above which an exercise auto-skips when its PrescriptionItem has no
+# therapist-set pain_stop_threshold (and for any flow without a therapist value).
+PAIN_STOP_THRESHOLD_DEFAULT = 5
+# Pain at/above which the WHOLE session pauses, regardless of per-exercise threshold.
+PAIN_SESSION_PAUSE_THRESHOLD = 8
+
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 CACHES = {
@@ -153,6 +159,9 @@ MESSAGE_TAGS = {
 }
 
 if not DEBUG:
+    # Render terminates TLS at its proxy; without this gunicorn sees HTTP and
+    # HSTS / SSL-redirect / Secure cookies never engage.
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
     SECURE_SSL_REDIRECT = os.environ.get('DJANGO_SSL_REDIRECT', 'False').lower() in ('true', '1')

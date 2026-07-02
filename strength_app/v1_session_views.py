@@ -746,7 +746,7 @@ def v1_save_exercise_result(request):
         # ── DA-F2: server-side sharp-pain response ────────────────────
         # The client shows guidance text, but the SERVER must also act:
         # sharp pain or 7+/10 removes the remaining same-pattern work
-        # this session; 8+/10 with action 'stop' ends the session.
+        # this session; 8+/10 ends the session.
         sharp_pain = (
             result['pain_reported']
             and (result['pain_type'] == 'sharp' or result['pain_severity'] >= 7)
@@ -754,7 +754,10 @@ def v1_save_exercise_result(request):
         if sharp_pain:
             _notify_linked_professionals_of_pain(patient, result)
 
-        if (result['pain_severity'] >= 8 and result['pain_action'] == 'stop'):
+        # G1a: severity 8+ ALWAYS stops, regardless of pain type or the
+        # client's suggested action — severe "burning/aching" can be
+        # neuropathic, so type-based leniency caps out below 8.
+        if result['pain_severity'] >= 8:
             request.session['v1_pain_stop'] = True
             request.session.modified = True
             return JsonResponse({'status': 'saved',

@@ -26,6 +26,9 @@ FIXED in commit `R2-W5`.
 | 13 | Headers: HSTS (1y, preload) / SSL redirect / secure cookies gated on prod; `X-Frame-Options: DENY`; nosniff; Permissions-Policy camera=self | — | **VERIFIED** |
 | 14 | Admin: no password hashes in any `list_display`; RedFlagEvent admin read-only. Operational note (no code): strong admin creds at deploy; consider moving `/admin/` later | Info | NOTED |
 | 15 | Known limitation (carried from Run 1): password change does not invalidate OTHER live sessions (needs a server-side token registry) | Low | **OPEN** — documented |
+| 16 | Deploy review F1 (2026-07): `therapist_session_report_pain` had no rate limit — a looping client could flood PainEvents/system messages/Alerts (therapist alarm fatigue, DB growth, junk training data) | Medium | **FIXED** — `@rate_limit` 15/min (`report_pain` prefix) + Alert dedupe: an unreviewed pain Alert for the same link+exercise within 10 min suppresses only the duplicate Alert row (PainEvent + message always recorded). Tests: `TestF1PainRateLimitAndAlertDedupe` |
+| 17 | Deploy review F2 (2026-07): `PasswordResetToken.token` stored the raw token — a leaked DB/backup exposed live reset links | Low-Med | **FIXED** — DB stores `sha256(raw)` (`PasswordResetToken.hash_of`); raw token exists only in the email. No migration (same field); pre-fix plaintext rows became unusable, acceptable at 1-hour lifetime. U1 tests now walk the email-extracted raw-token path |
+| 18 | Deploy review F3 (2026-07): forgot-password timing side channel — inline SMTP latency on a match weakly signals which phones have accounts despite identical response bodies | Low | **ACCEPTED (documented)** — 5/300s rate limit makes mass enumeration impractical; if it ever matters, move the send post-response or set `EMAIL_TIMEOUT = 5` |
 
 ## Cross-access test matrix (automated)
 

@@ -80,6 +80,7 @@ class TherapistProgramBuilderTests(TestCase):
                     "reps": 10,
                     "rest_seconds": 60,
                     "tempo": "3-1-2-0",
+                    "notes": "Don't rush. Stop if pain >3.",
                 }
             ],
         }
@@ -94,6 +95,9 @@ class TherapistProgramBuilderTests(TestCase):
         rx = Prescription.objects.get(link=self.link, week_number=1)
         self.assertIsNotNone(rx.published_at)
         self.assertEqual(PrescriptionItem.objects.filter(prescription=rx).count(), 1)
+        # Phase C: the per-exercise therapist note round-trips through save.
+        item = PrescriptionItem.objects.get(prescription=rx)
+        self.assertEqual(item.notes, "Don't rush. Stop if pain >3.")
 
     def test_save_program_draft_only(self):
         payload = {

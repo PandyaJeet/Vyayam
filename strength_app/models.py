@@ -1406,8 +1406,10 @@ class FootballProfile(models.Model):
 
 class PasswordResetToken(models.Model):
     """R2-U1: single-use, time-limited token for the patient password-reset
-    email flow. Tokens are random 64-char urlsafe strings generated in the
-    view; a token is dead once used or older than EXPIRY_HOURS."""
+    email flow. The raw token is random urlsafe, generated in the view and
+    carried ONLY by the email; F2 (deploy review): the DB stores
+    sha256(raw), so a leaked DB or backup exposes no usable tokens. A token
+    is dead once used or older than EXPIRY_HOURS."""
     EXPIRY_HOURS = 1
 
     patient = models.ForeignKey(
@@ -1418,6 +1420,13 @@ class PasswordResetToken(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     used = models.BooleanField(default=False)
 
+    @staticmethod
+    def hash_of(raw):
+        """At-rest form of a raw emailed token (sha256 hex — 64 chars,
+        fitting the field exactly)."""
+        import hashlib
+        return hashlib.sha256(raw.encode()).hexdigest()
+
     def is_valid(self):
         from django.utils import timezone
         from datetime import timedelta
@@ -1426,3 +1435,52 @@ class PasswordResetToken(models.Model):
 
     def __str__(self):
         return f"reset token for {self.patient.patient_id} ({'used' if self.used else 'live'})"
+
+
+class PainEvent(models.Model):
+    """One pain report during a session. Powers the system message, the alert,
+    the detailed report, and the pain-side of pain->action training data."""
+    OUTCOME_CHOICES = [
+        ('continued', 'Continued exercise'),
+        ('exercise_skipped', 'Exercise skipped'),
+        ('session_paused', 'Whole session paused'),
+    ]
+    patient = models.ForeignKey('PatientProfile', on_delete=models.CASCADE, related_name='pain_events')
+    session = models.ForeignKey('WorkoutSession', on_delete=models.SET_NULL, null=True, blank=True, related_name='pain_events')
+    exercise_id = models.CharField(max_length=100, blank=True, default='')
+    exercise_name = models.CharField(max_length=200, blank=True, default='')
+    set_number = models.PositiveSmallIntegerField(null=True, blank=True)
+    rep_number = models.PositiveSmallIntegerField(null=True, blank=True)
+    pain_type = models.CharField(max_length=20, blank=True, default='')
+    pain_severity = models.PositiveSmallIntegerField(default=0)
+    threshold_applied = models.PositiveSmallIntegerField(null=True, blank=True)
+    outcome = models.CharField(max_length=20, choices=OUTCOME_CHOICES, default='continued')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.patient_id} pain {self.pain_severity}/10 {self.exercise_name} ({self.outcome})"
+
+
+class RestEvent(models.Model):
+    """Records when a patient adds EXTRA rest beyond the prescribed rest."""
+    CONTEXT_CHOICES = [
+        ('between_sets', 'Between sets'),
+        ('between_exercises', 'Between exercises'),
+    ]
+    patient = models.ForeignKey('PatientProfile', on_delete=models.CASCADE, related_name='rest_events')
+    session = models.ForeignKey('WorkoutSession', on_delete=models.SET_NULL, null=True, blank=True, related_name='rest_events')
+    exercise_id = models.CharField(max_length=100, blank=True, default='')
+    exercise_name = models.CharField(max_length=200, blank=True, default='')
+    context = models.CharField(max_length=20, choices=CONTEXT_CHOICES, default='between_sets')
+    extra_seconds = models.PositiveSmallIntegerField(default=0)
+    cut_short = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.patient_id} +{self.extra_seconds}s ({self.context})"

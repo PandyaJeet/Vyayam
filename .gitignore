@@ -1,35 +1,19 @@
-# Python
-__pycache__/
-*.py[cod]
-*.egg-info/
-*.egg
-dist/
-build/
-
-# Django
-db.sqlite3
+# Databases / secrets — never commit
 *.sqlite3
-staticfiles/
-media/
-
-# Environment
+db.sqlite3
 .env
-.env.local
-.env.production
+.env.*
 
-# IDE
-.vscode/
-.idea/
-*.swp
-*.swo
-
-# OS
+# OS / editor cruft
 .DS_Store
-Thumbs.db
 
-# Secrets — never commit these
-*.pem
-*.key
-*.log
-=6.0
+# Django build artifacts
+/media/
+/staticfiles/
+__pycache__/
+*.pyc
+
+# Virtualenvs
+venv/
 .venv/
+env/

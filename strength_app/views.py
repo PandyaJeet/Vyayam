@@ -138,7 +138,10 @@ def forgot_password(request: HttpRequest):
                 import secrets
                 from .models import PasswordResetToken
                 token = secrets.token_urlsafe(32)
-                PasswordResetToken.objects.create(patient=patient, token=token)
+                # F2 (deploy review): only sha256(token) is stored — the raw
+                # token exists solely in the email link below.
+                PasswordResetToken.objects.create(
+                    patient=patient, token=PasswordResetToken.hash_of(token))
                 reset_url = request.build_absolute_uri(
                     reverse('reset_password', args=[token])
                 )
@@ -169,7 +172,10 @@ def reset_password(request: HttpRequest, token: str):
     from django.contrib.auth.hashers import make_password
     from .models import PasswordResetToken
 
-    prt = PasswordResetToken.objects.filter(token=token).select_related('patient').first()
+    # F2 (deploy review): tokens are stored hashed — look up by sha256(raw).
+    prt = (PasswordResetToken.objects
+           .filter(token=PasswordResetToken.hash_of(token))
+           .select_related('patient').first())
     if not prt or not prt.is_valid():
         return render(request, 'strength_app/reset_password.html',
                       {'invalid': True})
@@ -1857,8 +1863,10 @@ def change_password(request):
         confirm = request.POST.get('confirm_password', '')
         if not check_password(old, patient.password):
             error = 'Current password is incorrect.'
-        elif len(new) < 6:
-            error = 'New password must be at least 6 characters.'
+        elif len(new) < 8:
+            error = 'New password must be at least 8 characters.'
+        elif new.isdigit() or new.isalpha():
+            error = 'New password must mix letters and numbers.'
         elif new != confirm:
             error = 'New passwords do not match.'
         else:

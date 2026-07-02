@@ -192,6 +192,8 @@
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js" crossorigin="anonymous"></script>
+<!-- Phase F: friendlier voice -->
+<script src="{% static 'strength_app/js/voice_core.js' %}"></script>
 
 <script>
 
@@ -241,11 +243,9 @@
       if (speechSynthesis.speaking && !priority) return;
       if (priority && speechSynthesis.speaking) speechSynthesis.cancel();
       var utt = new SpeechSynthesisUtterance(text);
-      utt.rate = 0.85; utt.pitch = 1.0; utt.volume = 0.9; utt.lang = 'en-IN';
-      var voices = speechSynthesis.getVoices();
-      var v = voices.find(function(v) { return v.lang === 'en-IN'; })
-           || voices.find(function(v) { return v.lang.startsWith('en'); });
-      if (v) utt.voice = v;
+      utt.volume = 0.9; utt.lang = 'en-IN';
+      // Phase F Part 1: best available voice + rate 0.95 + pitch 1.0.
+      VyayamVoice.applyTo(utt);
       speechSynthesis.speak(utt);
       this.lastSpoken = text; this.lastSpokenTime = now;
     },

@@ -25,6 +25,7 @@ urlpatterns = [
     path('patient/<uuid:link_id>/program/save/', views.save_program, name='therapist_save_program'),
     path('patient/<uuid:link_id>/messages/send/', views.send_message, name='therapist_send_message'),
     path('patient/<uuid:link_id>/reports/generate/', views.generate_report, name='therapist_generate_report'),
+    path('reports/<int:report_id>/download/', views.download_report, name='therapist_download_report'),
     path('patient/<uuid:link_id>/reset-password/', views.reset_patient_password, name='therapist_reset_patient_password'),  # R2-U1
     path('alerts/', views.alerts_inbox, name='therapist_alerts'),                                                            # R2-T2
     path('alerts/<int:alert_id>/reviewed/', views.alert_mark_reviewed, name='therapist_alert_reviewed'),                     # R2-T2

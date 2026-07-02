@@ -539,7 +539,7 @@
       <div class="t-report-row__actions">
         <span class="t-pill {% if r.status == 'flagged' %}t-pill--error{% else %}t-pill--green{% endif %}">{{ r.get_status_display }}</span>
         {% if r.pdf and r.status == 'ready' %}
-          <a class="t-btn t-btn--ghost t-btn--sm" href="{{ r.pdf.url }}" target="_blank" rel="noopener" download><i class="fas fa-download"></i> Download PDF</a>
+          <a class="t-btn t-btn--ghost t-btn--sm" href="{% url 'therapist_download_report' r.id %}" target="_blank" rel="noopener" download><i class="fas fa-download"></i> Download PDF</a>
         {% else %}
           <button type="button" class="t-btn t-btn--ghost t-btn--sm" title="PDF unavailable" disabled><i class="fas fa-download"></i> PDF unavailable</button>
         {% endif %}
@@ -701,12 +701,13 @@
 
 {% block extra_scripts %}
 {% if tab == 'builder' %}
+{{ rx_items_data|json_script:"rx-items-data" }}
 <script>
 (function() {
   const csrf = "{{ csrf_token }}";
   const linkId = "{{ link.id }}";
   const week = {{ current_week }};
-  const initial = {{ rx_items_json|safe }};
+  const initial = JSON.parse(document.getElementById('rx-items-data').textContent);
   const catalog = {
     {% for e in catalog %}"{{ e.exercise_id }}": {name: "{{ e.name|escapejs }}", pattern: "{{ e.movement_pattern }}", equipment: "{{ e.equipment }}"}{% if not forloop.last %},{% endif %}
     {% endfor %}
@@ -761,6 +762,8 @@
             <span class="t-presc-field"><span class="k">Reps:</span><input data-k="reps" class="w-narrow" value="${esc(item.reps)}"/></span>
             <span class="t-presc-field"><span class="k">Load:</span><input data-k="load" class="w-wide" value="${esc(item.load)}"/></span>
             <span class="t-presc-field"><span class="k">Rest (s):</span><input data-k="rest_seconds" value="${esc(item.rest_seconds)}"/></span>
+            <span class="t-presc-field"><span class="k" title="Patient's usual pain on this exercise (0-10). Auto-skips only if reported pain is ABOVE this. Blank = default 5.">Usual pain:</span><input data-k="pain_stop_threshold" type="number" min="1" max="10" value="${esc(item.pain_stop_threshold || '')}" placeholder="5" style="width:52px;"/></span>
+            <span class="t-presc-field"><span class="k">Note:</span><input data-k="notes" class="w-wide" value="${esc(item.notes || '')}" placeholder="cue shown to patient" /></span>
           </div>
         </div>
         <button type="button" class="trash" title="Remove"><i class="fas fa-trash"></i></button>
@@ -800,7 +803,7 @@
       exercise_id: id,
       exercise_name: meta.name,
       movement_pattern: meta.pattern,
-      sets: 3, reps: 10, load: 'BW', rest_seconds: 60, tempo: '', notes: ''
+      sets: 3, reps: 10, load: 'BW', rest_seconds: 60, tempo: '', notes: '', pain_stop_threshold: ''
     });
     render();
   };

@@ -537,7 +537,7 @@ def coach_override_prescription(request, patient_id):
 @coach_required
 def coach_flag_review(request, patient_id):
     link = get_object_or_404(
-        CoachPatientLink, coach=request.therapist, patient__patient_id=patient_id
+        CoachPatientLink, coach=request.therapist, patient__patient_id=patient_id, is_active=True
     )
     note = request.POST.get('note', '').strip()
     if note:
@@ -550,7 +550,7 @@ def coach_flag_review(request, patient_id):
 @coach_required
 def coach_set_competition(request, patient_id):
     patient = get_object_or_404(PatientProfile, patient_id=patient_id)
-    get_object_or_404(CoachPatientLink, coach=request.therapist, patient=patient)
+    get_object_or_404(CoachPatientLink, coach=request.therapist, patient=patient, is_active=True)
     comp_date_str = request.POST.get('competition_date', '')
     if comp_date_str:
         # DA-C13: parse explicitly — assigning a raw string to a DateField
@@ -695,7 +695,7 @@ class _OnboardAbort(Exception):
 def coach_save_notes(request, patient_id):
     """AJAX endpoint to save coach notes on an athlete."""
     link = get_object_or_404(
-        CoachPatientLink, coach=request.therapist, patient__patient_id=patient_id
+        CoachPatientLink, coach=request.therapist, patient__patient_id=patient_id, is_active=True
     )
     link.notes = request.POST.get('notes', link.notes)
     link.save(update_fields=['notes'])

@@ -375,13 +375,24 @@ class TestR2W3ForgotPassword(TestCase):
         self.assertEqual(r1.content, r2.content)
 
     def test_r2_u1_token_created_and_reset_works(self):
+        import re
+        from django.core import mail
         from strength_app.models import PasswordResetToken
         from django.contrib.auth.hashers import check_password
         self.client.post(reverse('forgot_password'), {'phone': '9000009101'})
         token = PasswordResetToken.objects.get(patient=self.patient)
         self.assertTrue(token.is_valid())
+        # F2: the DB row is the sha256 of the raw token, which exists only
+        # in the email — extract it from there like a real user would.
+        self.assertEqual(len(mail.outbox), 1)
+        match = re.search(r'/reset-password/([^/\s]+)/', mail.outbox[0].body)
+        self.assertIsNotNone(match, 'reset link missing from email')
+        raw_token = match.group(1)
+        self.assertNotEqual(raw_token, token.token,
+                            'raw token must not be stored at rest')
+        self.assertEqual(PasswordResetToken.hash_of(raw_token), token.token)
         resp = self.client.post(
-            reverse('reset_password', args=[token.token]),
+            reverse('reset_password', args=[raw_token]),
             {'new_password': 'newpass123', 'confirm_password': 'newpass123'},
         )
         self.assertEqual(resp.status_code, 302)
@@ -390,12 +401,14 @@ class TestR2W3ForgotPassword(TestCase):
         token.refresh_from_db()
         self.assertTrue(token.used)
         # reuse blocked
-        resp2 = self.client.get(reverse('reset_password', args=[token.token]))
+        resp2 = self.client.get(reverse('reset_password', args=[raw_token]))
         self.assertContains(resp2, 'expired')
 
     def test_r2_u1_weak_password_rejected(self):
         from strength_app.models import PasswordResetToken
-        PasswordResetToken.objects.create(patient=self.patient, token='t' * 40)
+        # F2: rows hold the hash; the URL carries the raw token.
+        PasswordResetToken.objects.create(
+            patient=self.patient, token=PasswordResetToken.hash_of('t' * 40))
         resp = self.client.post(
             reverse('reset_password', args=['t' * 40]),
             {'new_password': '12345678', 'confirm_password': '12345678'},

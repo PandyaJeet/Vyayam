@@ -158,6 +158,7 @@ urlpatterns = [
     path('therapist-session/start/',                 views_thrx.therapist_session_start,     name='therapist_session_start'),
     path('therapist-session/exercise/<int:idx>/',    views_thrx.therapist_session_exercise,  name='therapist_session_exercise'),
     path('therapist-session/feedback/<int:idx>/',    views_thrx.therapist_session_feedback,  name='therapist_session_feedback'),
+    path('therapist-session/report-pain/<int:idx>/', views_thrx.therapist_session_report_pain, name='therapist_session_report_pain'),
     path('therapist-session/complete/',              views_thrx.therapist_session_complete,  name='therapist_session_complete'),
     path('therapist-session/finished/',              views_thrx.therapist_session_finished,  name='therapist_session_finished'),
     path('therapist-session/progress/',              views_thrx.therapist_session_progress,  name='therapist_session_progress'),

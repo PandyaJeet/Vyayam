@@ -56,7 +56,7 @@
 
   /* Reference-video panel — full-height strip flush to the left edge so
      the demo figure stands beside the patient like the ghost coach.
-     Mildly translucent; shown ONLY during DEMO (and Watch Demo Again),
+     Mildly translucent; shown ONLY during DEMO (opt-in via Show demo),
      toggled by videoModeDemoPlay/Pause(). */
   .video-ref-pip { position: absolute; top: 0; left: 0; height: 100%;
     width: 32%; z-index: 30; overflow: hidden;
@@ -134,6 +134,7 @@
     font-size: .8rem; cursor: pointer; margin-top: 10px; }
   .guidance-box { padding: 14px; border-radius: 10px; margin-top: 12px; font-size: .82rem; }
   .guidance-skip_exercise { background: rgba(255,71,87,.15); border-left: 4px solid #ff4757; }
+  .guidance-stop { background: rgba(255,71,87,.15); border-left: 4px solid #ff4757; }
   .guidance-reduce_volume { background: rgba(255,165,0,.15); border-left: 4px solid orange; }
   .guidance-continue { background: rgba(56,239,125,.15); border-left: 4px solid #38ef7d; }
   #painSeverity { width: 100%; accent-color: #ff4757; margin: 8px 0; }
@@ -198,6 +199,15 @@
   </div>
   {% endif %}
 
+  {% if therapist_note %}
+  <!-- C2: the therapist's per-exercise cue — same amber note language as the
+       guided screen, adapted to this screen's dark theme. HTML context only. -->
+  <div class="therapist-note" style="background:rgba(217,119,6,.14);border-left:3px solid #d97706;
+              border-radius:10px;padding:9px 13px;margin-bottom:12px;font-size:.84rem;color:#ffd9a8;">
+    <strong>Therapist note:</strong> {{ therapist_note }}
+  </div>
+  {% endif %}
+
   <div class="main-layout">
     <!-- Camera -->
     <div class="video-section">
@@ -216,11 +226,25 @@
       <div class="form-overlay" id="formOverlay" style="display:none;">
         <span id="formScore" style="color:#22c55e;">—%</span>
       </div>
+      <!-- Phase E: tempo countdown — colour follows the phase
+           (eccentric blue / hold amber / concentric green) -->
+      <div id="tempoCountdown" style="display:none;position:absolute;top:64px;right:12px;z-index:25;
+           text-align:center;background:rgba(0,0,0,.55);border:2px solid transparent;
+           border-radius:12px;padding:7px 14px;min-width:86px;">
+        <div id="tempoCountWord" style="font-size:.7rem;font-weight:700;letter-spacing:.04em;"></div>
+        <div id="tempoCountNum" style="font-size:1.9rem;font-weight:800;line-height:1.1;"></div>
+      </div>
       <div class="cam-placeholder" id="camPlaceholder">
         <i class="fas fa-camera fa-3x" style="opacity:.3;"></i>
         <p style="opacity:.5;font-size:.88rem;">Enable camera for form feedback</p>
         <button class="start-cam-btn" onclick="startCamera()">
           <i class="fas fa-video me-2"></i>Start Camera
+        </button>
+        <!-- Phase D: demo is opt-in — this starts the camera and runs
+             guidance → demo → framing before handing over to the patient. -->
+        <button onclick="showDemo()" style="background:none;border:1px solid rgba(255,255,255,.3);
+          border-radius:10px;color:#fff;opacity:.75;font-size:.82rem;padding:8px 18px;margin-top:8px;">
+          <i class="fas fa-person-walking me-1"></i><span class="show-demo-label">Show demo</span>
         </button>
       </div>
       <!-- Demo overlay — covers camera during "watch first" phase -->
@@ -248,7 +272,7 @@
     <div class="right-panel">
 
       <!-- Tempo -->
-      <div class="info-card">
+      <div class="info-card" id="tempoCard">
         <div class="card-label">Tempo — {{ exercise.tempo|default:"3-1-2-0" }}</div>
         <div class="tempo-grid">
           <div class="tempo-phase" id="tp0">
@@ -268,7 +292,7 @@
             <div class="t-lbl">Reset</div>
           </div>
         </div>
-        <div id="tempoGuide" style="text-align:center;font-size:.8rem;opacity:.5;margin-top:10px;">Press Start Set to activate tempo guide</div>
+        <div id="tempoGuide" style="text-align:center;font-size:.8rem;opacity:.5;margin-top:10px;">Tempo guide runs while you work</div>
       </div>
 
       <!-- Ghost Alignment Status (only shown for pilot exercises) -->
@@ -300,9 +324,9 @@
           background:rgba(12,108,63,.1);margin-top:8px;transition:color .3s;">
           Start camera to activate ghost guide
         </div>
-        <button onclick="ghostState.mode='DEMO';ghostState.currentPhaseIndex=0;ghostState.phaseStartTime=Date.now();ghostState.demoRepsDone=0;VoiceCoach.speak('Watch me first.',true);if(window.videoModeDemoPlay)window.videoModeDemoPlay();" class="btn btn-sm btn-outline-primary mt-2 w-100"
+        <button onclick="showDemo()" class="btn btn-sm btn-outline-primary mt-2 w-100"
           style="font-size:.75rem;border-radius:8px;">
-          <i class="fas fa-redo me-1"></i>Watch Demo Again
+          <i class="fas fa-person-walking me-1"></i><span class="show-demo-label">Show demo</span>
         </button>
       </div>
 
@@ -435,11 +459,13 @@
 <!-- R2-W1-9: pure CV math (angles, match scoring, stance checks) lives in a
      testable static module — see cv_core.test.mjs for the node harness -->
 <script src="{% static 'strength_app/js/cv_core.js' %}"></script>
+<!-- Phase F: friendlier voice — best-voice picking + dormant coach-clip player -->
+<script src="{% static 'strength_app/js/voice_core.js' %}"></script>
 
 <script>
-  const EXERCISE_ID   = "{{ exercise.exercise_id }}";
-  const EXERCISE_NAME = "{{ exercise.exercise_name|default:exercise.exercise_id }}";
-  const PATTERN       = "{{ exercise.movement_pattern }}";
+  const EXERCISE_ID   = "{{ exercise.exercise_id|escapejs }}";
+  const EXERCISE_NAME = "{{ exercise.exercise_name|default:exercise.exercise_id|escapejs }}";
+  const PATTERN       = "{{ exercise.movement_pattern|escapejs }}";
   const PRESCRIBED_SETS = "{{ exercise.sets|default:3 }}";
   const PRESCRIBED_REPS = "{{ exercise.reps|default:10 }}";
   const REST_SECS       = "{{ exercise.rest_seconds|default:75 }}";
@@ -450,14 +476,15 @@
   const ASSESSMENT_DURATION = {{ assessment_duration|default:60 }};
   const ASSESSMENT_TEST_ID  = "{{ assessment_test_id|default:'' }}";
   const ASSESSMENT_TEST_INDEX = {{ assessment_test_index|default:0 }};
-  const ASSESSMENT_SIDE     = "{{ assessment_side|default:'' }}";
-  const ASSESSMENT_VARIANT  = "{{ assessment_variant|default:'' }}";
+  const ASSESSMENT_SIDE     = "{{ assessment_side|default:''|escapejs }}";
+  const ASSESSMENT_VARIANT  = "{{ assessment_variant|default:''|escapejs }}";
   const ASSESSMENT_SCORING  = {% if assessment_scoring_json %}{{ assessment_scoring_json|safe }}{% else %}{}{% endif %};
-  const EXERCISE_INDEX  = "{{ exercise_index }}";
-  const TEMPO_PARTS     = [{{ exercise.tempo_parts.0|default:3 }}, {{ exercise.tempo_parts.1|default:1 }}, {{ exercise.tempo_parts.2|default:2 }}, {{ exercise.tempo_parts.3|default:0 }}];
+  const EXERCISE_INDEX  = "{{ exercise_index|escapejs }}";
+  const TEMPO_PARTS     = ["{{ exercise.tempo_parts.0|escapejs }}", "{{ exercise.tempo_parts.1|escapejs }}", "{{ exercise.tempo_parts.2|escapejs }}", "{{ exercise.tempo_parts.3|escapejs }}"].map(function (x) { return parseInt(x, 10) || 0; });
   const IS_TEST_MODE = (window.location.pathname.indexOf('/test-exercise/') !== -1);
   const LIBRARY_MODE = {{ library_mode|yesno:"true,false" }};
   const LIBRARY_RETURN_URL = "{{ library_return_url|default:'' }}";
+  const REPORT_PAIN_URL = "{{ report_pain_url|default:'' }}";
   const CAPABILITY_LEVEL = "{{ exercise.capability_level|default:2 }}";
   const EXERCISE_FORM_CUES = [{% for cue in exercise.form_cues %}"{{ cue|escapejs }}"{% if not forloop.last %},{% endif %}{% endfor %}];
 
@@ -490,7 +517,6 @@
   let repsPerSet = [];
   let formScores = [];
   let restInterval = null;
-  let tempoInterval = null;
   let painReported = false;
   let selectedLocation = '';
   let painAction = 'continue';
@@ -544,6 +570,59 @@
   });
 
   // ---- Camera ----
+// ── Phase D: the demo is opt-in ───────────────────────────────────────────
+// Single, easily-renamed label for every demo button on the page.
+var SHOW_DEMO_LABEL = 'Show demo';
+var demoRequested = false;
+
+function startDemoSequence() {
+  // Guidance (SETUP: camera-position + form cues) → demo media (DEMO:
+  // ghost figure, or reference video in VIDEO_MODE) → the existing state
+  // machine returns to WAITING ("Now you try") by itself.
+  if (ghostState.holdInterval) { clearInterval(ghostState.holdInterval); ghostState.holdInterval = null; }
+  var hasCues = ghostState.exerciseDef &&
+                ghostState.exerciseDef.setupCues &&
+                ghostState.exerciseDef.setupCues.length > 0;
+  if (hasCues) {
+    ghostState.mode = 'SETUP';
+    ghostState.setupCueIndex = -1;  // start at -1 so camera cue plays first
+    ghostState.setupCueTime = Date.now();
+    var camPos = ghostState.exerciseDef.cameraPosition;
+    if (camPos && camPos.instruction) {
+      VoiceCoach.speak(camPos.instruction, true);
+    } else {
+      VoiceCoach.speak(ghostState.exerciseDef.setupCues[0], true);
+      ghostState.setupCueIndex = 0;
+    }
+  } else {
+    ghostState.mode = 'DEMO';
+    ghostState.currentPhaseIndex = 0;
+    ghostState.phaseStartTime = Date.now();
+    ghostState.demoRepsDone = 0;
+    VoiceCoach.speak('Watch me first. I will show you the movement.', true);
+    if (typeof window.videoModeDemoPlay === 'function') window.videoModeDemoPlay();
+  }
+}
+
+function showDemo() {
+  if (CV_TRACKING !== 'camera') return;
+  if (!stream) {
+    // Camera not running yet — the demo rides the pose loop, so start the
+    // camera and run the sequence as soon as the framing check passes.
+    demoRequested = true;
+    startCamera();
+    return;
+  }
+  if (!ghostState.exerciseDef) return;
+  if (ghostState.mode === 'CALIBRATING') { demoRequested = true; return; }
+  startDemoSequence();
+}
+
+// One string renames every demo button (this script renders below the markup).
+document.querySelectorAll('.show-demo-label').forEach(function(el) {
+  el.textContent = SHOW_DEMO_LABEL;
+});
+
 async function startCamera() {
     console.log('startCamera called, EXERCISE_ID:', EXERCISE_ID);
     if (CV_TRACKING !== 'camera') return;  // guided mode never opens the camera
@@ -2535,16 +2614,20 @@ async function startCamera() {
       if (text === this.lastSpoken && (now - this.lastSpokenTime) < this.cooldownMs) return;
       if (speechSynthesis.speaking && !priority) return;
       if (priority && speechSynthesis.speaking) speechSynthesis.cancel();
+      if (priority) VyayamVoice.stopClip();
+
+      // Phase F Part 2 (dormant): a recorded coach clip for this exact
+      // phrase plays instead of TTS when its mp3 exists.
+      if (VyayamVoice.tryPlayClip(text)) {
+        this.lastSpoken = text; this.lastSpokenTime = now;
+        return;
+      }
 
       var utt = new SpeechSynthesisUtterance(text);
-      utt.rate = priority ? 0.95 : 0.88; utt.pitch = 1.0; utt.volume = 0.9; utt.lang = 'en-IN';
-      var voices = speechSynthesis.getVoices();
-      var v = voices.find(function(v) { return v.lang === 'en-IN'; })
-           || voices.find(function(v) { return v.lang.startsWith('en') && v.name.includes('Female'); })
-           || voices.find(function(v) { return v.lang.startsWith('en'); });
-      if (v) utt.voice = v;
+      utt.volume = 0.9; utt.lang = 'en-IN';
+      // Phase F Part 1: best available voice + rate 0.95 + pitch 1.0.
+      VyayamVoice.applyTo(utt);
       speechSynthesis.speak(utt);
-      VoiceCoach.lastSpokenTime = Date.now();
       this.lastSpoken = text; this.lastSpokenTime = now;
     },
 
@@ -2591,7 +2674,10 @@ async function startCamera() {
       this.speak('Rest. ' + seconds + ' seconds.', true);
     },
 
-    stop: function() { if (speechSynthesis.speaking) speechSynthesis.cancel(); },
+    stop: function() {
+      if (speechSynthesis.speaking) speechSynthesis.cancel();
+      VyayamVoice.stopClip();
+    },
 
     toggle: function() {
       this.enabled = !this.enabled;
@@ -2600,31 +2686,86 @@ async function startCamera() {
     }
   };
 
-  // Tempo voice counting
-  let tempoVoiceInterval = null;
-
-  function startTempoVoice() {
-    if (tempoVoiceInterval) return;
-    var parts = TEMPO_PARTS.slice();
-    var LABELS = ['Down', 'Hold', 'Up', 'Top'];
-    var phaseIdx = 0;
-    var countdown = parts[0];
-    if (parts[0] > 0) VoiceCoach.speak(LABELS[0], true);
-    tempoVoiceInterval = setInterval(function() {
-      countdown--;
-      if (countdown > 0) {
-        VoiceCoach.speak('' + countdown, false);
-      } else {
-        phaseIdx = (phaseIdx + 1) % 4;
-        countdown = parts[phaseIdx];
-        while (countdown === 0 && phaseIdx < 3) { phaseIdx++; countdown = parts[phaseIdx]; }
-        if (countdown > 0) VoiceCoach.speak(LABELS[phaseIdx], true);
+  // ── Phase E: spoken + visual tempo guidance ───────────────────────────────
+  // Rides the sanitized TEMPO_PARTS 4-int array (down-hold-up-pause seconds).
+  // Per phase with duration > 0: the phase WORD is spoken once (never a tick
+  // per second) and a colour-coded countdown chip counts N..1 top-right —
+  // eccentric blue, hold amber, concentric green. 0-second phases are
+  // skipped; a blank/0-0-0-0 tempo (legacy '—'/'Hold') shows no tempo UI.
+  // Speech is non-interrupting: ghost-coach and safety cues always win
+  // (VoiceCoach drops non-priority words while speech is busy).
+  var TempoCoach = {
+    timer: null,
+    active: false,
+    _phase: -1,
+    _left: 0,
+    PHASES: [
+      { word: 'Slowly down', color: '#38bdf8' },  // eccentric — blue
+      { word: 'Hold',        color: '#f59e0b' },  // isometric — amber
+      { word: 'Up',          color: '#38ef7d' },  // concentric — green
+      { word: 'Pause',       color: '#f59e0b' },  // reset at top — amber
+    ],
+    hasTempo: function() {
+      return (TEMPO_PARTS[0] + TEMPO_PARTS[1] + TEMPO_PARTS[2] + TEMPO_PARTS[3]) > 0;
+    },
+    start: function() {
+      if (this.active || !this.hasTempo()) return;
+      this.active = true;
+      this._phase = -1;
+      this._left = 0;
+      var chip = document.getElementById('tempoCountdown');
+      if (chip) chip.style.display = 'block';
+      this._tick();
+      this.timer = setInterval(this._tick.bind(this), 1000);
+    },
+    stop: function() {
+      if (this.timer) { clearInterval(this.timer); this.timer = null; }
+      this.active = false;
+      var chip = document.getElementById('tempoCountdown');
+      if (chip) chip.style.display = 'none';
+      [0, 1, 2, 3].forEach(function(i) {
+        var el = document.getElementById('tp' + i);
+        if (el) el.classList.remove('active');
+      });
+      var guide = document.getElementById('tempoGuide');
+      if (guide) guide.textContent = '';
+    },
+    _tick: function() {
+      this._left--;
+      if (this._left <= 0) {
+        // Advance to the next phase with a non-zero duration (0s = skipped).
+        var next = this._phase, hops = 0;
+        do { next = (next + 1) % 4; hops++; } while (TEMPO_PARTS[next] === 0 && hops < 5);
+        if (TEMPO_PARTS[next] === 0) { this.stop(); return; }  // defensive: no live phase
+        this._phase = next;
+        this._left = TEMPO_PARTS[next];
+        VoiceCoach.speak(this.PHASES[next].word, false);
       }
-    }, 1000);
-  }
+      this._paint();
+    },
+    _paint: function() {
+      var p = this.PHASES[this._phase];
+      var chip = document.getElementById('tempoCountdown');
+      var word = document.getElementById('tempoCountWord');
+      var num  = document.getElementById('tempoCountNum');
+      if (word) { word.textContent = p.word; word.style.color = p.color; }
+      if (num)  { num.textContent = this._left; num.style.color = p.color; }
+      if (chip) chip.style.borderColor = p.color;
+      [0, 1, 2, 3].forEach(function(i) {
+        var el = document.getElementById('tp' + i);
+        if (el) el.classList.toggle('active', i === TempoCoach._phase);
+      });
+      var guide = document.getElementById('tempoGuide');
+      if (guide) guide.textContent = p.word + ' — ' + this._left;
+    },
+  };
 
-  function stopTempoVoice() {
-    if (tempoVoiceInterval) { clearInterval(tempoVoiceInterval); tempoVoiceInterval = null; }
+  // No real tempo (blank / 0-0-0-0 / legacy '—' or 'Hold') → no tempo UI at
+  // all: hide the card so the template's display defaults can't masquerade
+  // as a prescription.
+  if (!TempoCoach.hasTempo()) {
+    var _tempoCard = document.getElementById('tempoCard');
+    if (_tempoCard) _tempoCard.style.display = 'none';
   }
 
   function toggleVoice() {
@@ -2884,6 +3025,9 @@ async function startCamera() {
               ghostState.phaseStartTime = Date.now();
               ghostState.ghostAnimProgress = 0;
               VoiceCoach.speak(phases.length > 1 ? phases[1].voice : phases[0].voice, true);
+              // Phase E: rep work starts — run the therapist-tempo guide
+              // (no-op when the exercise has no real tempo).
+              TempoCoach.start();
             }
           }
         } else {
@@ -4749,25 +4893,19 @@ async function startCamera() {
           if (allVis) {
             ghostState.calibrationFrames++;
             if (ghostState.calibrationFrames >= ghostState.CALIBRATION_NEEDED) {
-              var hasCues = ghostState.exerciseDef &&
-                            ghostState.exerciseDef.setupCues &&
-                            ghostState.exerciseDef.setupCues.length > 0;
-              if (hasCues) {
-                ghostState.mode = 'SETUP';
-                ghostState.setupCueIndex = -1;  // start at -1 so camera cue plays first
-                ghostState.setupCueTime = Date.now();
-                // Speak camera placement first
-                var camPos = ghostState.exerciseDef.cameraPosition;
-                if (camPos && camPos.instruction) {
-                  VoiceCoach.speak(camPos.instruction, true);
-                } else {
-                  VoiceCoach.speak(ghostState.exerciseDef.setupCues[0], true);
-                  ghostState.setupCueIndex = 0;
-                }
+              // Phase D: the framing check above is part of the SCORING path
+              // (landmarks must be reliably in frame), so it always runs.
+              // The guidance + demo sequence is opt-in via the Show-demo
+              // button — the default goes straight to work.
+              if (demoRequested) {
+                demoRequested = false;
+                startDemoSequence();
               } else {
-                ghostState.mode = 'DEMO';
+                ghostState.mode = 'WAITING';
+                ghostState.matchFrames = 0;
+                ghostState.currentPhaseIndex = 0;
                 ghostState.phaseStartTime = Date.now();
-                VoiceCoach.speak('Watch me first. I will show you the movement.', true);
+                VoiceCoach.speak('Ready. Step into the outline and begin when you are set.', true);
               }
             }
           } else {
@@ -4949,28 +5087,8 @@ async function startCamera() {
     el.style.color = score >= 85 ? '#22c55e' : score >= 70 ? '#f59e0b' : '#ef4444';
   }
 
-  // ---- Tempo guide ----
-  function runTempo(setNum) {
-    const labels = ['Down', 'Hold', 'Up', 'Reset'];
-    let phase = 0;
-    function nextPhase() {
-      [0,1,2,3].forEach(i => document.getElementById('tp'+i).classList.remove('active'));
-      document.getElementById('tp'+phase).classList.add('active');
-      const dur = TEMPO_PARTS[phase];
-      document.getElementById('tempoGuide').textContent = labels[phase] + '...';
-      if (dur > 0) {
-        tempoInterval = setTimeout(() => {
-          phase = (phase + 1) % 4;
-          if (phase === 0) { nextPhase(); } // loop
-          else nextPhase();
-        }, dur * 1000);
-      } else {
-        phase = (phase + 1) % 4;
-        nextPhase();
-      }
-    }
-    nextPhase();
-  }
+  // ---- Tempo guide: Phase E — TempoCoach (defined above) owns the visual
+  //      cards, the countdown chip, and the spoken phase words. ----
 
   // ---- Set management ----
   var _completedSetStack = [];  // R2-U3: undo support (most recent first)
@@ -4998,9 +5116,7 @@ async function startCamera() {
     repState.count = 0;
     repState.phase = 'up';
     angleBuffer = [];
-    stopTempoVoice();
-    clearTimeout(tempoInterval);
-    [0,1,2,3].forEach(i => document.getElementById('tp'+i).classList.remove('active'));
+    TempoCoach.stop();
     document.getElementById('doneBtn'+setNum).classList.add('done');
     document.getElementById('doneBtn'+setNum).disabled = true;
     const repsEl = document.getElementById('reps'+setNum);
@@ -5013,7 +5129,7 @@ async function startCamera() {
   }
 
   function startRest() {
-    stopTempoVoice();
+    TempoCoach.stop();
     const wrap = document.getElementById('restTimerWrap');
     const val  = document.getElementById('restVal');
     wrap.style.display = 'block';
@@ -5027,16 +5143,17 @@ async function startCamera() {
         clearInterval(restInterval);
         wrap.style.display = 'none';
         VoiceCoach.speak('Rest over. Next set.', true);
+        // Phase E: the tempo guide runs during the SET, not during rest.
+        TempoCoach.start();
       }
     }, 1000);
-    // Run visual tempo guide for current set
-    runTempo(completedSets + 1);
   }
 
   function skipRest() {
     clearInterval(restInterval);
     document.getElementById('restTimerWrap').style.display = 'none';
     VoiceCoach.speak('Next set.', true);
+    TempoCoach.start();
   }
 
   // ---- Pain protocol ----
@@ -5073,6 +5190,12 @@ async function startCamera() {
   function updateSevAndGuidance() {
     const severity = parseInt(document.getElementById('painSeverity').value);
     document.getElementById('sevVal').textContent = severity;
+    if (LIBRARY_MODE) {
+      // G1b: managed patients get SERVER-decided guidance only (their
+      // therapist's plan sets the thresholds) — no client-rule flash here.
+      document.getElementById('painGuidance').innerHTML = '';
+      return;
+    }
     const type = document.querySelector('input[name="painType"]:checked')?.value || 'aching';
     const { guidance, action } = computeGuidance(type, severity);
     painAction = action;
@@ -5082,6 +5205,14 @@ async function startCamera() {
 
   function computeGuidance(type, severity) {
     let guidance = '', action = 'continue';
+    // G1a: severity 8+ stops the session whatever the type — severe
+    // "burning" can be nerve pain; type-based leniency caps out below 8.
+    if (severity >= 8) {
+      return {
+        guidance: 'Stop for today. Pain this severe — whatever the type — is a signal to rest and, if it repeats, see a physiotherapist.',
+        action: 'stop'
+      };
+    }
     if (type === 'sharp' || type === 'joint') {
       if (severity >= 4) {
         guidance = type === 'sharp'
@@ -5114,14 +5245,42 @@ async function startCamera() {
     painReported = true;
 
     if (LIBRARY_MODE) {
-      if (painAction === 'skip_exercise') {
-        document.getElementById('painProtocol').innerHTML =
-          `<div class="guidance-box guidance-skip_exercise"><p>${computeGuidance(type, severity).guidance}</p><p style="margin-top:8px;font-size:.78rem;opacity:.7;">Returning to exercise library in 3 seconds...</p></div>`;
-        setTimeout(() => { if (stream) stream.getTracks().forEach(t => t.stop()); window.location.href = LIBRARY_RETURN_URL || '{% url "exercise_library" %}'; }, 3000);
-      } else if (painAction === 'reduce_volume') {
-        remainingSets = Math.max(1, remainingSets - 1);
-        document.getElementById('painProtocol').classList.remove('show');
-        togglePain();
+      // Unified pain pipeline: send to the same endpoint the guided screen uses; the
+      // SERVER decides continue/skip/pause from the patient's usual-pain threshold and
+      // records the PainEvent + message/alert. No client-side pain rules here.
+      // G1b: neutral "Recording…" while in flight, then render the server's
+      // guidance string — client and therapist chat can never disagree.
+      if (REPORT_PAIN_URL) {
+        const box = document.getElementById('painGuidance');
+        box.innerHTML = '<div class="guidance-box guidance-continue"><p>Recording&hellip;</p></div>';
+        fetch(REPORT_PAIN_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
+          body: JSON.stringify({ severity: severity, pain_type: type, set_number: completedSets + 1 })
+        }).then(r => r.json()).then(out => {
+          const action = (out.action === 'skip' || out.action === 'pause') ? out.action : 'continue';
+          const wrap = document.createElement('div');
+          wrap.className = 'guidance-box ' + (action === 'continue' ? 'guidance-continue' : 'guidance-stop');
+          const p = document.createElement('p');
+          p.textContent = out.guidance || '';
+          wrap.appendChild(p);
+          box.innerHTML = '';
+          box.appendChild(wrap);
+          if (action === 'skip' || action === 'pause') {
+            setTimeout(() => {
+              if (stream) stream.getTracks().forEach(t => t.stop());
+              window.location.href = out.next_url;
+            }, 2500);
+          } else {
+            setTimeout(() => {
+              box.innerHTML = '';
+              document.getElementById('painProtocol').classList.remove('show');
+            }, 2500);
+          }
+        }).catch(() => {
+          box.innerHTML = '';
+          document.getElementById('painProtocol').classList.remove('show');
+        });
       } else {
         document.getElementById('painProtocol').classList.remove('show');
       }
@@ -5150,7 +5309,14 @@ async function startCamera() {
         skipped: painAction === 'skip_exercise',
       })
     }).then(r => r.json()).then(data => {
-      if (painAction === 'skip_exercise') {
+      if (painAction === 'stop') {
+        // G1a: the server has already ended the session (severity 8+);
+        // show the stop guidance, then follow its redirect.
+        document.getElementById('painProtocol').innerHTML =
+          `<div class="guidance-box guidance-stop"><p>${computeGuidance(type, severity).guidance}</p><p style="margin-top:8px;font-size:.78rem;opacity:.7;">Ending today's session...</p></div>`;
+        if (stream) stream.getTracks().forEach(t => t.stop());
+        setTimeout(() => { window.location.href = data.next_url; }, 3000);
+      } else if (painAction === 'skip_exercise') {
         document.getElementById('painProtocol').innerHTML =
           `<div class="guidance-box guidance-skip_exercise"><p>${computeGuidance(type, severity).guidance}</p><p style="margin-top:8px;font-size:.78rem;opacity:.7;">Moving to next exercise in 3 seconds...</p></div>`;
         setTimeout(() => { window.location.href = data.next_url; }, 3000);
