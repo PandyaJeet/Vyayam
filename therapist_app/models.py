@@ -375,6 +375,40 @@ class ExerciseSetLog(models.Model):
                 f"({self.mode}, {self.reps_count} reps)")
 
 
+class SessionReport(models.Model):
+    """R2: the immutable per-session report. report_json is a snapshot taken
+    at generation time (strength_app/report_builder.py); both the therapist
+    and the patient render from this JSON forever — it is never rebuilt
+    (locked decision 3). One report per SessionLog."""
+
+    STATUS_CHOICES = [
+        ('complete', 'Completed'),
+        ('ended_early_pain', 'Ended early — pain'),
+        ('partial', 'Partial'),
+    ]
+
+    link = models.ForeignKey(
+        TherapistPatientLink, on_delete=models.CASCADE,
+        related_name='session_reports')
+    session_log = models.OneToOneField(
+        SessionLog, on_delete=models.CASCADE, related_name='report')
+    patient = models.ForeignKey(
+        'strength_app.PatientProfile', on_delete=models.CASCADE,
+        related_name='session_reports')
+    report_date = models.DateField()
+    status = models.CharField(
+        max_length=20, choices=STATUS_CHOICES, default='complete')
+    report_json = models.JSONField(default=dict)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-report_date', '-created_at']
+        indexes = [models.Index(fields=['patient', 'report_date'])]
+
+    def __str__(self):
+        return f"Report {self.report_date} · {self.link.display_name} ({self.status})"
+
+
 class ProgressReport(models.Model):
     """A generated progress report for a patient link."""
 
