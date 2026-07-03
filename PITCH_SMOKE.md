@@ -75,7 +75,32 @@ freshly restarted server (`python manage.py runserver`) after
     aching → severity **9**.
     → Red stop guidance, "Ending today's session…", session-ended page.
 
+## 6 · Report + coaching cycle (R1–R5)
+
+20. **Rest + pause capture:** during a managed session, tap **+30s** on a
+    rest timer and **Pause session** once (resume after ~30s).
+    → Both appear later in the report: "+30s extended" on that set's rest
+    column and "paused Ns" on the paused set.
+21. **Mid-rep pain pin:** on a camera exercise, stop mid-rep and report
+    aching **4**.
+    → The report's pain line reads "aching 4/10 at rep R of set S" —
+    the exact rep the modal opened on.
+22. **The report, both sides:** finish the session → **View today's
+    session report** on the finished page; then as dr_shah open
+    Reports → Session reports → same session.
+    → Identical document: narrative first, per-set tables with form/depth/
+    tempo, elapsed AND working times, footer disclaimer. Print preview
+    (Cmd+P) is clean.
+23. **Coaching spot-check:** start a squat set — hear "Let's see your
+    natural movement first" (2 uncolored reps), let your knees cave once
+    → ONE "Knees toward the camera" (red only now); fix it → "Better —
+    knees are tracking now"; ignore a cue 3 reps → one "Let's slow down —
+    quality over count" then silence; step out of frame ~2s → grey
+    skeleton + "I can't see you clearly". Tempo counts "Slowly down —
+    3… 2… 1" pause while the coach speaks.
+
 ---
 
-**If anything fails:** `python manage.py test` (268 tests) — the inline-JS
-harness (`test_g0_inline_js_integrity`) pinpoints any broken page + line.
+**If anything fails:** `python manage.py test` (310+ tests) — the inline-JS
+harness (`test_g0_inline_js_integrity`) pinpoints any broken page + line;
+`node --test strength_app/tests/js/` covers the CV, voice and coaching cores.
