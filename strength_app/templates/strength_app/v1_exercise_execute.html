@@ -484,6 +484,8 @@
 <script src="{% static 'strength_app/js/cv_core.js' %}"></script>
 <!-- Phase F: friendlier voice — best-voice picking + dormant coach-clip player -->
 <script src="{% static 'strength_app/js/voice_core.js' %}"></script>
+<!-- R4: coaching arbitration core (pure; node-tested in coach_core.test.mjs) -->
+<script src="{% static 'strength_app/js/coach_core.js' %}"></script>
 
 <script>
   const EXERCISE_ID   = "{{ exercise.exercise_id|escapejs }}";
@@ -2759,6 +2761,9 @@ async function startCamera() {
     },
     _tick: function() {
       this._left--;
+      // R4h: arbitration owns the voice channel — tempo speech yields to
+      // any live cue or praise line (one speaker, like one human).
+      var maySpeak = Coach.tempoAllowed(Date.now());
       if (this._left <= 0) {
         // Advance to the next phase with a non-zero duration (0s = skipped).
         var next = this._phase, hops = 0;
@@ -2766,7 +2771,15 @@ async function startCamera() {
         if (TEMPO_PARTS[next] === 0) { this.stop(); return; }  // defensive: no live phase
         this._phase = next;
         this._left = TEMPO_PARTS[next];
-        VoiceCoach.speak(this.PHASES[next].word, false);
+        // R4h: "Slowly down — 3" for countable phases (>=2s); a 1s phase
+        // gets just its word ("Hold"); 0s phases never reach here.
+        if (maySpeak) {
+          var word = this.PHASES[next].word;
+          VoiceCoach.speak(this._left >= 2 ? word + ' — ' + this._left : word, false);
+        }
+      } else if (this._left >= 1 && TEMPO_PARTS[this._phase] >= 2 && maySpeak) {
+        // Counts spoken only for phases >=2s: "… 2… 1".
+        VoiceCoach.speak('' + this._left, false);
       }
       this._paint();
     },
@@ -2890,18 +2903,28 @@ async function startCamera() {
       // same cue was not re-attempted during THIS rep.
       var thisRepIds = {};
       for (var i = 0; i < rep.cues.length; i++) thisRepIds[rep.cues[i].cue_id] = true;
+      var correctedIds = [];
       for (var j = 0; j < this._prevRepCues.length; j++) {
         var prev = this._prevRepCues[j];
-        if (!thisRepIds[prev.cue_id]) prev.corrected = true;
+        if (!thisRepIds[prev.cue_id]) {
+          prev.corrected = true;
+          correctedIds.push(prev.cue_id);
+        }
       }
       this._prevRepCues = rep.cues;
       this.reps.push(rep);
       this._cur = null;
+      // R4: notify the coach bridge (praise / calibration / tempo adjust).
+      if (typeof this.onRepClosed === 'function') {
+        try { this.onRepClosed(rep, correctedIds); } catch (e) { /* never break capture */ }
+      }
     },
     noteSpeech: function(text) {
-      if (!this._cur) return;
       var id = this._cueIds[text];
-      if (!id) return;
+      if (id) this.cueFiredById(id);
+    },
+    cueFiredById: function(id) {
+      if (!this._cur || !id) return;
       for (var i = 0; i < this._cur.cues.length; i++) {
         if (this._cur.cues[i].cue_id === id) return;  // dedupe per rep
       }
@@ -2964,6 +2987,129 @@ async function startCamera() {
       return _origSpeak.call(this, text, priority);
     };
   })();
+
+  // ══ R4: THE COACH BRIDGE — arbitration between machine and voice ════════
+  // All decisions live in coach_core.js (pure, node-tested); this bridge
+  // feeds it events and speaks/colors what it answers. It never writes
+  // ghostState (detection boundary).
+  var Coach = VyayamCoach.createArbiter();
+
+  // Every cue request goes through arbitration: one voice, one cue at a
+  // time, safety interrupts, rep spacing, 3-strike fading.
+  function coachCue(cueId) {
+    var d = Coach.requestCue(cueId, Date.now());
+    if (d.action !== 'speak') return;
+    VoiceCoach.speak(d.text, !!d.interrupt);
+    RepCapture.cueFiredById(d.cue_id || cueId);
+  }
+
+  var _coachSetStarted = 0;
+  function coachSetStart() {
+    var setN = completedSets + 1;
+    if (ASSESSMENT_MODE || setN === _coachSetStarted) return;
+    _coachSetStarted = setN;
+    var r = Coach.setStarted(setN, ghostState.targetReps || 10);
+    if (r.line) VoiceCoach.speak(r.line, true);
+  }
+
+  // R4d: calibration wrapper — after the first 2 calibration reps, depth is
+  // scored against THEIR natural range (+5° encouragement), never deeper
+  // than textbook demands, floor-clamped. Assessments are NEVER calibrated
+  // (their scores must stay comparable). Pure math in coach_core.
+  var CoachCal = {
+    bottoms: [],
+    applied: false,
+    joint: null,
+    deepest: null,
+    target: null,
+    onRep: function(rep) {
+      if (this.applied || ASSESSMENT_MODE) return;
+      if (completedSets !== 0 || rep.partial || rep.bottom_angle === null) return;
+      this.bottoms.push(rep.bottom_angle);
+      if (this.bottoms.length >= 2) this._engage();
+    },
+    _engage: function() {
+      this.applied = true;
+      if (!window.ghostState || !ghostState.exerciseDef) return;
+      var pj = RepCapture._primaryJoint;
+      if (!pj) return;
+      var phases = ghostState.exerciseDef.phases || [];
+      var textbook = null;
+      for (var i = 0; i < phases.length; i++) {
+        var joints = phases[i].joints || {};
+        if (typeof joints[pj] === 'number') {
+          textbook = (textbook === null) ? joints[pj] : Math.min(textbook, joints[pj]);
+        }
+      }
+      if (textbook === null) return;
+      var natural = Math.min(this.bottoms[0], this.bottoms[1]);
+      var adjusted = VyayamCoach.calibratedTarget(textbook, natural);
+      if (adjusted !== textbook) {
+        this.joint = pj;
+        this.deepest = textbook;
+        this.target = adjusted;
+      }
+    },
+    adjustTarget: function(t) {
+      if (!t || this.target === null || !t.joints) return t;
+      if (typeof t.joints[this.joint] !== 'number' ||
+          Math.abs(t.joints[this.joint] - this.deepest) > 5) return t;
+      var joints = {};
+      for (var k in t.joints) joints[k] = t.joints[k];
+      joints[this.joint] = this.target;
+      var out = {};
+      for (var k2 in t) out[k2] = t[k2];
+      out.joints = joints;
+      return out;
+    },
+  };
+
+  // The sanctioned calibration wrapper: targets in, adjusted targets out.
+  (function() {
+    var _origGetTarget = getGhostCurrentTarget;
+    getGhostCurrentTarget = function() {
+      return CoachCal.adjustTarget(_origGetTarget());
+    };
+  })();
+
+  // R4c/R4g/R4f: rep boundary — praise, calibration progress, tempo adjust.
+  RepCapture.onRepClosed = function(rep, correctedIds) {
+    var res = Coach.repClosed(rep.rep_n, rep.form_pct, correctedIds, Date.now());
+    for (var i = 0; i < res.lines.length; i++) VoiceCoach.speak(res.lines[i], false);
+    CoachCal.onRep(rep);
+    // Tempo adjust (max once/set, arbiter-enforced; never colors form).
+    if (TempoCoach.hasTempo() && rep.phase_ms) {
+      var prescribedEcc = TEMPO_PARTS[0];
+      var actualEcc = (rep.phase_ms.ecc || 0) / 1000;
+      if (prescribedEcc > 0 && actualEcc > 0) {
+        var tol = Math.max(0.4 * prescribedEcc, 0.7);
+        var direction = null;
+        if (actualEcc < prescribedEcc - tol) direction = 'fast';
+        else if (actualEcc > prescribedEcc + tol) direction = 'slow';
+        if (direction) {
+          var line = Coach.tempoAdjustLine(direction);
+          if (line) VoiceCoach.speak(line, false);
+        }
+      }
+    }
+  };
+
+  // R4g: live fatigue inputs (form drop vs set 1 / 2+ rest extensions).
+  var _setFormAvgs = [];
+  var _restExtensionsThisExercise = 0;
+  function coachCheckFatigue(setReps) {
+    var forms = [];
+    for (var i = 0; i < setReps.length; i++) {
+      if (typeof setReps[i].form_pct === 'number') forms.push(setReps[i].form_pct);
+    }
+    if (forms.length) {
+      var avg = forms.reduce(function(a, b) { return a + b; }, 0) / forms.length;
+      _setFormAvgs.push(avg);
+    }
+    var dropped = _setFormAvgs.length >= 2 &&
+      _setFormAvgs[_setFormAvgs.length - 1] <= _setFormAvgs[0] * 0.85;
+    if (dropped || _restExtensionsThisExercise >= 2) Coach.setFatigued();
+  }
 
   function toggleVoice() {
     var on = VoiceCoach.toggle();
@@ -3215,6 +3361,7 @@ async function startCamera() {
               ghostState.mode = 'SETTLE';
               ghostState.settleStartTime = Date.now();
               VoiceCoach.speak('Good... hold it right there...', true);
+              coachSetStart();  // R4: holds are sets too
             } else {
               ghostState.userHasMovedFromStart = false;
               ghostState.mode = 'GHOST_LEADS';
@@ -3225,6 +3372,9 @@ async function startCamera() {
               // Phase E: rep work starts — run the therapist-tempo guide
               // (no-op when the exercise has no real tempo).
               TempoCoach.start();
+              // R4: set lifecycle for the coach (calibration line on set 1,
+              // fatigue announcement when tripped; once per set).
+              coachSetStart();
             }
           }
         } else {
@@ -3250,9 +3400,7 @@ async function startCamera() {
                 if (el) el.textContent = ghostState.holdSeconds + 's';
               } else {
                 // User broke form — pause timer, cue to get back
-                if (Date.now() - VoiceCoach.lastSpokenTime > 3000) {
-                  VoiceCoach.speak('Get back into position. Timer paused.', true);
-                }
+                coachCue('hold_position');
                 var el = document.getElementById('holdTimerDisplay');
                 if (el) el.textContent = ghostState.holdSeconds + 's \u23F8';
               }
@@ -3308,12 +3456,10 @@ async function startCamera() {
             if (!_matches && _detected !== 'unknown') {
               // Surface a visible nudge and suspend rep counting this frame.
               var _orientCue = '';
-              if (_expectedOrient === 'supine')    _orientCue = 'Please lie on your back.';
-              else if (_expectedOrient === 'prone') _orientCue = 'Please lie face down.';
-              else                                   _orientCue = 'Please lie on your side.';
-              if (Date.now() - VoiceCoach.lastSpokenTime > 4000) {
-                VoiceCoach.speak(_orientCue, true);
-              }
+              if (_expectedOrient === 'supine')    _orientCue = 'Lie on your back';
+              else if (_expectedOrient === 'prone') _orientCue = 'Lie face down';
+              else                                   _orientCue = 'Lie on your side';
+              coachCue('orientation_' + _expectedOrient);
               var _orientEl = document.getElementById('alignmentCue');
               if (_orientEl) {
                 _orientEl.textContent = '⚠️ ' + _orientCue;
@@ -3327,9 +3473,7 @@ async function startCamera() {
         if (ghostState.exerciseType === 'GLUTE_BRIDGE_SUPINE' && lm) {
           var _gbA = ghostState.exerciseDef.checkAngles(lm);
           if (_gbA.hipSymmetry !== undefined && _gbA.hipSymmetry > 20) {
-            if (Date.now() - VoiceCoach.lastSpokenTime > 4000) {
-              VoiceCoach.speak('Even out your hips — keep them level.', false);
-            }
+            coachCue('hips_even');
           }
           if (window.VYAYAM_DEBUG) {
             var _gbT = getGhostCurrentTarget() || { joints: {} };
@@ -3353,9 +3497,7 @@ async function startCamera() {
         if (ghostState.exerciseType === 'ROW_BENT_OVER' && lm) {
           var _rbA = ghostState.exerciseDef.checkAngles(lm);
           if (_rbA.hinge !== undefined && _rbA.hinge < 150) {
-            if (Date.now() - VoiceCoach.lastSpokenTime > 4000) {
-              VoiceCoach.speak('Stay hinged forward — push your hips back.', true);
-            }
+            coachCue('stay_hinged');
           }
           if (window.VYAYAM_DEBUG) {
             var _rbT = getGhostCurrentTarget() || { joints: {} };
@@ -3372,14 +3514,10 @@ async function startCamera() {
         if (ghostState.exerciseType === 'BSS' && lm) {
           var _bsA = ghostState.exerciseDef.checkAngles(lm);
           if (_bsA.kneeOverToe) {
-            if (Date.now() - VoiceCoach.lastSpokenTime > 4000) {
-              VoiceCoach.speak('Step your front foot further forward.', true);
-            }
+            coachCue('foot_forward');
           }
           if (_bsA.trunk !== undefined && _bsA.trunk < 145) {
-            if (Date.now() - VoiceCoach.lastSpokenTime > 4000) {
-              VoiceCoach.speak('Stay upright — chest tall.', false);
-            }
+            coachCue('chest_up');
           }
           if (window.VYAYAM_DEBUG) {
             var _bsT = getGhostCurrentTarget() || { joints: {} };
@@ -3399,14 +3537,10 @@ async function startCamera() {
           var _suA = ghostState.exerciseDef.checkAngles(lm);
           // hipLevelDiff > 0.04 normalised ≈ 35px on 480p frame → matches Python threshold
           if (_suA.hipLevelDiff !== undefined && _suA.hipLevelDiff > 0.04) {
-            if (Date.now() - VoiceCoach.lastSpokenTime > 4000) {
-              VoiceCoach.speak('Keep your hips level — do not hike.', true);
-            }
+            coachCue('hips_level');
           }
           if (_suA.trunk !== undefined && _suA.trunk < 145) {
-            if (Date.now() - VoiceCoach.lastSpokenTime > 4000) {
-              VoiceCoach.speak('Stand tall on the step.', false);
-            }
+            coachCue('stand_tall');
           }
           if (window.VYAYAM_DEBUG) {
             var _suT = getGhostCurrentTarget() || { joints: {} };
@@ -3429,9 +3563,7 @@ async function startCamera() {
             var _rValgus = lm[LM.rightKnee].x  - lm[LM.rightAnkle].x;
             var _vThresh = _shoulderW * 0.15;
             if (_lValgus > _vThresh || _rValgus > _vThresh) {
-              if (Date.now() - VoiceCoach.lastSpokenTime > 4000) {
-                VoiceCoach.speak('Push your knees out. Do not let them cave in.', true);
-              }
+              coachCue('knee_valgus');
             }
           }
         }
@@ -3447,16 +3579,12 @@ async function startCamera() {
             var _cAnkleDist = Math.sqrt(
               Math.pow(_cLA.x - _cRA.x, 2) + Math.pow(_cLA.y - _cRA.y, 2)
             );
-            if (_cAnkleDist > 0.08 && Date.now() - VoiceCoach.lastSpokenTime > 4000) {
-              VoiceCoach.speak('Keep your feet together.', false);
-            }
+            if (_cAnkleDist > 0.08) coachCue('feet_together');
           }
           // Hip-stacking check (from Python reference): if hips diverge in X, pelvis has rotated
           if (_cLH && _cRH) {
             var _cHipSep = Math.abs(_cLH.x - _cRH.x);
-            if (_cHipSep > 0.06 && Date.now() - VoiceCoach.lastSpokenTime > 4000) {
-              VoiceCoach.speak('Keep your hips stacked', false);
-            }
+            if (_cHipSep > 0.06) coachCue('hips_stacked');
           }
 
           // Threshold-based state machine (knee separation in normalized × 100 units)
@@ -3505,9 +3633,7 @@ async function startCamera() {
               var _pKneeDist = Math.abs(_pLK.x - _pRK.x);
               var _pHipDist  = Math.abs(_pLH.x - _pRH.x);
               if (_pHipDist > 0.02 && _pKneeDist < _pHipDist * 0.8) {
-                if (Date.now() - VoiceCoach.lastSpokenTime > 4000) {
-                  VoiceCoach.speak('Knees out on landing! Do not let them cave in.', true);
-                }
+                coachCue('knee_valgus_landing');
               }
             }
             // b) LANDING ABSORPTION — stiff-leg landing
@@ -3517,9 +3643,7 @@ async function startCamera() {
               var _pRKnee = calcAngle(_pRH, _pRK, _pRA);
               var _pMinKnee = Math.min(_pLKnee, _pRKnee);
               if (_pPhaseName === 'landing' && _pMinKnee > 160) {
-                if (Date.now() - VoiceCoach.lastSpokenTime > 4000) {
-                  VoiceCoach.speak('Bend your knees on landing — absorb the impact.', true);
-                }
+                coachCue('soft_landing');
               }
             }
             // c) SINGLE-LEG ASYMMETRY — for single-leg variants, track loading-leg knee
@@ -3681,9 +3805,7 @@ async function startCamera() {
             var _rValgus = lm[LM.rightKnee].x  - lm[LM.rightAnkle].x;
             var _vThresh = _shoulderW * 0.15;
             if (_lValgus > _vThresh || _rValgus > _vThresh) {
-              if (Date.now() - VoiceCoach.lastSpokenTime > 4000) {
-                VoiceCoach.speak('Push your knees out. Do not let them cave in.', true);
-              }
+              coachCue('knee_valgus');
             }
           }
         }
@@ -4335,6 +4457,13 @@ async function startCamera() {
     var GREEN  = { r: 0,   g: 255, b: 120 };
     var YELLOW = { r: 255, g: 220, b: 0   };
     var RED    = { r: 255, g: 50,  b: 50  };
+    var NEUTRAL = { r: 195, g: 205, b: 215 };
+
+    // R4d/R4e: calibrating or low-confidence → no judgment colors at all.
+    // R4f: amber-first — RED is reserved for moments a SAFETY cue is live;
+    // every other big deviation ambers with its cue.
+    var frozen = Coach.colorsFrozen();
+    var redOk  = Coach.redAllowed(Date.now());
 
     var segColors  = {};
     var nodeColors = {};
@@ -4349,9 +4478,11 @@ async function startCamera() {
         : Math.abs(actual - target);
 
       var color;
-      if (diff <= 20)      { color = { r: GREEN.r,  g: GREEN.g,  b: GREEN.b,  diff: diff }; }
+      if (frozen)          { color = { r: NEUTRAL.r, g: NEUTRAL.g, b: NEUTRAL.b, diff: 0 }; }
+      else if (diff <= 20) { color = { r: GREEN.r,  g: GREEN.g,  b: GREEN.b,  diff: diff }; }
       else if (diff <= 40) { color = { r: YELLOW.r, g: YELLOW.g, b: YELLOW.b, diff: diff }; }
-      else                 { color = { r: RED.r,    g: RED.g,    b: RED.b,    diff: diff }; }
+      else if (redOk)      { color = { r: RED.r,    g: RED.g,    b: RED.b,    diff: diff }; }
+      else                 { color = { r: YELLOW.r, g: YELLOW.g, b: YELLOW.b, diff: diff }; }
 
       // Apply to segments — keep WORST color per segment
       var segs = JOINT_TO_SEGMENTS[jointKey] || [];
@@ -5081,6 +5212,18 @@ async function startCamera() {
       if (results.poseLandmarks) {
         var lm = results.poseLandmarks;
 
+        // R4e: confidence gate — low landmark visibility for >1s freezes
+        // all coloring and cueing (never judge what we can't see). Purely
+        // additive read; the framing/CALIBRATING flow below is untouched.
+        (function() {
+          var gateLMs = [11, 12, 23, 24, 25, 26, 27, 28];
+          var gateVisible = gateLMs.every(function(idx) {
+            return lm[idx] && (lm[idx].visibility === undefined || lm[idx].visibility > 0.5);
+          });
+          var gate = Coach.confidence(gateVisible, Date.now());
+          if (gate.line) VoiceCoach.speak(gate.line, true);
+        })();
+
         // --- CALIBRATION phase ---
         if (ghostState.mode === 'CALIBRATING') {
           var keyLMs = [11, 12, 23, 24, 25, 26, 27, 28];
@@ -5248,6 +5391,10 @@ async function startCamera() {
             }
           }
         }
+      } else {
+        // R4e: no landmarks at all = not visible \u2014 feed the confidence gate.
+        var noLmGate = Coach.confidence(false, Date.now());
+        if (noLmGate.line) VoiceCoach.speak(noLmGate.line, true);
       }
     });
 
@@ -5284,7 +5431,17 @@ async function startCamera() {
   function updateFormDisplay(score) {
     const el = document.getElementById('formScore');
     el.textContent = Math.round(score) + '%';
-    el.style.color = score >= 85 ? '#22c55e' : score >= 70 ? '#f59e0b' : '#ef4444';
+    // R4f amber-first: green when strong, amber otherwise; red ONLY while
+    // a safety cue is live. R4d/R4e: neutral while calibrating/low-confidence.
+    if (Coach.colorsFrozen()) {
+      el.style.color = '#cbd5e1';
+    } else if (score >= 85) {
+      el.style.color = '#22c55e';
+    } else if (score < 70 && Coach.redAllowed(Date.now())) {
+      el.style.color = '#ef4444';
+    } else {
+      el.style.color = '#f59e0b';
+    }
   }
 
   // ---- Tempo guide: Phase E — TempoCoach (defined above) owns the visual
@@ -5336,6 +5493,8 @@ async function startCamera() {
   function completeSet(setNum) {
     // R1a: drain the per-rep records BEFORE the ghost reset zeroes repCount.
     var capturedReps = RepCapture.takeSet();
+    // R4g: feed the live fatigue signature (form drop vs set 1 / 2+ ext.).
+    try { coachCheckFatigue(capturedReps); } catch (e) { /* coaching never breaks flow */ }
     var capturedHold = (window.ghostState && ghostState.holdSeconds) ||
                        (typeof _guidedHold !== 'undefined' && _guidedHold.seconds) || 0;
     _completedSetStack.push(setNum);
@@ -5384,6 +5543,7 @@ async function startCamera() {
       t += 30;
       val.textContent = t;
       postRestEvent('extension', 30);
+      _restExtensionsThisExercise++;  // R4g fatigue input
     };
     restInterval = setInterval(() => {
       t--;
