@@ -1587,7 +1587,10 @@ def generate_v1_session(patient):
         try:
             _advance_hsr_phase(patient, patient.football_profile)
         except Exception:
-            pass
+            # D4: a failed tendon-loading progression must leave a trace.
+            logging.getLogger(__name__).warning(
+                'HSR phase advancement failed for %s',
+                getattr(patient, 'patient_id', '?'), exc_info=True)
 
     # ── 14. Warm-up (Principle 14 / P32 FIFA 11+ for football) ───────────
     warmup = _build_warmup(patterns_today, working_sets, hormonal_mods, patient=patient)
@@ -1694,7 +1697,12 @@ def generate_v1_session(patient):
             meta['has_coach_override'] = True
             meta['coach_name'] = active_override.therapist.name
     except Exception:
-        pass
+        # D1: a clinician's override silently vanishing is exactly the kind
+        # of failure someone must see — the session still generates, but loud.
+        logging.getLogger(__name__).warning(
+            'coach override application failed for %s — serving the '
+            'un-overridden session', getattr(patient, 'patient_id', '?'),
+            exc_info=True)
 
     return {
         'status': 'ready' if not is_deload else 'deload',
