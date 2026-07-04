@@ -198,6 +198,15 @@ class TestR1dRepPinnedPain(CaptureBase):
         self.report()  # guided screens send nothing
         self.assertIsNone(PainEvent.objects.latest('id').rep_number)
 
+    def test_set_number_clamped_never_500(self):
+        # A1 (health sweep): out-of-range set_number 500'd on Postgres
+        # (PositiveSmallIntegerField) though SQLite let it slide.
+        for raw, expected in ((999999, 30), (-3, 1), ('junk', None), (2, 2)):
+            resp = self.report(set_number=raw)
+            self.assertEqual(resp.status_code, 200, f'set_number={raw!r}')
+            self.assertEqual(PainEvent.objects.latest('id').set_number,
+                             expected, f'set_number={raw!r}')
+
 
 class TestR1cTimestamps(CaptureBase):
 

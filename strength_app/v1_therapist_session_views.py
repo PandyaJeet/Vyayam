@@ -491,7 +491,9 @@ def therapist_session_report_pain(request, idx):
         return JsonResponse({'error': 'severity_required'}, status=400)
     pain_type = str(data.get('pain_type') or '')[:20]
     try:
-        set_number = int(data.get('set_number'))
+        # A1: clamp like every sibling field — an out-of-range value would
+        # 500 on Postgres (PositiveSmallIntegerField), not on dev SQLite.
+        set_number = max(1, min(30, int(data.get('set_number'))))
     except (TypeError, ValueError):
         set_number = None
     # R1d: camera exercises pin pain to the rep the modal opened on;
