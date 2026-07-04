@@ -323,7 +323,11 @@ EXERCISES = [
         "equipment": "None",
         "video_url": "",
         "v2_ghost_supported": True,
-        "v2_exercise_key": "lateral_bound_stick",
+        # B1 (health sweep): was 'lateral_bound_stick' — a curated json stub
+        # with EMPTY phases and no registry object; this key has full CV
+        # phase targets + registry parity (same PLYO_LATERAL_BOUND_STICK
+        # js_type, so the JS landing coach is unchanged).
+        "v2_exercise_key": "lateral_bound_and_stick",
         "description": "Side-to-side bound onto a single leg with a three-second stuck landing. Trains lateral power and frontal-plane knee control.",
         "default_sets": 3,
         "default_reps": 5,
