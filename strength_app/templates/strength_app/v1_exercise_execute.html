@@ -2660,16 +2660,6 @@ async function startCamera() {
       this.lastSpoken = text; this.lastSpokenTime = now;
     },
 
-    cueAlignment: function(score, cueText) {
-      if (score >= 90) { this.speak('Beautiful. Hold it right there.', false); }
-      else if (score >= 75) { this.speak('Looking good. Just a little more.', false); }
-      else if (score >= 60) { this.speak("You're getting there. Keep going.", false); }
-      else if (cueText && score < 60) {
-        var clean = cueText.replace(/^[\u2713\u2717\uD83C\uDFAF\uD83D\uDC40] ?/, '');
-        if (clean) this.speak(clean, false);
-      }
-    },
-
     announceRep: function(count, targetReps) {
       var now = Date.now();
       if ((now - this.lastSpokenTime) < this.repCooldownMs) return;
