@@ -17,3 +17,11 @@ __pycache__/
 venv/
 .venv/
 env/
+
+# Transient audit / scratch dirs and logs
+.tmp_audit/
+.r2_tmp/
+*.log
+
+# Regenerable clinical-audit case dumps (~4.7 MB; generators recreate them)
+strength_app/tests/clinical_audit/reports/*.jsonl
