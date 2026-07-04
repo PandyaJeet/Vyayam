@@ -364,8 +364,14 @@ def therapist_session_feedback(request, idx):
 
     enriched = items[idx]
     item = enriched['item']
-    log_item_id = state['log_item_ids'][idx]
-    log_item = get_object_or_404(SessionLogItem, id=log_item_id)
+    # D3: the log-item list was frozen at session start; a same-week
+    # republish can grow the CURRENT items past it — guard like the
+    # sibling endpoints instead of a bare subscript (IndexError/500).
+    log_ids = state.get('log_item_ids') or []
+    if idx >= len(log_ids):
+        flash.error(request, "Session expired — please start again.")
+        return redirect('therapist_session_today')
+    log_item = get_object_or_404(SessionLogItem, id=log_ids[idx])
 
     if request.method == 'POST':
         try:

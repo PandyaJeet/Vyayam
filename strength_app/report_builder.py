@@ -600,7 +600,7 @@ def _narrative(name, status, done, total, duration_mmss, exercise_blocks,
             'continued': 'inside their usual range — the session continued',
             'exercise_skipped': 'above their usual level — the exercise was skipped',
             'session_paused': 'the session was stopped for safety',
-        }[worst.outcome]
+        }.get(worst.outcome, 'noted for the therapist')  # D6: never KeyError
         sentences.append(f"{name} reported {worst.pain_type or 'unspecified'} "
                          f"{worst.pain_severity}/10 {where}{extra} — "
                          f"{outcome_text}.")
