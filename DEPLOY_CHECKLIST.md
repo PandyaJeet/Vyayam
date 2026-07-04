@@ -27,6 +27,12 @@
   strength_app, 0004 therapist_app).
 - **Start command**:
   `gunicorn vyayam_project.wsgi:application --workers 2 --threads 4 --timeout 60 --access-logfile -`
+  - NOTE (health sweep A2): the rate limiter uses per-process LocMemCache —
+    with 2 workers every documented limit is effectively doubled and counters
+    reset on deploy. Acceptable for launch; move to Redis/DB cache to make
+    limits exact.
+  - NEVER run seed commands (seed_therapist_demo, seed_demo_patient — the
+    latter plants a fixed 'demo1234' login) against a production database.
   - Starter/standard dyno (512MB–2GB): 2 workers × 4 threads is the safe
     default for this mostly-IO app. Bump workers to `(2×CPU)+1` on bigger
     instances. 60 s timeout covers PDF generation; nothing long-running
