@@ -113,3 +113,24 @@ test('watchdogMs: 6s floor, scales with text length so long lines are never behe
   const long = 'x'.repeat(120);
   assert.equal(voice.watchdogMs(long), 9600);
 });
+
+/* ── R6-P2: briefing tempo line ──────────────────────────────────────────── */
+
+test('briefingTempoLine: words only, number only as a 3s+ pacing hint, never a countdown', () => {
+  // Blank / 0-0-0-0 tempo → steady-pace line.
+  assert.equal(voice.briefingTempoLine([0, 0, 0, 0]), 'Move at a steady, controlled pace.');
+  assert.equal(voice.briefingTempoLine(null), 'Move at a steady, controlled pace.');
+  // Short eccentric (<3s): no numbers at all.
+  assert.equal(voice.briefingTempoLine([2, 1, 2, 0]),
+    "We'll go slowly down, hold, then push up.");
+  // 3s+ eccentric: number appears as a pacing hint word.
+  assert.equal(voice.briefingTempoLine([3, 1, 2, 0]),
+    "We'll go slowly down for a slow three count, hold, then push up.");
+  // No hold → the hold clause is dropped.
+  assert.equal(voice.briefingTempoLine([4, 0, 2, 0]),
+    "We'll go slowly down for a slow four count, then push up.");
+  // No digits ever leak into the sentence.
+  for (const parts of [[3,1,2,0],[10,2,3,1],[2,0,2,0],[15,0,1,0]]) {
+    assert.doesNotMatch(voice.briefingTempoLine(parts), /\d/);
+  }
+});

@@ -189,6 +189,24 @@
     return [item];
   }
 
+  // R6-P2: spoken tempo line for the exercise briefing. Words only — a
+  // number appears solely as a pacing hint when the eccentric is 3s+
+  // ("a slow three count"), never as a countdown.
+  var NUMBER_WORDS = { 3: 'three', 4: 'four', 5: 'five', 6: 'six',
+                       7: 'seven', 8: 'eight', 9: 'nine', 10: 'ten' };
+
+  function briefingTempoLine(parts) {
+    var d = (parts && parts[0]) || 0;
+    var h = (parts && parts[1]) || 0;
+    var u = (parts && parts[2]) || 0;
+    var p = (parts && parts[3]) || 0;
+    if (d + h + u + p <= 0) return 'Move at a steady, controlled pace.';
+    var line = "We'll go slowly down";
+    if (d >= 3) line += ' for a slow ' + (NUMBER_WORDS[d] || 'long') + ' count';
+    line += (h > 0) ? ', hold, then push up.' : ', then push up.';
+    return line;
+  }
+
   // Watchdog duration for one utterance: long enough for the sentence at
   // rate 0.95 (~80ms/char floor 6s) so a legitimate long line is never
   // beheaded, short enough to unwedge Chrome's stuck speechSynthesis flag.
@@ -201,6 +219,7 @@
     tierFromPriority: tierFromPriority,
     speechDecision: speechDecision,
     queueCue: queueCue,
+    briefingTempoLine: briefingTempoLine,
     watchdogMs: watchdogMs,
     PREFERRED_NAME_TOKENS: PREFERRED_NAME_TOKENS,
     RATE: RATE,

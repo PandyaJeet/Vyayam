@@ -506,6 +506,9 @@
   const ASSESSMENT_SCORING  = {% if assessment_scoring_json %}{{ assessment_scoring_json|safe }}{% else %}{}{% endif %};
   const EXERCISE_INDEX  = "{{ exercise_index|escapejs }}";
   const TEMPO_PARTS     = ["{{ exercise.tempo_parts.0|escapejs }}", "{{ exercise.tempo_parts.1|escapejs }}", "{{ exercise.tempo_parts.2|escapejs }}", "{{ exercise.tempo_parts.3|escapejs }}"].map(function (x) { return parseInt(x, 10) || 0; });
+  // R6-P2: the therapist's per-exercise cue, spoken in the exercise briefing
+  // (quoted + |escapejs — G0 inline-JS integrity applies).
+  const THERAPIST_NOTE  = "{{ therapist_note|default:''|escapejs }}";
   const IS_TEST_MODE = (window.location.pathname.indexOf('/test-exercise/') !== -1);
   const LIBRARY_MODE = {{ library_mode|yesno:"true,false" }};
   const LIBRARY_RETURN_URL = "{{ library_return_url|default:'' }}";
@@ -722,6 +725,8 @@ async function startCamera() {
         'Weight in the middle of your feet. Not your toes.',
         'Chest up. Look straight ahead.',
       ],
+      // R6-P2: spoken once in the exercise briefing (author: Pawan — live).
+      commonMistake: 'Most common mistake: letting your knees drift past your toes. Sit your hips back and keep your knees behind your toes.',
       stanceCheck: {
         ankleToShoulderRatio: { min: 0.7, max: 1.4 },
         maxFootRotation: 0.20,
@@ -759,6 +764,8 @@ async function startCamera() {
         'Weight in the middle of your feet.',
         'You will only descend to a comfortable, pain-free depth.',
       ],
+      // R6-P2: interim-live pending mentor review (MENTOR_REVIEW_QUEUE.md).
+      commonMistake: 'Most common mistake: going deeper than feels comfortable. Only go as far down as you can without pain.',
       stanceCheck: {
         ankleToShoulderRatio: { min: 0.7, max: 1.4 },
         maxFootRotation: 0.20,
@@ -942,6 +949,8 @@ async function startCamera() {
         'Hands on your thighs or by your sides.',
         'Push your hips back like you are closing a car door with your backside.',
       ],
+      // R6-P2: interim-live pending mentor review (MENTOR_REVIEW_QUEUE.md).
+      commonMistake: 'Most common mistake: bending the knees and turning it into a squat. Push your hips back and keep your knees only softly bent.',
       stanceCheck: {
         ankleToShoulderRatio: { min: 0.4, max: 1.1 },
         maxFootRotation: 0.15,
@@ -1007,6 +1016,8 @@ async function startCamera() {
         'Both feet pointing straight ahead. Not turned out.',
         'Torso upright. Do not lean forward.',
       ],
+      // R6-P2: interim-live pending mentor review (MENTOR_REVIEW_QUEUE.md).
+      commonMistake: 'Most common mistake: taking too short a step. Take a big step so your front knee stays over your foot.',
       stanceCheck: {
         maxFootRotation: 0.15,
         kneeOverAnkle: true,
@@ -1533,6 +1544,8 @@ async function startCamera() {
         'Keep your back flat like a table. No rounding.',
         'Reach your hands toward the floor as you hinge.',
       ],
+      // R6-P2: interim-live pending mentor review (MENTOR_REVIEW_QUEUE.md).
+      commonMistake: 'Most common mistake: rushing and losing balance. Move slowly, and keep your standing foot pressed into the floor.',
       stanceCheck: {
         maxFootRotation: 0.15,
         label: 'Standing foot pointing forward',
@@ -2001,6 +2014,8 @@ async function startCamera() {
         'Arms by your sides, palms down for stability.',
         'Drive through your heels to lift your hips toward the ceiling.',
       ],
+      // R6-P2: interim-live pending mentor review (MENTOR_REVIEW_QUEUE.md).
+      commonMistake: 'Most common mistake: pushing through your toes. Keep your heels down and drive through them as you lift.',
       stanceCheck: null,
       // Targets in degrees per glute_bridge_v2.py get_target_poses()
       phases: [
@@ -2668,9 +2683,15 @@ async function startCamera() {
     // Used by the exercise briefing; a safety cue still cancels the series.
     speakSeries: function(lines, onDone) {
       if (!this.enabled || !lines || !lines.length) { if (onDone) onDone(); return; }
-      this._series = lines.slice(1);
       this._seriesDone = onDone || null;
-      this._utter(lines[0]);
+      if (this._busy || speechSynthesis.speaking) {
+        // Channel busy ("Now you try. Step into me.") — the whole series
+        // starts on the current utterance's end.
+        this._series = lines.slice();
+      } else {
+        this._series = lines.slice(1);
+        this._utter(lines[0]);
+      }
     },
 
     _utter: function(text) {
@@ -3059,7 +3080,43 @@ async function startCamera() {
     _coachSetStarted = setN;
     var r = Coach.setStarted(setN, ghostState.targetReps || 10);
     if (r.line) VoiceCoach.speak(r.line, true);
+    // R6-P2: no re-briefing on later sets — just the rhythm reminder.
+    if (setN >= 2 && Briefing.delivered) {
+      VoiceCoach.speak('Set ' + setN + '. Same rhythm.', { tier: 'cue' });
+    }
   }
+
+  // ══ R6-P2: SPOKEN BRIEFING at exercise start ═══════════════════════════
+  // Fires once, at the demo-end seam (DEMO → WAITING, before the user steps
+  // in) — chosen over the GHOST_LEADS→USER_FOLLOWS transition because that
+  // one fires on every phase, not once per set. While the briefing plays,
+  // the WAITING handler is gated so no rep work can start; a 20s hard cap
+  // means a TTS failure can never lock the session.
+  var Briefing = {
+    delivered: false,
+    _active: false,
+    _startedAt: 0,
+    maybeStart: function() {
+      if (this.delivered || ASSESSMENT_MODE) return;
+      this.delivered = true;
+      // TTS unavailable or muted → skip entirely, session proceeds normally.
+      if (!VoiceCoach.enabled || !('speechSynthesis' in window)) return;
+      var lines = [];
+      lines.push(VyayamVoice.briefingTempoLine(TEMPO_PARTS));
+      var def = window.ghostState && ghostState.exerciseDef;
+      if (def && def.commonMistake) lines.push(def.commonMistake);
+      if (THERAPIST_NOTE) lines.push('Your therapist adds: ' + THERAPIST_NOTE + '.');
+      lines.push("When you're ready, begin.");
+      this._active = true;
+      this._startedAt = Date.now();
+      var self = this;
+      VoiceCoach.speakSeries(lines, function() { self._active = false; });
+    },
+    active: function() {
+      if (this._active && Date.now() - this._startedAt > 20000) this._active = false;
+      return this._active;
+    },
+  };
 
   // R4d: calibration wrapper — after the first 2 calibration reps, depth is
   // scored against THEIR natural range (+5° encouragement), never deeper
@@ -3371,6 +3428,9 @@ async function startCamera() {
               ghostState.matchFrames = 0;
               VoiceCoach.speak('Now you try. Step into me.', true);
               if (typeof window.videoModeDemoPause === 'function') window.videoModeDemoPause();
+              // R6-P2: one-time spoken briefing (tempo, common mistake,
+              // therapist note) — rep work is gated until it drains.
+              Briefing.maybeStart();
             }
           }
         }
@@ -3378,6 +3438,9 @@ async function startCamera() {
       }
 
       case 'WAITING': {
+        // R6-P2: rep machine gated while the briefing plays (20s hard cap
+        // inside Briefing.active() — a TTS wedge can never lock the session).
+        if (Briefing.active()) break;
         // Stance check — WARN but don't block (soft gate)
         var stanceResult = checkStanceWidth(lm, ghostState.exerciseDef.stanceCheck || null);
         if (!stanceResult.ok) {
