@@ -25,3 +25,13 @@ Remove a row once the mentor approves it (or replace the string and re-tag).
 | Briefing, therapist note | "Your therapist adds: {note}." | interim-live pending mentor (frame only — note text is the therapist's own) |
 | Briefing, close | "When you're ready, begin." | interim-live pending mentor |
 | Set 2+ | "Set {n}. Same rhythm." | interim-live pending mentor |
+
+## R6-P3 — movement-synced tempo phrases (tier flow; tempo never affects form color/score)
+
+| Context | String | Tag |
+|---|---|---|
+| Eccentric 1s / 2s / 3s+ | "Down." / "Slowly down." / "Slowly… all the way down." | interim-live pending mentor |
+| Hold (+60% elapsed if ≥2s) | "Hold." / "…good." | interim-live pending mentor |
+| Concentric 1s / 2s / 3s+ | "Up." / "Push up." / "Slowly push up, squeeze." | interim-live pending mentor |
+| Pause/top (if >0s) | "Reset." | interim-live pending mentor |
+| Pace nudge (ecc <50% prescribed ×2 consecutive reps, once/set) | "Slower on the way down — control it." | interim-live pending mentor |

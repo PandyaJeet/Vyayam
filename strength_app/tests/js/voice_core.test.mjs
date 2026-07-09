@@ -134,3 +134,29 @@ test('briefingTempoLine: words only, number only as a 3s+ pacing hint, never a c
     assert.doesNotMatch(voice.briefingTempoLine(parts), /\d/);
   }
 });
+
+/* ── R6-P3: movement-synced tempo phrases ────────────────────────────────── */
+
+test('tempoPhaseWord: phrase length matches phase duration, no numbers, 0s silent', () => {
+  assert.equal(voice.tempoPhaseWord('ecc', 1), 'Down.');
+  assert.equal(voice.tempoPhaseWord('ecc', 2), 'Slowly down.');
+  assert.equal(voice.tempoPhaseWord('ecc', 3), 'Slowly… all the way down.');
+  assert.equal(voice.tempoPhaseWord('ecc', 5), 'Slowly… all the way down.');
+  assert.equal(voice.tempoPhaseWord('hold', 1), 'Hold.');
+  assert.equal(voice.tempoPhaseWord('hold', 3), 'Hold.');
+  assert.equal(voice.tempoPhaseWord('con', 1), 'Up.');
+  assert.equal(voice.tempoPhaseWord('con', 2), 'Push up.');
+  assert.equal(voice.tempoPhaseWord('con', 4), 'Slowly push up, squeeze.');
+  assert.equal(voice.tempoPhaseWord('pause', 2), 'Reset.');
+  // 0s / unprescribed phases are silent; unknown kind is silent.
+  assert.equal(voice.tempoPhaseWord('ecc', 0), null);
+  assert.equal(voice.tempoPhaseWord('pause', 0), null);
+  assert.equal(voice.tempoPhaseWord('mystery', 3), null);
+  // NO spoken numbers anywhere.
+  for (const kind of ['ecc', 'hold', 'con', 'pause']) {
+    for (let s = 1; s <= 10; s++) {
+      const w = voice.tempoPhaseWord(kind, s);
+      if (w) assert.doesNotMatch(w, /\d/);
+    }
+  }
+});

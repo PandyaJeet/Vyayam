@@ -2783,40 +2783,52 @@ async function startCamera() {
     }
   };
 
-  // ── Phase E: spoken + visual tempo guidance ───────────────────────────────
+  // ── Phase E → R6-P3: MOVEMENT-SYNCED tempo guidance ──────────────────────
   // Rides the sanitized TEMPO_PARTS 4-int array (down-hold-up-pause seconds).
-  // Per phase with duration > 0: the phase WORD is spoken once (never a tick
-  // per second) and a colour-coded countdown chip counts N..1 top-right —
-  // eccentric blue, hold amber, concentric green. 0-second phases are
-  // skipped; a blank/0-0-0-0 tempo (legacy '—'/'Hold') shows no tempo UI.
-  // Speech is non-interrupting: ghost-coach and safety cues always win
-  // (VoiceCoach drops non-priority words while speech is busy).
+  // The old wall-clock metronome (setInterval speaking numbers) is gone: the
+  // coach now speaks WHEN THE USER'S REP ACTUALLY CHANGES PHASE. frame() is
+  // a pure OBSERVER of ghostState.currentPhaseIndex (zero writes into the
+  // detection state machine); on each phase-index change onPhase() speaks a
+  // phrase whose length matches the prescribed phase duration (pure picker
+  // in voice_core.js — no spoken numbers anywhere) and repaints the chip +
+  // tp0-3 pills in the same PHASES colours. The visual countdown number is
+  // driven from phase elapsed time by a display-only 500ms timer.
+  // Speech is tier 'flow': it never interrupts and is dropped while any cue
+  // is live (arbitration via Coach.tempoAllowed still applies). Tempo NEVER
+  // affects form color or score.
   var TempoCoach = {
-    timer: null,
     active: false,
-    _phase: -1,
-    _left: 0,
+    _visualTimer: null,
+    _lastPhaseIdx: -1,
+    _partIdx: -1,          // 0..3 index into TEMPO_PARTS for the live phase
+    _phaseStartedAt: 0,
+    _holdFollowT: null,
     PHASES: [
       { word: 'Slowly down', color: '#38bdf8' },  // eccentric — blue
       { word: 'Hold',        color: '#f59e0b' },  // isometric — amber
       { word: 'Up',          color: '#38ef7d' },  // concentric — green
       { word: 'Pause',       color: '#f59e0b' },  // reset at top — amber
     ],
+    // Pace nudge (voice only — NEVER color/score): reset per set.
+    eccFastStreak: 0,
+    paceNudged: false,
     hasTempo: function() {
       return (TEMPO_PARTS[0] + TEMPO_PARTS[1] + TEMPO_PARTS[2] + TEMPO_PARTS[3]) > 0;
     },
     start: function() {
       if (this.active || !this.hasTempo()) return;
       this.active = true;
-      this._phase = -1;
-      this._left = 0;
+      this._lastPhaseIdx = -1;
+      this._partIdx = -1;
+      this.eccFastStreak = 0;
+      this.paceNudged = false;
       var chip = document.getElementById('tempoCountdown');
       if (chip) chip.style.display = 'block';
-      this._tick();
-      this.timer = setInterval(this._tick.bind(this), 1000);
+      this._visualTimer = setInterval(this._paintNum.bind(this), 500);
     },
     stop: function() {
-      if (this.timer) { clearInterval(this.timer); this.timer = null; }
+      if (this._visualTimer) { clearInterval(this._visualTimer); this._visualTimer = null; }
+      if (this._holdFollowT) { clearTimeout(this._holdFollowT); this._holdFollowT = null; }
       this.active = false;
       var chip = document.getElementById('tempoCountdown');
       if (chip) chip.style.display = 'none';
@@ -2827,44 +2839,78 @@ async function startCamera() {
       var guide = document.getElementById('tempoGuide');
       if (guide) guide.textContent = '';
     },
-    _tick: function() {
-      this._left--;
-      // R4h: arbitration owns the voice channel — tempo speech yields to
-      // any live cue or praise line (one speaker, like one human).
-      var maySpeak = Coach.tempoAllowed(Date.now());
-      if (this._left <= 0) {
-        // Advance to the next phase with a non-zero duration (0s = skipped).
-        var next = this._phase, hops = 0;
-        do { next = (next + 1) % 4; hops++; } while (TEMPO_PARTS[next] === 0 && hops < 5);
-        if (TEMPO_PARTS[next] === 0) { this.stop(); return; }  // defensive: no live phase
-        this._phase = next;
-        this._left = TEMPO_PARTS[next];
-        // R4h: "Slowly down — 3" for countable phases (>=2s); a 1s phase
-        // gets just its word ("Hold"); 0s phases never reach here.
-        if (maySpeak) {
-          var word = this.PHASES[next].word;
-          VoiceCoach.speak(this._left >= 2 ? word + ' — ' + this._left : word, false);
-        }
-      } else if (this._left >= 1 && TEMPO_PARTS[this._phase] >= 2 && maySpeak) {
-        // Counts spoken only for phases >=2s: "… 2… 1".
-        VoiceCoach.speak('' + this._left, false);
+    // Called once per pose frame (next to RepCapture.frame) — observer only.
+    frame: function() {
+      if (!this.active || !window.ghostState) return;
+      var mode = ghostState.mode;
+      if (mode !== 'GHOST_LEADS' && mode !== 'USER_FOLLOWS') return;
+      var idx = ghostState.currentPhaseIndex;
+      if (idx !== this._lastPhaseIdx) {
+        this._lastPhaseIdx = idx;
+        this.onPhase(idx);
       }
-      this._paint();
     },
-    _paint: function() {
-      var p = this.PHASES[this._phase];
+    // Same buckets as RepCapture._phaseBucket, with 'pause' as the default
+    // (top-of-rep reset phases like 'stand'/'lying').
+    _kindOf: function(idx) {
+      var phases = (window.ghostState && ghostState.exerciseDef &&
+                    ghostState.exerciseDef.phases) || [];
+      var name = String((phases[idx] && phases[idx].name) || '').toLowerCase();
+      if (/hold|pause|bottom/.test(name)) return 'hold';
+      if (/down|lower|descend|drop|sink|bend|ecc/.test(name)) return 'ecc';
+      if (/up|rise|return|lift|press|extend|con/.test(name)) return 'con';
+      return 'pause';
+    },
+    onPhase: function(idx) {
+      if (!this.active) return;
+      if (this._holdFollowT) { clearTimeout(this._holdFollowT); this._holdFollowT = null; }
+      var kind = this._kindOf(idx);
+      var PART = { ecc: 0, hold: 1, con: 2, pause: 3 };
+      this._partIdx = PART[kind];
+      this._phaseStartedAt = Date.now();
+      var secs = TEMPO_PARTS[this._partIdx];
+      this._paint(secs);
+      if (secs <= 0) return;  // unprescribed phase — silent (incl. 0s pause)
+      // R4h arbitration still owns the channel: tempo yields to live cues.
+      var word = VyayamVoice.tempoPhaseWord(kind, secs);
+      if (word && Coach.tempoAllowed(Date.now())) {
+        VoiceCoach.speak(word, { tier: 'flow' });
+      }
+      if (kind === 'hold' && secs >= 2) {
+        var self = this;
+        this._holdFollowT = setTimeout(function() {
+          self._holdFollowT = null;
+          if (self.active && Coach.tempoAllowed(Date.now())) {
+            VoiceCoach.speak('…good.', { tier: 'flow' });
+          }
+        }, secs * 600);  // ~60% of the hold
+      }
+    },
+    _paint: function(secs) {
+      var p = this.PHASES[this._partIdx];
+      if (!p) return;
       var chip = document.getElementById('tempoCountdown');
       var word = document.getElementById('tempoCountWord');
-      var num  = document.getElementById('tempoCountNum');
       if (word) { word.textContent = p.word; word.style.color = p.color; }
-      if (num)  { num.textContent = this._left; num.style.color = p.color; }
       if (chip) chip.style.borderColor = p.color;
       [0, 1, 2, 3].forEach(function(i) {
         var el = document.getElementById('tp' + i);
-        if (el) el.classList.toggle('active', i === TempoCoach._phase);
+        if (el) el.classList.toggle('active', i === TempoCoach._partIdx);
       });
       var guide = document.getElementById('tempoGuide');
-      if (guide) guide.textContent = p.word + ' — ' + this._left;
+      if (guide) guide.textContent = p.word;
+      this._paintNum();
+    },
+    // Display-only: remaining seconds from phase elapsed vs prescription.
+    _paintNum: function() {
+      var num = document.getElementById('tempoCountNum');
+      if (!num) return;
+      var p = this.PHASES[this._partIdx];
+      var secs = this._partIdx >= 0 ? TEMPO_PARTS[this._partIdx] : 0;
+      if (secs <= 0) { num.textContent = ''; return; }
+      var left = Math.max(0, Math.ceil(secs - (Date.now() - this._phaseStartedAt) / 1000));
+      num.textContent = left > 0 ? left : '';
+      if (p) num.style.color = p.color;
     },
   };
 
@@ -3183,17 +3229,27 @@ async function startCamera() {
     var res = Coach.repClosed(rep.rep_n, rep.form_pct, correctedIds, Date.now());
     for (var i = 0; i < res.lines.length; i++) VoiceCoach.speak(res.lines[i], false);
     CoachCal.onRep(rep);
-    // Tempo adjust (max once/set, arbiter-enforced; never colors form).
+    // Tempo pace handling (voice only — NEVER colors form or scores).
     if (TempoCoach.hasTempo() && rep.phase_ms) {
       var prescribedEcc = TEMPO_PARTS[0];
       var actualEcc = (rep.phase_ms.ecc || 0) / 1000;
       if (prescribedEcc > 0 && actualEcc > 0) {
+        // R6-P3 pace nudge: eccentric measured (RepCapture phase-transition
+        // timestamps) under 50% of prescribed for 2 consecutive reps → one
+        // 'cue'-tier nudge per set. Replaces the old 'fast' adjust line.
+        if (actualEcc < 0.5 * prescribedEcc) {
+          TempoCoach.eccFastStreak++;
+          if (TempoCoach.eccFastStreak >= 2 && !TempoCoach.paceNudged) {
+            TempoCoach.paceNudged = true;
+            VoiceCoach.speak('Slower on the way down — control it.', { tier: 'cue' });
+          }
+        } else {
+          TempoCoach.eccFastStreak = 0;
+        }
+        // Too-slow direction keeps the R4f arbiter line (max once/set).
         var tol = Math.max(0.4 * prescribedEcc, 0.7);
-        var direction = null;
-        if (actualEcc < prescribedEcc - tol) direction = 'fast';
-        else if (actualEcc > prescribedEcc + tol) direction = 'slow';
-        if (direction) {
-          var line = Coach.tempoAdjustLine(direction);
+        if (actualEcc > prescribedEcc + tol) {
+          var line = Coach.tempoAdjustLine('slow');
           if (line) VoiceCoach.speak(line, false);
         }
       }
@@ -5447,6 +5503,8 @@ async function startCamera() {
           // R1a: per-rep capture observes each frame (pre-update state; the
           // observer detects transitions itself — no machine writes).
           try { RepCapture.frame(matchScore, userAngles); } catch (e) { /* never break tracking */ }
+          // R6-P3: movement-synced tempo — observer only, zero machine writes.
+          try { TempoCoach.frame(); } catch (e) { /* never break tracking */ }
           updateGhostState(userAngles, matchScore, lm);
           target = getGhostCurrentTarget();
           drawGhostTarget(ctx, target, matchScore || 50, W, H, lm);

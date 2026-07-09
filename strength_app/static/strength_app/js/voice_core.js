@@ -207,6 +207,20 @@
     return line;
   }
 
+  // R6-P3: movement-synced tempo word for a rep phase. Phrase length scales
+  // with the prescribed phase duration; NO spoken numbers anywhere. A 0s /
+  // unprescribed phase returns null (silence).
+  function tempoPhaseWord(kind, seconds) {
+    if (!seconds || seconds <= 0) return null;
+    if (kind === 'ecc')  return seconds >= 3 ? 'Slowly… all the way down.'
+                              : (seconds >= 2 ? 'Slowly down.' : 'Down.');
+    if (kind === 'hold') return 'Hold.';
+    if (kind === 'con')  return seconds >= 3 ? 'Slowly push up, squeeze.'
+                              : (seconds >= 2 ? 'Push up.' : 'Up.');
+    if (kind === 'pause') return 'Reset.';
+    return null;
+  }
+
   // Watchdog duration for one utterance: long enough for the sentence at
   // rate 0.95 (~80ms/char floor 6s) so a legitimate long line is never
   // beheaded, short enough to unwedge Chrome's stuck speechSynthesis flag.
@@ -220,6 +234,7 @@
     speechDecision: speechDecision,
     queueCue: queueCue,
     briefingTempoLine: briefingTempoLine,
+    tempoPhaseWord: tempoPhaseWord,
     watchdogMs: watchdogMs,
     PREFERRED_NAME_TOKENS: PREFERRED_NAME_TOKENS,
     RATE: RATE,
