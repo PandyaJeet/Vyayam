@@ -43,3 +43,10 @@ Remove a row once the mentor approves it (or replace the string and re-tag).
 | squat_knee_over_toe | "Knees drifting past your toes — sit your hips back." | author: Pawan — live |
 | squat_heel_rise | "Keep your heels down. Weight through mid-foot." | interim-live pending mentor |
 | squat_depth_gentle | "You can go a little deeper if it's comfortable." | interim-live pending mentor (comfort-conditional — never commands depth) |
+
+## R6-HOTFIX — squat SAFETY fault cues (safety class: red allowed while cue live)
+
+| Cue id | String | Tag |
+|---|---|---|
+| squat_too_deep | "Too deep — come up a little. Stay in your range." | author: Pawan — live |
+| squat_asymmetry | "Uneven — you're loading one side more. Even out both knees." | author: Pawan — live |

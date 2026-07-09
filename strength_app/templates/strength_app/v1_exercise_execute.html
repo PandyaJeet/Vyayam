@@ -3179,12 +3179,98 @@ async function startCamera() {
     _heelBase: null,       // rolling flat-foot reference: min(toe.y - heel.y)
     _lastRepKey: '',
     _faultCuedRepKey: null,
-    _cueLastAt: { knee: 0, heel: 0 },   // per-fault cooldown 8s
+    _cueLastAt: { knee: 0, heel: 0, deep: 0, asym: 0 },   // per-fault cooldown 8s
     amberUntil: 0,
     _amberSegs: [],
     depthShortStreak: 0,
     depthCued: false,
     amberSegs: function() { return this._amberSegs; },
+    // R6-HOTFIX: safety-fault red window (painted only while the arbiter's
+    // safety window is live — redAllowed() — so red stays safety-class).
+    _deepSince: 0,
+    _asymSince: 0,
+    _safetyCuedRepKey: null,
+    _kneeTargetVal: undefined,
+    redUntil: 0,
+    _redSegs: [],
+    redSegs: function() { return this._redSegs; },
+    _legAngle: function(lm, left) {
+      var hp = lm[left ? LM.leftHip : LM.rightHip];
+      var kn = lm[left ? LM.leftKnee : LM.rightKnee];
+      var ak = lm[left ? LM.leftAnkle : LM.rightAnkle];
+      if (!hp || !kn || !ak) return { vis: 0, angle: null, left: left };
+      var v = 0, n = 0;
+      [hp, kn, ak].forEach(function(p) {
+        if (p.visibility !== undefined) { v += p.visibility; n++; }
+      });
+      return { vis: n ? v / n : 0, angle: calcAngle(hp, kn, ak), left: left };
+    },
+    _kneeTarget: function() {
+      // Textbook depth: min knee target across the def's phases (90 for SQUAT).
+      if (this._kneeTargetVal !== undefined) return this._kneeTargetVal;
+      var t = null;
+      var ph = (window.ghostState && ghostState.exerciseDef &&
+                ghostState.exerciseDef.phases) || [];
+      for (var i = 0; i < ph.length; i++) {
+        var k = ph[i].joints && ph[i].joints.knee;
+        if (typeof k === 'number') t = (t === null) ? k : Math.min(t, k);
+      }
+      this._kneeTargetVal = t;
+      return t;
+    },
+    // Safety faults — run BEFORE the side-on gate (asymmetry needs the
+    // frontal/45° view the amber checks reject). Silent unless confident.
+    _safetyFrame: function(lm, bucket, now, repKey) {
+      if (bucket !== 'ecc' && bucket !== 'hold') {
+        this._deepSince = 0; this._asymSince = 0;
+        return;
+      }
+      var L = this._legAngle(lm, true);
+      var R = this._legAngle(lm, false);
+      // 1) TOO DEEP — the more-visible leg, >20° beyond the target depth.
+      var deepFault = false, deepLeg = (L.vis >= R.vis) ? L : R;
+      var target = this._kneeTarget();
+      if (deepLeg.vis >= this.VIS && target !== null &&
+          deepLeg.angle < target - 20) {
+        if (!this._deepSince) this._deepSince = now;
+        if (now - this._deepSince >= 300) deepFault = true;
+      } else {
+        this._deepSince = 0;
+      }
+      // 2) KNEE ASYMMETRY — both legs confident AND a frontal/45° view
+      // (hips x-separated; in side-view occlusion they overlap → silent).
+      var asymFault = false, asymLeftWorse = false;
+      var lHip = lm[LM.leftHip], rHip = lm[LM.rightHip];
+      var hipSep = (lHip && rHip) ? Math.abs(lHip.x - rHip.x) : 0;
+      if (L.vis >= this.VIS && R.vis >= this.VIS && hipSep > 0.08 &&
+          Math.abs(L.angle - R.angle) > 15) {
+        if (!this._asymSince) this._asymSince = now;
+        if (now - this._asymSince >= 400) {
+          asymFault = true;
+          asymLeftWorse = L.angle < R.angle;  // smaller angle = more flexed
+        }
+      } else {
+        this._asymSince = 0;
+      }
+      if (!deepFault && !asymFault) return;
+      // RED the involved leg for the live fault window (worst wins: deep
+      // over asym). Paint is additionally gated on redAllowed() downstream.
+      this._redSegs = deepFault ? this._kneeSegsFor(deepLeg.left)
+                                : this._kneeSegsFor(asymLeftWorse);
+      this.redUntil = now + 600;
+      // Max ONE safety fault cue per rep + 8s per-fault cooldown; dispatch
+      // through the arbiter's safety class so redAllowed() flips.
+      if (this._safetyCuedRepKey === repKey) return;
+      if (deepFault && now - this._cueLastAt.deep >= 8000) {
+        this._cueLastAt.deep = now;
+        this._safetyCuedRepKey = repKey;
+        coachCue('squat_too_deep');
+      } else if (asymFault && !deepFault && now - this._cueLastAt.asym >= 8000) {
+        this._cueLastAt.asym = now;
+        this._safetyCuedRepKey = repKey;
+        coachCue('squat_asymmetry');
+      }
+    },
     _side: function(lm) {
       var mk = function(hl, to, kn, hp) {
         return { heel: lm[hl], toe: lm[to], knee: lm[kn], hip: lm[hp] };
@@ -3221,10 +3307,12 @@ async function startCamera() {
       var now = Date.now();
       var repKey = ghostState.repCount + ':' + ghostState.partialRomReps;
       this._lastRepKey = repKey;
-      var s = this._side(lm);
-      if (!s) { this._kneeSince = 0; this._heelSince = 0; return; }
       var phase = phases[ghostState.currentPhaseIndex] || {};
       var bucket = RepCapture._phaseBucket(phase.name);
+      // R6-HOTFIX: safety faults first — any view, own confidence gates.
+      this._safetyFrame(lm, bucket, now, repKey);
+      var s = this._side(lm);
+      if (!s) { this._kneeSince = 0; this._heelSince = 0; return; }
 
       // a) KNEE PAST TOES — eccentric/hold only, >0.04 normalized for >=300ms.
       var kneeFault = false;
@@ -3256,6 +3344,8 @@ async function startCamera() {
 
       // Max ONE fault cue per rep (worst wins) + 8s per-fault cooldown; the
       // arbiter adds its own rep spacing / occupancy / 3-strike fade on top.
+      // R6-HOTFIX: a safety fault this rep outranks the amber cues entirely.
+      if (this._safetyCuedRepKey === repKey) return;
       if (this._faultCuedRepKey === repKey) return;
       if (kneeFault && now - this._cueLastAt.knee >= 8000) {
         this._cueLastAt.knee = now;
@@ -4806,10 +4896,22 @@ async function startCamera() {
     // R6-P4: named-fault overlay — amber the involved segments for the live
     // fault window. AMBER only, never red (amber-first; form, not safety).
     // diff 999 wins the per-segment worst-color contest above.
-    if (!frozen && window.SquatFaults && SquatFaults.amberUntil > Date.now()) {
-      var FAULT_AMBER = { r: 255, g: 220, b: 0, diff: 999 };
-      var _fSegs = SquatFaults.amberSegs();
-      for (var f = 0; f < _fSegs.length; f++) segColors[_fSegs[f]] = FAULT_AMBER;
+    if (!frozen && window.SquatFaults) {
+      var _nowSF = Date.now();
+      if (SquatFaults.amberUntil > _nowSF) {
+        var FAULT_AMBER = { r: 255, g: 220, b: 0, diff: 999 };
+        var _fSegs = SquatFaults.amberSegs();
+        for (var f = 0; f < _fSegs.length; f++) segColors[_fSegs[f]] = FAULT_AMBER;
+      }
+      // R6-HOTFIX: SAFETY faults (over-depth / asymmetry) paint RED, but
+      // only while the arbiter's safety cue window is live (redOk) — the
+      // locked amber-first rule: red exists only with an active safety cue.
+      // Applied after amber so safety wins shared segments.
+      if (redOk && SquatFaults.redUntil > _nowSF) {
+        var FAULT_RED = { r: 255, g: 50, b: 50, diff: 999 };
+        var _rSegs = SquatFaults.redSegs();
+        for (var r = 0; r < _rSegs.length; r++) segColors[_rSegs[r]] = FAULT_RED;
+      }
     }
 
     return { segmentColors: segColors, nodeColors: nodeColors };

@@ -59,6 +59,9 @@
     // R6-P4: squat named-fault cues (side-view checks; amber-first, not red).
     squat_knee_over_toe: { text: 'Knees drifting past your toes — sit your hips back.', priority: 'primary' },
     squat_heel_rise:     { text: 'Keep your heels down. Weight through mid-foot.',      priority: 'primary' },
+    // R6-HOTFIX: squat SAFETY faults — the safety class flips redAllowed().
+    squat_too_deep:      { text: 'Too deep — come up a little. Stay in your range.',    priority: 'safety' },
+    squat_asymmetry:     { text: "Uneven — you're loading one side more. Even out both knees.", priority: 'safety' },
     // Comfort-conditional depth encouragement — never commands depth.
     squat_depth_gentle:  { text: "You can go a little deeper if it's comfortable.",     priority: 'refinement' },
   };
