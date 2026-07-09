@@ -74,3 +74,42 @@ test('clip map: every spoken coach phrase resolves to a filename-safe key', () =
 test('tryPlayClip is a safe no-op outside the browser', () => {
   assert.equal(voice.tryPlayClip('Hold'), false);
 });
+
+/* ── Part 3 (R6): tiered speech-queue policy ─────────────────────────────── */
+
+test('tierFromPriority: legacy booleans map true→cue, false→flow; opts pass through', () => {
+  assert.equal(voice.tierFromPriority(true), 'cue');
+  assert.equal(voice.tierFromPriority(false), 'flow');
+  assert.equal(voice.tierFromPriority(undefined), 'flow');
+  assert.equal(voice.tierFromPriority({ tier: 'safety' }), 'safety');
+  assert.equal(voice.tierFromPriority({ tier: 'cue' }), 'cue');
+  assert.equal(voice.tierFromPriority({ tier: 'flow' }), 'flow');
+  // Unknown tier falls back to the legacy truthiness path (object → cue).
+  assert.equal(voice.tierFromPriority({ tier: 'shout' }), 'cue');
+});
+
+test('speechDecision: idle channel always speaks', () => {
+  assert.equal(voice.speechDecision('safety', false), 'speak');
+  assert.equal(voice.speechDecision('cue', false), 'speak');
+  assert.equal(voice.speechDecision('flow', false), 'speak');
+});
+
+test('speechDecision: busy channel — safety cancels, cue queues, flow drops', () => {
+  assert.equal(voice.speechDecision('safety', true), 'cancel_speak');
+  assert.equal(voice.speechDecision('cue', true), 'queue');
+  assert.equal(voice.speechDecision('flow', true), 'drop');
+});
+
+test('queueCue: max length 1 — a newer cue replaces a queued older cue', () => {
+  const q1 = voice.queueCue([], { text: 'first' });
+  assert.deepEqual(q1.map(i => i.text), ['first']);
+  const q2 = voice.queueCue(q1, { text: 'second' });
+  assert.deepEqual(q2.map(i => i.text), ['second']);
+});
+
+test('watchdogMs: 6s floor, scales with text length so long lines are never beheaded', () => {
+  assert.equal(voice.watchdogMs('Up.'), 6000);
+  assert.equal(voice.watchdogMs(''), 6000);
+  const long = 'x'.repeat(120);
+  assert.equal(voice.watchdogMs(long), 9600);
+});

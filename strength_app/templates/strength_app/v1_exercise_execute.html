@@ -2637,27 +2637,79 @@ async function startCamera() {
       speechSynthesis.speak(warmup);
     },
 
+    // R6-P1: tiered speech channel (policy is pure in voice_core.js).
+    // 'safety' cancels live speech; 'cue' queues (max 1, newest wins) and
+    // speaks on the current utterance's end; 'flow' drops when busy.
+    _queue: [],
+    _series: [],
+    _seriesDone: null,
+    _busy: false,
+    _watchdog: null,
+
     speak: function(text, priority) {
       if (!this.enabled || !text) return;
       var now = Date.now();
       if (text === this.lastSpoken && (now - this.lastSpokenTime) < this.cooldownMs) return;
-      if (speechSynthesis.speaking && !priority) return;
-      if (priority && speechSynthesis.speaking) speechSynthesis.cancel();
-      if (priority) VyayamVoice.stopClip();
-
-      // Phase F Part 2 (dormant): a recorded coach clip for this exact
-      // phrase plays instead of TTS when its mp3 exists.
-      if (VyayamVoice.tryPlayClip(text)) {
-        this.lastSpoken = text; this.lastSpokenTime = now;
-        return;
+      var tier = VyayamVoice.tierFromPriority(priority);
+      var d = VyayamVoice.speechDecision(tier, this._busy || speechSynthesis.speaking);
+      if (d === 'drop') return;
+      if (d === 'queue') { this._queue = VyayamVoice.queueCue(this._queue, { text: text }); return; }
+      if (d === 'cancel_speak') {
+        this._queue = [];
+        this._series = [];
+        this._seriesDone = null;
+        speechSynthesis.cancel();
+        VyayamVoice.stopClip();
       }
+      this._utter(text);
+    },
 
+    // Speak lines strictly in order (each starts on the previous line's end).
+    // Used by the exercise briefing; a safety cue still cancels the series.
+    speakSeries: function(lines, onDone) {
+      if (!this.enabled || !lines || !lines.length) { if (onDone) onDone(); return; }
+      this._series = lines.slice(1);
+      this._seriesDone = onDone || null;
+      this._utter(lines[0]);
+    },
+
+    _utter: function(text) {
+      this._busy = true;
+      this.lastSpoken = text; this.lastSpokenTime = Date.now();
+      var self = this;
+      this._armWatchdog(text);
+      // Phase F Part 2 (dormant): a recorded coach clip for this exact
+      // phrase plays instead of TTS when its mp3 exists. Clips expose no
+      // onend here — the watchdog drains the queue behind them.
+      if (VyayamVoice.tryPlayClip(text)) return;
       var utt = new SpeechSynthesisUtterance(text);
       utt.volume = 0.9; utt.lang = 'en-IN';
       // Phase F Part 1: best available voice + rate 0.95 + pitch 1.0.
       VyayamVoice.applyTo(utt);
+      var done = function() { self._onUtteranceEnd(); };
+      utt.onend = done;
+      utt.onerror = done;
       speechSynthesis.speak(utt);
-      this.lastSpoken = text; this.lastSpokenTime = now;
+    },
+
+    _armWatchdog: function(text) {
+      var self = this;
+      if (this._watchdog) clearTimeout(this._watchdog);
+      // Chrome speechSynthesis can wedge with .speaking stuck true — after
+      // a text-scaled timeout, cancel and drain so the channel never locks.
+      this._watchdog = setTimeout(function() {
+        try { speechSynthesis.cancel(); } catch (e) { /* already dead */ }
+        self._onUtteranceEnd();
+      }, VyayamVoice.watchdogMs(text));
+    },
+
+    _onUtteranceEnd: function() {
+      if (this._watchdog) { clearTimeout(this._watchdog); this._watchdog = null; }
+      this._busy = false;
+      if (this._series.length) { this._utter(this._series.shift()); return; }
+      if (this._seriesDone) { var cb = this._seriesDone; this._seriesDone = null; cb(); }
+      var next = this._queue.shift();
+      if (next) this._utter(next.text);
     },
 
     announceRep: function(count, targetReps) {
@@ -2694,6 +2746,11 @@ async function startCamera() {
     },
 
     stop: function() {
+      this._queue = [];
+      this._series = [];
+      this._seriesDone = null;
+      if (this._watchdog) { clearTimeout(this._watchdog); this._watchdog = null; }
+      this._busy = false;
       if (speechSynthesis.speaking) speechSynthesis.cancel();
       VyayamVoice.stopClip();
     },
@@ -2989,7 +3046,9 @@ async function startCamera() {
   function coachCue(cueId) {
     var d = Coach.requestCue(cueId, Date.now());
     if (d.action !== 'speak') return;
-    VoiceCoach.speak(d.text, !!d.interrupt);
+    // R6-P1: arbiter marks interrupt=true only for the safety cue class —
+    // the one tier allowed to cancel live speech. Everything else queues.
+    VoiceCoach.speak(d.text, { tier: d.interrupt ? 'safety' : 'cue' });
     RepCapture.cueFiredById(d.cue_id || cueId);
   }
 

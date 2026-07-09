@@ -159,7 +159,49 @@
     _currentClip = null;
   }
 
+  /* ── Part 3 (R6): tiered speech-queue policy — pure ───────────────────── */
+
+  // Channel tiers: 'safety' is the ONLY tier allowed to cancel live speech;
+  // 'cue' waits its turn (queue of 1 — newest replaces); 'flow' (tempo words,
+  // rep counts, praise) is dropped when the channel is busy — a stale pacing
+  // word is worse than silence.
+  var TIERS = { safety: 3, cue: 2, flow: 1 };
+
+  // Map a VoiceCoach.speak second argument to a tier. Legacy call sites pass
+  // a boolean priority (true → 'cue', false → 'flow'); upgraded call sites
+  // pass { tier: 'safety' | 'cue' | 'flow' }.
+  function tierFromPriority(p) {
+    if (p && typeof p === 'object' && TIERS[p.tier]) return p.tier;
+    return p ? 'cue' : 'flow';
+  }
+
+  // What to do with a speak request given channel busyness.
+  // Returns 'speak' | 'cancel_speak' | 'queue' | 'drop'.
+  function speechDecision(tier, busy) {
+    if (!busy) return 'speak';
+    if (tier === 'safety') return 'cancel_speak';
+    if (tier === 'cue') return 'queue';
+    return 'drop';
+  }
+
+  // Cue queue insert: max length 1 — a newer cue replaces a queued older cue.
+  function queueCue(queue, item) {
+    return [item];
+  }
+
+  // Watchdog duration for one utterance: long enough for the sentence at
+  // rate 0.95 (~80ms/char floor 6s) so a legitimate long line is never
+  // beheaded, short enough to unwedge Chrome's stuck speechSynthesis flag.
+  function watchdogMs(text) {
+    return Math.max(6000, String(text || '').length * 80);
+  }
+
   return {
+    TIERS: TIERS,
+    tierFromPriority: tierFromPriority,
+    speechDecision: speechDecision,
+    queueCue: queueCue,
+    watchdogMs: watchdogMs,
     PREFERRED_NAME_TOKENS: PREFERRED_NAME_TOKENS,
     RATE: RATE,
     PITCH: PITCH,
