@@ -8,6 +8,15 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 
+from strength_app.rate_limiter import rate_limit
+
+# D1 (2026-07 exam): every app login is limited 5/300s; the superuser login
+# was the only unthrottled one. Same limiter, same budget. POST-only —
+# rendering the admin login form is unaffected.
+admin.site.login = rate_limit(
+    max_attempts=5, window_seconds=300, key_prefix='admin_login',
+)(admin.site.login)
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('therapist/', include('therapist_app.urls')),

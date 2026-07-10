@@ -324,6 +324,29 @@ class TestBT1BT2AtomicWrites(TestCase):
                          'orphan SessionLog survived a failed start')
 
 
+class TestD1AdminLoginRateLimited(TestCase):
+    """D1 (S2): /admin/login/ POSTs are rate-limited like every other login
+    (5 per 300s per IP)."""
+
+    def test_sixth_post_is_throttled(self):
+        from django.core.cache import cache
+        cache.clear()
+        for _ in range(5):
+            resp = self.client.post('/admin/login/',
+                                    {'username': 'x', 'password': 'y'})
+            self.assertNotEqual(resp.status_code, 429)
+        resp = self.client.post('/admin/login/',
+                                {'username': 'x', 'password': 'y'})
+        self.assertEqual(resp.status_code, 429)
+        cache.clear()
+
+    def test_get_login_form_unaffected(self):
+        from django.core.cache import cache
+        cache.clear()
+        resp = self.client.get('/admin/login/')
+        self.assertEqual(resp.status_code, 200)
+
+
 class TestBX1DeleteAccountManagedBlock(TestCase):
     """B-X1 (S1): therapist-managed patients must not be able to cascade-
     delete their clinical record (SessionReports, PainEvent/RedFlagEvent audit
