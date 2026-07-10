@@ -3265,7 +3265,7 @@ EXERCISE_CONTENT_GAP_FILL = {
         'form_cues': ['Quick off the ground — like the floor is hot', 'Land on balls of feet', 'Knees slightly bent on landing', 'Continuous rhythm — no pausing between hurdles'],
         'mind_muscle_cue': {'during': 'Be a bouncing ball. Each landing is just preparation for the next takeoff.'},
         'common_mistakes': ['Pausing between hurdles', 'Flat-footed landing', 'No arm drive'],
-        'language_athlete': 'Reactive strength training. Fast SSC. Build RSI by minimizing ground contact time.',
+        'language_athlete': 'Reactivity training. Fast SSC. Improve springiness by minimizing ground contact time.',
     },
 
     'a_skip_drill': {
