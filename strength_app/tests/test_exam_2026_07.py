@@ -400,6 +400,94 @@ class TestC6GetParamsWhitelisted(TestCase):
         self.assertIn('"left"', resp.content.decode())
 
 
+class TestE9ReportDownloadOwnership(TestCase):
+    """E9 (S3): ProgressReport view/download must 404 for anyone but the
+    owning therapist / patient (IDOR class)."""
+
+    def test_foreign_therapist_cannot_download(self):
+        from django.contrib.auth.models import User
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        from therapist_app.models import (ProgressReport, Therapist,
+                                          TherapistPatientLink)
+        t1 = User.objects.create_user('dr_e9a', password='x')
+        Therapist.objects.create(user=t1, full_name='Dr A')
+        t2 = User.objects.create_user('dr_e9b', password='x')
+        Therapist.objects.create(user=t2, full_name='Dr B')
+        p_user = User.objects.create_user('e9_patient', password='x')
+        link = TherapistPatientLink.objects.create(
+            therapist=t1.therapist, patient=p_user, full_name='E9',
+            email='e9@x.com', status='active')
+        report = ProgressReport.objects.create(
+            link=link, title='Week 1',
+            pdf=SimpleUploadedFile('r.pdf', b'%PDF-1.4 test'))
+
+        self.client.force_login(t1)
+        self.assertEqual(self.client.get(
+            f'/therapist/reports/{report.id}/download/').status_code, 200)
+        self.client.force_login(t2)
+        self.assertEqual(self.client.get(
+            f'/therapist/reports/{report.id}/download/').status_code, 404)
+
+    def test_foreign_patient_cannot_view_or_download(self):
+        from strength_app.models import ProgressReport as PatientReport
+        p1 = _make_patient('E9P1', '9000009991')
+        p2 = _make_patient('E9P2', '9000009992')
+        report = PatientReport.objects.create(patient=p1,
+                                              report_period='Week 1-4')
+
+        session = self.client.session
+        session['patient_id'] = p2.patient_id
+        session.save()
+        for name in ('view_report', 'download_report'):
+            resp = self.client.get(reverse(name, args=[report.id]))
+            self.assertEqual(resp.status_code, 404, name)
+
+        session = self.client.session
+        session['patient_id'] = p1.patient_id
+        session.save()
+        self.assertEqual(self.client.get(
+            reverse('view_report', args=[report.id])).status_code, 200)
+
+
+class TestE11CatalogRegistryIntegrity(TestCase):
+    """E11 (S3): every catalog v2_exercise_key must resolve in the registry
+    and the exercise_targets artifact — a B1-class drift (bad key) must fail
+    the suite, not ship silently. Also the dark-coach invariant: a
+    ghost-supported entry always names a camera-tracked key with phases."""
+
+    def test_catalog_keys_resolve(self):
+        from therapist_app.exercise_catalog import EXERCISES
+        from strength_app.cv_targets import get_cv_config
+        try:
+            from strength_app.exercise_system.exercise_registry_v2 import (
+                EXERCISE_METADATA,
+            )
+        except Exception:            # mediapipe-free env: registry side skips
+            EXERCISE_METADATA = None
+
+        for entry in EXERCISES:
+            key = entry.get('v2_exercise_key') or ''
+            if entry.get('v2_ghost_supported'):
+                self.assertTrue(
+                    key, f"{entry['exercise_id']}: ghost-supported, no key")
+            if not key:
+                continue
+            cfg = get_cv_config(key)
+            if entry.get('v2_ghost_supported'):
+                self.assertEqual(
+                    cfg.get('tracking'), 'camera',
+                    f"{key}: flagged ghost but targets say "
+                    f"{cfg.get('tracking')!r}")
+                self.assertTrue(cfg.get('js_type'),
+                                f'{key}: camera without js_type')
+                self.assertTrue(cfg.get('phases'),
+                                f'{key}: camera without phase targets')
+            if EXERCISE_METADATA is not None:
+                self.assertIn(
+                    key, EXERCISE_METADATA,
+                    f"{entry['exercise_id']}: key {key!r} not in registry")
+
+
 class TestBX1DeleteAccountManagedBlock(TestCase):
     """B-X1 (S1): therapist-managed patients must not be able to cascade-
     delete their clinical record (SessionReports, PainEvent/RedFlagEvent audit

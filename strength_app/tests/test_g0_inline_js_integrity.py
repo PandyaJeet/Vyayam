@@ -245,6 +245,51 @@ class TestG0SelfServePatientJS(InlineJSAuditMixin, TestCase):
 
 
 @unittest.skipUnless(NODE, 'node is required for inline-JS syntax checking')
+class TestG0AssessmentFootballConditioningJS(InlineJSAuditMixin, TestCase):
+    """E10 (2026-07 exam): camera-template entry routes the original walks
+    missed — onboarding strength-test execute (both template variants),
+    football assessment execute + nordic diagnostic, conditioning session.
+    Hostile GET params ride along (C6 regression)."""
+
+    def setUp(self):
+        super().setUp()
+        patient = PatientProfile.objects.create(
+            patient_id='G0EXT1',
+            name="Extended O'Walk",
+            phone='9000009973',
+            age=24,
+            goals='Football',
+            training_history='intermediate',
+            athlete_tier_eligible=True,
+            athlete_tier_active=True,
+            athlete_sport='football',
+        )
+        StrengthProfile.objects.create(
+            patient=patient, assessment_number=1,
+            squat_score=3, hinge_score=3, push_score=3,
+            pull_score=3, core_score=3, rotate_score=3, lunge_score=3,
+        )
+        session = self.client.session
+        session['patient_id'] = patient.patient_id
+        session.save()
+
+    def test_g0_extended_pages_inline_js_parses(self):
+        self.audit_page(
+            reverse('onboarding_strength_test_execute', args=[0]) +
+            '?side=left&variant=%0Ahostile', 'strength test 0 hostile')
+        self.audit_page(
+            reverse('onboarding_strength_test_execute', args=[1]),
+            'strength test 1')
+        self.audit_page(
+            reverse('football_assessment_execute', args=[0]) +
+            '?side=%0Ahostile', 'football execute 0 hostile')
+        self.audit_page(reverse('football_nordic_camera_test'),
+                        'nordic diagnostic')
+        self.audit_page(reverse('v1_conditioning_session'), 'conditioning')
+        self.assert_all_js_clean(min_scripts=4)
+
+
+@unittest.skipUnless(NODE, 'node is required for inline-JS syntax checking')
 class TestG0CoachPagesJS(InlineJSAuditMixin, TestCase):
     """Coach console: squad list + athlete detail."""
 
