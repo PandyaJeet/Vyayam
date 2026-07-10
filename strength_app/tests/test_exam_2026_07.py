@@ -347,6 +347,32 @@ class TestD1AdminLoginRateLimited(TestCase):
         self.assertEqual(resp.status_code, 200)
 
 
+class TestC1C2C3CameraTemplateFetchSafety(TestCase):
+    """C1-C3 (S2): template-source guards — assessment POSTs carry the CSRF
+    header; both pain-report fetch chains carry a visible-failure .catch."""
+
+    def _template(self):
+        from pathlib import Path
+        import strength_app
+        return (Path(strength_app.__file__).parent / 'templates' /
+                'strength_app' / 'v1_exercise_execute.html').read_text()
+
+    def test_assessment_fetches_send_csrf(self):
+        text = self._template()
+        blocks = text.split("fetch(\"{% url 'onboarding_save_test_result' %}\"")
+        self.assertGreaterEqual(len(blocks), 3,
+                                'assessment fetches went missing')
+        for i, block in enumerate(blocks[1:]):
+            self.assertIn("'X-CSRFToken': getCsrf()", block[:400],
+                          f'assessment fetch #{i} missing CSRF header (C1)')
+
+    def test_pain_fetch_chains_fail_visibly(self):
+        text = self._template()
+        self.assertEqual(text.count("We couldn't record this."), 2,
+                         'both pain chains must carry the visible-failure '
+                         'state (C2 managed, C3 self-serve)')
+
+
 class TestBX1DeleteAccountManagedBlock(TestCase):
     """B-X1 (S1): therapist-managed patients must not be able to cascade-
     delete their clinical record (SessionReports, PainEvent/RedFlagEvent audit

@@ -491,9 +491,13 @@
   const EXERCISE_ID   = "{{ exercise.exercise_id|escapejs }}";
   const EXERCISE_NAME = "{{ exercise.exercise_name|default:exercise.exercise_id|escapejs }}";
   const PATTERN       = "{{ exercise.movement_pattern|escapejs }}";
-  const PRESCRIBED_SETS = "{{ exercise.sets|default:3 }}";
-  const PRESCRIBED_REPS = "{{ exercise.reps|default:10 }}";
-  const REST_SECS       = "{{ exercise.rest_seconds|default:75 }}";
+  // C4/C12 (2026-07 exam): quoted+parseInt (the TEMPO_PARTS pattern). As
+  // bare strings, Array(PRESCRIBED_SETS) made the camera-failed manual path
+  // record ONE set instead of the prescribed count, and the strict
+  // `count === targetReps` set-completion speech never fired.
+  const PRESCRIBED_SETS = parseInt("{{ exercise.sets|default:3 }}", 10) || 3;
+  const PRESCRIBED_REPS = parseInt("{{ exercise.reps|default:10 }}", 10) || 10;
+  const REST_SECS       = parseInt("{{ exercise.rest_seconds|default:75 }}", 10) || 75;
 
   // ── Assessment mode ──────────────────────────────────────────────────────
   const ASSESSMENT_MODE     = {{ assessment_mode|yesno:"true,false" }};
@@ -6147,8 +6151,21 @@ async function startCamera() {
             }, 2500);
           }
         }).catch(() => {
-          box.innerHTML = '';
-          document.getElementById('painProtocol').classList.remove('show');
+          // C2 (2026-07 exam): a failed POST used to close the modal exactly
+          // like success — the patient believed the pain was recorded while
+          // no PainEvent existed. Fail visibly and offer retry instead.
+          const fail = document.createElement('div');
+          fail.className = 'guidance-box guidance-stop';
+          const msg = document.createElement('p');
+          msg.textContent = "We couldn't record this. Check your connection and try again — if it keeps failing, tell your therapist directly.";
+          fail.appendChild(msg);
+          const retry = document.createElement('button');
+          retry.type = 'button';
+          retry.textContent = 'Try again';
+          retry.style.cssText = 'margin-top:8px;padding:6px 14px;border-radius:8px;border:0;font-weight:700;';
+          retry.onclick = submitPain;
+          fail.appendChild(retry);
+          box.replaceChildren(fail);
         });
       } else {
         document.getElementById('painProtocol').classList.remove('show');
@@ -6196,6 +6213,24 @@ async function startCamera() {
       } else {
         document.getElementById('painProtocol').classList.remove('show');
       }
+    }).catch(() => {
+      // C3 (2026-07 exam): the chain had no .catch — a network failure hung
+      // the modal forever (and for 'stop' the promised session-end never
+      // happened). Fail visibly with retry, same as the managed path.
+      const proto = document.getElementById('painProtocol');
+      const fail = document.createElement('div');
+      fail.className = 'guidance-box guidance-stop';
+      const msg = document.createElement('p');
+      msg.textContent = "We couldn't record this. Check your connection and try again — if it keeps failing, stop the exercise and note it in your session feedback.";
+      fail.appendChild(msg);
+      const retry = document.createElement('button');
+      retry.type = 'button';
+      retry.textContent = 'Try again';
+      retry.style.cssText = 'margin-top:8px;padding:6px 14px;border-radius:8px;border:0;font-weight:700;';
+      retry.onclick = submitPain;
+      fail.appendChild(retry);
+      proto.replaceChildren(fail);
+      proto.classList.add('show');
     });
   }
 
@@ -6217,9 +6252,11 @@ async function startCamera() {
       assessBtn.disabled = true;
       assessBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Scoring...  (Held ' + holdTime + 's → Score ' + score + ')';
       
+      // C1 (2026-07 exam): CSRF header was missing — the POST 403'd and the
+      // .catch redirect silently dropped the hold score.
       fetch("{% url 'onboarding_save_test_result' %}", {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrf() },
         body: JSON.stringify({
           test_index: ASSESSMENT_TEST_INDEX,
           score: score,
@@ -6302,9 +6339,10 @@ async function startCamera() {
   function skipExercise() {
     if (ASSESSMENT_MODE) {
       // Skip this test with score 1
+      // C1 (2026-07 exam): CSRF header was missing here too.
       fetch("{% url 'onboarding_save_test_result' %}", {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrf() },
         body: JSON.stringify({
           test_index: ASSESSMENT_TEST_INDEX,
           score: 1,
