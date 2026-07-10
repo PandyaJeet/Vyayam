@@ -224,12 +224,18 @@ def _exercise_block(presc_item, log_item, set_logs, rest_events, pain_events,
     has_tempo = any(v > 0 for v in tempo_parts.values())
 
     modes = {s.mode for s in set_logs}
+    # A5 (2026-07 exam): plyo camera coaching is landing-check only (locked
+    # rule) — the mode chip must say so rather than implying full-trajectory
+    # form tracking. (Whether Form% should ALSO be suppressed for plyo sets
+    # is with the physio mentor — MENTOR_REVIEW_QUEUE §2026-07.)
+    is_plyo = (catalog_entry or {}).get('movement_pattern') == 'Plyometrics'
+    camera_label = 'camera (landing checks)' if is_plyo else 'camera-tracked'
     if 'camera' in modes:
-        mode_label = 'camera-tracked'
+        mode_label = camera_label
     elif set_logs:
         mode_label = 'guided (self-reported)'
     else:
-        mode_label = ('camera-tracked'
+        mode_label = (camera_label
                       if (catalog_entry or {}).get('v2_ghost_supported')
                       else 'guided (self-reported)')
 

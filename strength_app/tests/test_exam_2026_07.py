@@ -97,6 +97,49 @@ class TestA4LegacyCameraFlowRetired(TestCase):
         self.assertNotIn('strength_app/exercise_execute.html', used)
 
 
+class TestA5PlyoLandingCheckLabel(TestCase):
+    """A5 (S2): plyo camera exercises must be labeled landing-check, never
+    generic camera form tracking (locked clinical rule)."""
+
+    def test_plyo_camera_set_mode_label(self):
+        from django.contrib.auth.models import User
+        from therapist_app.models import (
+            ExerciseSetLog, Prescription, PrescriptionItem, SessionLog,
+            SessionLogItem, Therapist, TherapistPatientLink,
+        )
+        from strength_app.report_builder import build_report
+
+        t_user = User.objects.create_user('dr_a5', password='x')
+        therapist = Therapist.objects.create(user=t_user, full_name='Dr A5')
+        p_user = User.objects.create_user('a5_patient', password='x')
+        PatientProfile.objects.create(
+            patient_id='A5PLYO', name='Plyo Patient', phone='9000009986',
+            age=22, goals='Football', therapist_managed=True, user=p_user)
+        link = TherapistPatientLink.objects.create(
+            therapist=therapist, patient=p_user, full_name='Plyo Patient',
+            email='a5@x.com', status='active')
+        rx = Prescription.objects.create(link=link, week_number=1,
+                                         draft_json={})
+        item = PrescriptionItem.objects.create(
+            prescription=rx, order=0, exercise_id='ex_plyo_tuck_jumps',
+            exercise_name='Tuck Jumps', sets=1, reps=5, load='BW',
+            rest_seconds=60, tempo='')
+        log = SessionLog.objects.create(link=link, prescription=rx)
+        SessionLogItem.objects.create(
+            session_log=log, prescription_item=item, order=0,
+            exercise_id='ex_plyo_tuck_jumps', exercise_name='Tuck Jumps',
+            sets_completed=1)
+        ExerciseSetLog.objects.create(
+            session_log=log, link=link, exercise_id='ex_plyo_tuck_jumps',
+            exercise_name='Tuck Jumps', set_number=1, mode='camera',
+            reps_count=5, reps_json=[])
+
+        report = build_report(log)
+        block = next(e for e in report['exercises']
+                     if e['exercise_id'] == 'ex_plyo_tuck_jumps')
+        self.assertEqual(block['mode'], 'camera (landing checks)')
+
+
 class TestBX1DeleteAccountManagedBlock(TestCase):
     """B-X1 (S1): therapist-managed patients must not be able to cascade-
     delete their clinical record (SessionReports, PainEvent/RedFlagEvent audit
