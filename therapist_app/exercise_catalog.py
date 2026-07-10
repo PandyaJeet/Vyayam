@@ -404,8 +404,8 @@ EXERCISES = [
         "movement_pattern": "Activation",
         "equipment": "None",
         "video_url": "",
-        "v2_ghost_supported": False,
-        "v2_exercise_key": "",
+        "v2_ghost_supported": False,  # DARK — flip after filming protocol
+        "v2_exercise_key": "supine_hip_abduction_rx",
         "description": "Lie on your back with both legs straight. Keeping the knee straight and toes pointing to the ceiling, slide the working leg out to the side along the floor as far as is comfortable, then bring it slowly back to the middle. Keep the pelvis level and the toes facing up — don't let the leg roll outward.",
         "default_sets": 3,
         "default_reps": 12,

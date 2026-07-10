@@ -4100,4 +4100,19 @@ EXERCISE_CONTENT_GAP_FILL = {
         'mind_muscle_cue': {'during': 'Draw the heel in with the back of your thigh.'},
     },
 
+    'supine_hip_abduction_rx': {
+        'display_name': 'Supine Hip Abduction',
+        'movement_pattern': 'activation',
+        'level': 'foundation',
+        'target_muscles': ['Glute medius', 'Outer hip'],
+        'instructions': [
+            'Lie on your back with both legs straight, toes pointing up.',
+            'Keeping the knee straight, slide the working leg out to the side.',
+            'Go as far as comfortable, then slide slowly back to the middle.',
+            'The pelvis stays still — the movement is only the leg.',
+        ],
+        'form_cues': ['Toes point at the ceiling', 'Pelvis stays still', 'Slide, not lift'],
+        'mind_muscle_cue': {'during': 'Lead the slide from the outside of your hip.'},
+    },
+
 }

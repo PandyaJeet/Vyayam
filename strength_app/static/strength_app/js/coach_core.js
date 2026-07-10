@@ -74,6 +74,7 @@
     balance_foot_down:   { text: 'Lift your foot to restart the clock',       priority: 'primary' },
     slr_knee_straight:   { text: 'Keep that knee locked straight',            priority: 'primary' },
     prone_hips_flat:     { text: 'Keep your hips on the floor',               priority: 'primary' },
+    pelvis_still:        { text: 'Keep your pelvis still',                    priority: 'primary' },
   };
 
   // Reinforcement when a specific cue is corrected (R4c) — specific first,

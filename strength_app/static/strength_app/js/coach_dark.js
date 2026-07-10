@@ -486,6 +486,64 @@
   ]);
   CUE_IDS.push('prone_hips_flat');
 
+  // ── supine_hip_abduction_rx — supine leg slide, camera at the feet ──────
+  // Primary: ankle spread as a % of hip width (CLAMSHELL\'s x100 convention
+  // so the 70-point phase gate has real resolution). Fault: pelvis shifting
+  // sideways instead of the leg sliding.
+  function _supAbd(lm) {
+    var hipW = Math.abs(lm[LM.leftHip].x - lm[LM.rightHip].x);
+    if (hipW < 0.02) return null;
+    return {
+      spreadPct: Math.min(400, (Math.abs(lm[LM.leftAnkle].x - lm[LM.rightAnkle].x) / hipW) * 100),
+      hipMidX: (lm[LM.leftHip].x + lm[LM.rightHip].x) / 2,
+    };
+  }
+
+  PHASES.SUPINE_ABD_RX = {
+    name: 'Supine Hip Abduction',
+    bodyOrientation: 'supine',
+    cameraPosition: { view: 'front', instruction: 'Place camera beyond your feet at floor level, looking up your body. Both legs and hips visible.' },
+    setupCues: [
+      'Lie on your back, legs straight, toes pointing up.',
+      'Keep the knee straight the whole time.',
+      'Slide the working leg out along the floor.',
+      'Slide slowly back to the middle. Pelvis stays still.',
+    ],
+    stanceCheck: null,
+    phases: [
+      { name: 'center', duration: 0,    joints: { legSpreadPct: 110 }, voice: 'Legs together, toes up' },
+      { name: 'out',    duration: 2000, joints: { legSpreadPct: 200 }, voice: 'Slide the leg out' },
+      { name: 'hold',   duration: 800,  joints: { legSpreadPct: 200 }, voice: 'Hold' },
+      { name: 'in',     duration: 2000, joints: { legSpreadPct: 110 }, voice: 'Slide back to the middle' },
+    ],
+    checkAngles: function (lm) {
+      var m = _supAbd(lm);
+      return { legSpreadPct: m ? m.spreadPct : 110 };
+    },
+    cues: { legSpreadPct: 'Slide the leg a little further out' },
+    forceArrows: [],
+  };
+
+  var _supAbdBaseX = { v: null };
+  FAULTS.SUPINE_ABD_RX = makeFaults([
+    {
+      // Pelvis shift: hip midpoint drifting sideways from its set baseline.
+      cue: 'pelvis_still', modes: ['USER_FOLLOWS', 'GHOST_LEADS'], minMs: 400,
+      test: function (lm) {
+        if (!allVisible(lm, [LM.leftHip, LM.rightHip])) return null;
+        var m = _supAbd(lm);
+        if (!m) return null;
+        if (_supAbdBaseX.v === null) { _supAbdBaseX.v = m.hipMidX; return null; }
+        if (Math.abs(m.hipMidX - _supAbdBaseX.v) <= 0.05) return null;
+        return HIP_SEGS;
+      },
+    },
+  ]);
+  // Baseline resets with the observer (new set = new lie-down position).
+  var _supAbdReset = FAULTS.SUPINE_ABD_RX.resetSet.bind(FAULTS.SUPINE_ABD_RX);
+  FAULTS.SUPINE_ABD_RX.resetSet = function () { _supAbdBaseX.v = null; _supAbdReset(); };
+  CUE_IDS.push('pelvis_still');
+
   // [VYAYAM-DARK-DEFS-END]
 
   return {

@@ -358,4 +358,41 @@ test('PRONE_KNEE_BEND_RX: flat/bent phases score in sequence; hip lift faults', 
   assert.deepEqual(runFaults(obs, [flat, flat, flat], gs), []);
 });
 
+test('SUPINE_ABD_RX: center/out phases score by spread; pelvis shift faults', () => {
+  const def = dark.PHASES.SUPINE_ABD_RX;
+  assert.equal(def.phases.length, 4);
+
+  // Feet-view supine: hips ~0.14 wide, ankles just outside the hips.
+  const center = frame();
+  center[L.leftHip] = P(0.43, 0.45);   center[L.rightHip] = P(0.57, 0.45);
+  center[L.leftAnkle] = P(0.42, 0.80); center[L.rightAnkle] = P(0.58, 0.80);
+  assert.ok(scorePhase(def, 'center', center) >= 70,
+            `center scored ${scorePhase(def, 'center', center)}`);
+  assert.ok(scorePhase(def, 'out', center) < 70);
+
+  // Left leg slid out: ankle spread ~2x hip width.
+  const out = frame();
+  out[L.leftHip] = P(0.43, 0.45);   out[L.rightHip] = P(0.57, 0.45);
+  out[L.leftAnkle] = P(0.30, 0.80); out[L.rightAnkle] = P(0.58, 0.80);
+  assert.ok(scorePhase(def, 'out', out) >= 70,
+            `out scored ${scorePhase(def, 'out', out)}`);
+  assert.ok(scorePhase(def, 'center', out) < 70);
+
+  // Pelvis shift: whole pelvis drifts left while legs stay put.
+  const shifted = frame();
+  shifted[L.leftHip] = P(0.33, 0.45);   shifted[L.rightHip] = P(0.47, 0.45);
+  shifted[L.leftAnkle] = P(0.42, 0.80); shifted[L.rightAnkle] = P(0.58, 0.80);
+
+  const gs = { mode: 'USER_FOLLOWS', isHoldExercise: false, repCount: 0 };
+  const obs = dark.FAULTS.SUPINE_ABD_RX;
+  obs.resetSet(); obs._lastAt = {};
+  // First frame sets the baseline from the centered pose, then the shift
+  // sustains past the window → one cue.
+  assert.deepEqual(runFaults(obs, [center, shifted, shifted, shifted, shifted], gs),
+                   ['pelvis_still']);
+  // A clean set never faults.
+  obs.resetSet(); obs._lastAt = {};
+  assert.deepEqual(runFaults(obs, [center, out, center, out], gs), []);
+});
+
 // [VYAYAM-DARK-TESTS-END]

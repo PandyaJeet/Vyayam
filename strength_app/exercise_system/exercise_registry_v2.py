@@ -37,6 +37,7 @@ from .exercises import SingleLegBalanceRxV2
 from .exercises import StraightLegRaiseRxV2
 from .exercises import KneeToChestRxV2
 from .exercises import ProneKneeBendRxV2
+from .exercises import SupineHipAbductionRxV2
 from .exercises import PartialSquatsV2
 from .exercises import GluteBridgeV2
 from .exercises import StraightLegRaisesV2
@@ -2999,6 +3000,16 @@ EXERCISE_METADATA = {
         'display_name': 'Wall Sit',
         'unilateral': False,
         'movement_pattern': 'squat',
+        'rx_dark_2026_07': True,
+    },
+    'supine_hip_abduction_rx': {
+        'class': SupineHipAbductionRxV2,
+        'category': 'strength',
+        'subcategory': 'foundation',
+        'level': 1,
+        'display_name': 'Supine Hip Abduction',
+        'unilateral': True,
+        'movement_pattern': 'activation',
         'rx_dark_2026_07': True,
     },
     'prone_knee_bend_rx': {

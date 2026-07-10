@@ -146,6 +146,7 @@ CAMERA = {
     'straight_leg_raise_rx': 'SLR_RX',
     'knee_to_chest_rx': 'KNEE_TO_CHEST_RX',
     'prone_knee_bend_rx': 'PRONE_KNEE_BEND_RX',
+    'supine_hip_abduction_rx': 'SUPINE_ABD_RX',
 }
 
 # Manual — no JS template matches the real movement, the movement travels

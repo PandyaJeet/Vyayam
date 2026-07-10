@@ -6480,6 +6480,24 @@
   "tracking": "manual",
   "unilateral": true
  },
+ "supine_hip_abduction_rx": {
+  "display_name": "Supine Hip Abduction",
+  "is_hold": false,
+  "js_type": "SUPINE_ABD_RX",
+  "movement_pattern": "activation",
+  "phases": {
+   "holding": {
+    "avg_knee": 170,
+    "tolerance": 20
+   },
+   "rest": {
+    "avg_knee": 170,
+    "tolerance": 20
+   }
+  },
+  "tracking": "camera",
+  "unilateral": true
+ },
  "table_row": {
   "display_name": "Table Row",
   "is_hold": false,

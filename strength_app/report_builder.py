@@ -112,6 +112,7 @@ CUE_TEXT = {
     'balance_foot_down': 'Lift your foot to restart the clock',
     'slr_knee_straight': 'Keep that knee locked straight',
     'prone_hips_flat': 'Keep your hips on the floor',
+    'pelvis_still': 'Keep your pelvis still',
 }
 
 DIFFICULTY_LABEL = {

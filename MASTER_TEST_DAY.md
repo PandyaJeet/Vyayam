@@ -282,3 +282,13 @@ the filming day BEFORE flipping that exercise's flag.
    your hips on the floor".
 4. Shallow bend (~30°): the bend phase must NOT complete — no rep counted.
 5. Both legs. No red at any point.
+
+### H33. supine_hip_abduction_rx — Supine Hip Abduction (reps, feet view)
+1. Camera BEYOND YOUR FEET at floor level looking up your body; hips and
+   both legs in frame.
+2. Clean reps (leg slides out ~2x hip width, slides back): rep counter
+   advances once per out-and-back cycle.
+3. Deliberate fault — shift your whole pelvis sideways instead of sliding
+   the leg. Within ~0.5s: hip segments amber + "Keep your pelvis still".
+4. Half slide (barely past hip width): the out phase must NOT complete.
+5. Both legs. No red at any point.
