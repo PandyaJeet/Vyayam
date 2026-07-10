@@ -541,3 +541,38 @@ class TestBX1DeleteAccountManagedBlock(TestCase):
         self.assertFalse(
             PatientProfile.objects.filter(patient_id='BX1SELF').exists(),
             'self-serve data-rights deletion must keep working')
+
+
+class TestPhase4VideoModeAutoDetect(TestCase):
+    """Phase 4: VIDEO_MODE allowlist is derived from the videos directory —
+    with only full_squats.mp4 on disk, behavior is identical to the old
+    hardcoded list."""
+
+    def test_scan_returns_exactly_the_filmed_keys(self):
+        import strength_app.cv_targets as cvt
+        cvt._videos_cache = None
+        self.assertEqual(cvt.get_video_mode_exercises(), ['full_squats'])
+
+    def test_camera_page_consumes_the_server_list(self):
+        from io import StringIO
+        from django.core.cache import cache
+        from django.core.management import call_command
+        cache.clear()
+        call_command('seed_therapist_demo', stdout=StringIO())
+        resp = self.client.post(reverse('patient_login'),
+                                {'phone': '9000000001', 'password': 'patient'})
+        self.assertEqual(resp.status_code, 302)
+        self.client.post(reverse('therapist_session_start'))
+        found = False
+        for idx in range(5):
+            resp = self.client.get(
+                reverse('therapist_session_exercise', args=[idx]))
+            if resp.status_code != 200:
+                continue
+            body = resp.content.decode()
+            if 'VIDEO_MODE_EXERCISES' in body:
+                self.assertIn('var VIDEO_MODE_EXERCISES = ["full_squats"];',
+                              body)
+                found = True
+                break
+        self.assertTrue(found, 'no camera page rendered the video-mode slot')

@@ -5629,7 +5629,10 @@ async function startCamera() {
     //    now), set up the side-panel reference video element: src,
     //    visibility, and tempo-matched playbackRate. Play/pause is
     //    driven by the ghost state machine in a follow-up commit.
-    var VIDEO_MODE_EXERCISES = ['full_squats'];
+    // 2026-07 Phase 4: server-derived from static/strength_app/videos/
+    // *.mp4 — every future filmed video goes live by dropping the file
+    // (+ collectstatic). Tag emits '<'-escaped JSON (G0-safe).
+    var VIDEO_MODE_EXERCISES = {% video_mode_exercises_json %};
     var VIDEO_MODE = VIDEO_MODE_EXERCISES.indexOf(EXERCISE_ID) !== -1;
     window.VIDEO_MODE = VIDEO_MODE;
     if (VIDEO_MODE) {

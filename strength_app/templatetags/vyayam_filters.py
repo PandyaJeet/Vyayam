@@ -46,6 +46,19 @@ def get_range(value):
         return range(3)
 
 
+@register.simple_tag(name='video_mode_exercises_json')
+def video_mode_exercises_json():
+    """2026-07 Phase 4: the engine keys that have a filmed reference video,
+    as a JSON array for inline use (same '<'-escaping discipline as
+    cv_config_json — safe inside a <script> block)."""
+    import json
+    from django.utils.safestring import mark_safe
+    from strength_app.cv_targets import get_video_mode_exercises
+
+    return mark_safe(
+        json.dumps(get_video_mode_exercises()).replace('<', '\\u003c'))
+
+
 @register.simple_tag(name='cv_config_json')
 def cv_config_json(exercise_id):
     """R2-W1: emit the generated CV config for this exercise as a JSON

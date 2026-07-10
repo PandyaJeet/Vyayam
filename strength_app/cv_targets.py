@@ -52,3 +52,25 @@ def get_cv_config(exercise_id):
         'js_type': None,
         'phases': {},
     }
+
+
+_VIDEOS_DIR = (
+    Path(__file__).resolve().parent / 'static' / 'strength_app' / 'videos'
+)
+_videos_cache = None
+
+
+def get_video_mode_exercises():
+    """2026-07 Phase 4: engine keys with a filmed reference video on disk.
+    Drop <engine_key>.mp4 into static/strength_app/videos/ (+ collectstatic)
+    and that exercise runs VIDEO_MODE on the next process start — no code
+    edit. Replaces the old hardcoded VIDEO_MODE_EXERCISES allowlist in
+    v1_exercise_execute.html."""
+    global _videos_cache
+    if _videos_cache is None:
+        try:
+            _videos_cache = sorted(p.stem for p in _VIDEOS_DIR.glob('*.mp4'))
+        except OSError as exc:
+            logger.error('videos dir unreadable (%s) — VIDEO_MODE disabled', exc)
+            _videos_cache = []
+    return list(_videos_cache)
