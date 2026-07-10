@@ -14,6 +14,26 @@ Status legend: **FIXED** <hash> · **BATCHED** <hash> (S3/S4 batch commits) ·
 **MENTOR** (docs/MENTOR_REVIEW_QUEUE.md — wording is the physio mentor's call) ·
 **DEFERRED** (reason inline) · **DOCUMENTED** (accepted + written down).
 
+## Commit map (Phase 2 fixes, 2026-07-10)
+
+| Commit | Findings |
+|--------|----------|
+| 92b367e | B-X1 (S1) |
+| 7de6667 | A1, A2 |
+| 5920a93 | A4 (supersedes C5) |
+| db05455 | A5 (label) |
+| b0b9284 | B-X2 |
+| afb761f | B-X3 + B-N3 |
+| 2155228 | B-N1, B-N2 (dashboard 38→constant queries @8 patients) |
+| 856fd47 | B-T1, B-T2 |
+| 2449999 | D1 |
+| 1bf6056 | C1, C2, C3, C4, C12 |
+| 22273be | C6 |
+| 1887c3e | S3 batch: B-D1, B-D2, B-I1, B-T3, B-T4, B-N4, C7, C8, C9, C10, C11 |
+| 0205f48 | E9, E10 (partial), E11 |
+| ca35156 | E1 (partial), E2, E3 (P22), E4, E5 |
+| cc0bbcb | S4 batch: A12, A13, B-P1/P2, C13, C15-C22 (C14 documented), D2-D5 docs, E7, E12, E15 |
+
 ## Findings ledger (severity-ordered)
 
 | ID | Sev | file:line (at finding time) | Finding | Status |
