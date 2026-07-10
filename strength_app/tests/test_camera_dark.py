@@ -129,3 +129,56 @@ class TestDarkCoachIntegrity(TestCase):
                              f'{key} leaked into progression chains')
             self.assertNotIn(f"'{key}'", sess_src,
                              f'{key} leaked into session views')
+
+
+class TestQaDarkCoachesPage(TestCase):
+    """The QA surface: therapist-only, lists every dark coach, runs the
+    camera flow in QA mode, and writes NOTHING."""
+
+    def setUp(self):
+        from django.contrib.auth.models import User
+        from therapist_app.models import Therapist
+        self.t_user = User.objects.create_user('dr_qa', password='x')
+        Therapist.objects.create(user=self.t_user, full_name='Dr QA')
+
+    def test_anonymous_and_patient_blocked(self):
+        resp = self.client.get('/therapist/qa/dark-coaches/')
+        self.assertEqual(resp.status_code, 302)          # → therapist login
+        from django.contrib.auth.models import User
+        plain = User.objects.create_user('qa_plain', password='x')
+        self.client.force_login(plain)
+        resp = self.client.get('/therapist/qa/dark-coaches/')
+        self.assertEqual(resp.status_code, 403)
+
+    def test_list_shows_every_dark_coach(self):
+        self.client.force_login(self.t_user)
+        resp = self.client.get('/therapist/qa/dark-coaches/')
+        self.assertEqual(resp.status_code, 200)
+        body = resp.content.decode()
+        for key in DARK_COACHES:
+            self.assertIn(key, body, key)
+        # every row is still DARK — the flags must not flip this cycle
+        self.assertEqual(body.count('>DARK<'), len(DARK_COACHES))
+
+    def test_run_page_is_qa_mode_with_no_capture_endpoints(self):
+        self.client.force_login(self.t_user)
+        for key in DARK_COACHES:
+            resp = self.client.get(f'/therapist/qa/dark-coaches/{key}/run/')
+            self.assertEqual(resp.status_code, 200, key)
+            body = resp.content.decode()
+            self.assertIn('QA — not patient mode', body, key)
+            self.assertIn('const SET_LOG_URL = "";', body, key)
+            self.assertIn('const REST_EVENT_URL = "";', body, key)
+            self.assertIn('const REPORT_PAIN_URL = "";', body, key)
+        resp = self.client.get('/therapist/qa/dark-coaches/nope_rx/run/')
+        self.assertEqual(resp.status_code, 404)
+
+    def test_qa_banner_never_renders_for_patients(self):
+        """No patient route passes qa_mode — the managed camera page must
+        not carry the QA banner."""
+        from pathlib import Path
+        import strength_app as sa
+        for py in ('v1_session_views.py', 'v1_therapist_session_views.py',
+                   'views.py', 'v1_onboarding_views.py'):
+            src = (Path(sa.__file__).parent / py).read_text()
+            self.assertNotIn("'qa_mode'", src, f'{py} passes qa_mode')

@@ -32,4 +32,8 @@ urlpatterns = [
     path('alerts/<int:alert_id>/reviewed/', views.alert_mark_reviewed, name='therapist_alert_reviewed'),                     # R2-T2
     path('patient/<uuid:link_id>/program/copy-week/', views.copy_previous_week, name='therapist_copy_week'),                 # R2-T3
     path('patient/<uuid:link_id>/notes/add/', views.add_visit_note, name='therapist_add_visit_note'),                        # R2-T7
+
+    # 2026-07 dark camera coaches — QA surface (therapist-only, writes nothing)
+    path('qa/dark-coaches/', views.qa_dark_coaches, name='therapist_qa_dark_coaches'),
+    path('qa/dark-coaches/<str:key>/run/', views.qa_dark_coach_run, name='therapist_qa_dark_coach_run'),
 ]

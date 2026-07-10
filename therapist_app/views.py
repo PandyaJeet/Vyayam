@@ -1152,3 +1152,86 @@ def download_report(request, report_id):
         filename=f"{report.title.replace(' ', '_')}.pdf",
         content_type='application/pdf',
     )
+
+
+# ---------------------------------------------------------------------------
+# 2026-07 DARK CAMERA COACHES — therapist QA surface (the only new route of
+# the final session). Read-only with respect to patient data: the run page
+# passes NO capture endpoints (SET_LOG_URL / REST_EVENT_URL / REPORT_PAIN_URL
+# all empty), so nothing a therapist does here writes a single row — the
+# simplest of the two allowed designs, chosen over is_qa-flagged rows.
+# ---------------------------------------------------------------------------
+
+def _dark_coach_entries():
+    """Catalog entries carrying a *_rx dark-coach key, in catalog order."""
+    from .exercise_catalog import EXERCISES
+    return [e for e in EXERCISES
+            if (e.get('v2_exercise_key') or '').endswith('_rx')]
+
+
+@therapist_required
+def qa_dark_coaches(request):
+    from strength_app.cv_targets import get_cv_config
+    rows = []
+    for e in _dark_coach_entries():
+        key = e['v2_exercise_key']
+        cfg = get_cv_config(key)
+        rows.append({
+            'name': e['name'],
+            'exercise_id': e['exercise_id'],
+            'key': key,
+            'js_type': cfg.get('js_type') or '—',
+            'is_hold': bool(cfg.get('is_hold')),
+            'live': bool(e.get('v2_ghost_supported')),
+        })
+    return render(request, 'therapist_app/qa_dark_coaches.html', {
+        'therapist': request.user.therapist,
+        'rows': rows,
+        'active_section': 'settings',
+    })
+
+
+@therapist_required
+def qa_dark_coach_run(request, key):
+    """Run one dark coach through the real camera flow, flagged QA MODE.
+    No patient, no capture rows — library_mode returns to the QA list."""
+    from django.urls import reverse as _reverse
+    from strength_app.cv_targets import get_cv_config
+    from strength_app.exercise_content_gap_fill import EXERCISE_CONTENT_GAP_FILL
+
+    entry = next((e for e in _dark_coach_entries()
+                  if e['v2_exercise_key'] == key), None)
+    if entry is None:
+        raise Http404
+    content = EXERCISE_CONTENT_GAP_FILL.get(key, {})
+    cfg = get_cv_config(key)
+
+    exercise = {
+        'exercise_id': key,
+        'exercise_name': entry['name'],
+        'movement_pattern': entry['movement_pattern'],
+        'sets': entry['default_sets'],
+        'reps': entry['default_reps'],
+        'tempo': '3-1-2-0',
+        'tempo_parts': ['3', '1', '2', '0'],
+        'rest_seconds': entry['default_rest_seconds'],
+        'prescribed_rest': entry['default_rest_seconds'],
+        'is_unilateral': False,
+        'mind_muscle_cue': content.get('mind_muscle_cue', {}),
+        'form_cues': content.get('form_cues', []),
+        'instructions': ' '.join(content.get('instructions', [])),
+        'asymmetry': {},
+        'capability_level': 2,
+        'is_hold': bool(cfg.get('is_hold')),
+    }
+    ctx = {
+        'exercise': exercise,
+        'exercise_index': 0,
+        'total_exercises': 1,
+        'is_last_exercise': True,
+        'has_strength_profile': True,
+        'library_mode': True,
+        'library_return_url': _reverse('therapist_qa_dark_coaches'),
+        'qa_mode': True,
+    }
+    return render(request, 'strength_app/v1_exercise_execute.html', ctx)

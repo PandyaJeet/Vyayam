@@ -1,0 +1,52 @@
+{% extends "therapist_app/base_therapist.html" %}
+{% block title %}QA — Dark Camera Coaches{% endblock %}
+
+{% block content %}
+<a class="t-back" href="{% url 'therapist_dashboard' %}"><i class="fas fa-arrow-left"></i> Back to dashboard</a>
+
+<div class="t-card" style="margin-bottom:16px;">
+  <div class="t-card-title"><span><i class="fas fa-flask"></i> Dark camera coaches — QA</span></div>
+  <p style="font-size:.88rem;color:var(--muted);margin:0 0 6px;">
+    These coaches are built but <strong>not visible to any patient</strong> until
+    their catalog flag flips after the filming protocol. "Test this coach" runs
+    the real camera flow in QA mode — <strong>nothing is recorded</strong>.
+    Follow the matching Part H block in MASTER_TEST_DAY.md for each walk.
+  </p>
+</div>
+
+<div class="t-card">
+  <table style="width:100%;border-collapse:collapse;font-size:.9rem;">
+    <thead>
+      <tr style="text-align:left;color:var(--muted);border-bottom:1px solid var(--border);">
+        <th style="padding:8px 6px;">Exercise</th>
+        <th style="padding:8px 6px;">Engine key</th>
+        <th style="padding:8px 6px;">Coach</th>
+        <th style="padding:8px 6px;">Type</th>
+        <th style="padding:8px 6px;">Status</th>
+        <th style="padding:8px 6px;"></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for r in rows %}
+      <tr style="border-bottom:1px solid var(--border);">
+        <td style="padding:10px 6px;font-weight:600;">{{ r.name }}</td>
+        <td style="padding:10px 6px;"><code>{{ r.key }}</code></td>
+        <td style="padding:10px 6px;"><code>{{ r.js_type }}</code></td>
+        <td style="padding:10px 6px;">{% if r.is_hold %}hold{% else %}reps{% endif %}</td>
+        <td style="padding:10px 6px;">
+          {% if r.live %}<span class="t-pill t-pill--green">LIVE</span>
+          {% else %}<span class="t-pill t-pill--neutral">DARK</span>{% endif %}
+        </td>
+        <td style="padding:10px 6px;text-align:right;">
+          <a class="t-btn t-btn--sm" href="{% url 'therapist_qa_dark_coach_run' r.key %}">
+            <i class="fas fa-video"></i> Test this coach
+          </a>
+        </td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="6" style="padding:16px;color:var(--muted);">No dark coaches registered.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
