@@ -50,3 +50,50 @@ Remove a row once the mentor approves it (or replace the string and re-tag).
 |---|---|---|
 | squat_too_deep | "Too deep — come up a little. Stay in your range." | author: Pawan — live |
 | squat_asymmetry | "Uneven — you're loading one side more. Even out both knees." | author: Pawan — live |
+
+---
+
+# §2026-07 — Final-examination clinical wording queue (Agent A audit, 2026-07-10)
+
+Items below are NOT live changes — they are existing strings (or policy
+questions) the audit flagged. Each row cites the ledger id in
+CODEBASE_HEALTH_2026-07.md where the file:line + proof lives.
+
+## Wording rulings needed
+
+| Ledger | Surface | Current string (verbatim) | Question / proposed |
+|---|---|---|---|
+| A3 | exercise_catalog.py:370 (renders on patient session pages) | "ACL injury-prevention drill — trains single-leg deceleration without knee valgus." | Is a prevention claim acceptable in patient copy? Proposed: "Trains single-leg deceleration and landing control without knee collapse." |
+| A5 | session report mode chip | plyo camera sets labeled `camera (landing checks)` as of this cycle (label fix shipped) | Should Form% ALSO be suppressed for PLYO_* sets, or is the qualified label sufficient? |
+| A6 | gap_fill heel_drop content (LATENT — dead keys) | "This will be painful or achy in the tendon — this is safe and therapeutic." · "Stopping when it aches — mild tendon ache during the exercise is normal and therapeutic." · "Heel drops are the gold standard treatment for Achilles tendinopathy…" | Alfredson-protocol framing vs the app's own pain-stop protocol; needs mentor rewrite. **Blocks ledger A8** (content-key fix) — approving these unblocks a one-line fix that lights up instructions/cues on all camera + library pages. |
+| A7 | gap_fill:2186,2252 + exercise_content.py:143 (LATENT `language_*` fields) | "Tight ankles limit squat depth and increase injury risk." · "Tight adductors increase groin injury risk." · "Useful for patellar tendinopathy rehab…" | Batch-review all `language_*` strings before any surface ever renders them. |
+| A10 | football_assessment_results.html:102 | "You need a Nordic hold of 4+ seconds and a Pogo score of 3+ before explosive jump training is safe for your tendons." | Proposed readiness wording: "…before your programme unlocks explosive jump training." |
+| A11 | v1_warmup.html:195 | "Skipping warm-up increases injury risk. Recommended only if you've already warmed up separately." | Proposed: "Warming up prepares your joints and tendons for loading. Skip only if you've already warmed up separately." |
+| A14 | v1_session_detail.html:39 | History card colors form_score<55 red | Does rule 7 (red = safety only) bind stats displays, or only live coaching? If yes → amber floor. |
+
+## Policy rulings needed (Pawan + mentor)
+
+| Ledger | Question |
+|---|---|
+| B-X1 | Managed-patient self-serve account deletion is now BLOCKED (fix shipped: therapist-managed patients are told to ask their therapist). Ruling needed on the permanent policy: PROTECT clinical records vs patient data-rights deletion (anonymize-not-delete?). Self-serve (non-managed) patients retain full delete. |
+| A9 | Does locked decision 4 (PainEvent is the only pain source in REPORTS) bind the patient progress page + weekly therapist PDF too? Both currently average direct patient-entered ratings (SessionLogItem.pain / SessionLog.overall_pain) — real data, but a different source than PainEvent. If yes → rebuild both from PainEvent next cycle. |
+
+## Phase-3 dark-coach cue strings (2026-07-10 build — DARK, not patient-visible until flag flip)
+
+All new coach cue ids ship dark behind per-exercise catalog flags that remain
+False. Strings follow the ≤8-words/no-fault-label/amber-first rules; none are
+safety/red class. Review before any flag flips:
+
+| Cue id | String |
+|---|---|
+| wall_sit_slide_down | "Slide down — thighs level with the floor" |
+| wall_sit_heels | "Keep both heels on the floor" |
+| plank_hips_sag | "Lift your hips — straight line" |
+| plank_hips_pike | "Lower your hips — straight line" |
+| side_plank_hip_drop | "Push your hip up" |
+| balance_foot_down | "Lift your foot to restart the clock" |
+| slr_knee_straight | "Keep that knee locked straight" |
+| prone_hips_flat | "Keep your hips on the floor" |
+| pelvis_still | "Keep your pelvis still" |
+| press_even | "Press both arms up together" |
+| row_sit_tall | "Sit tall — pull with your back" |
