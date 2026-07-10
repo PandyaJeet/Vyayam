@@ -181,6 +181,40 @@ class TestBX2ReportChainProtected(TestCase):
         self.assertFalse(SessionReport.objects.exists())
 
 
+class TestBX3FlashNotShadowedByChat(TestCase):
+    """B-X3 (S2): the 'messages' ctx key shadowed django.contrib.messages on
+    patient_detail — flashes (incl. the one-time reset temp password) were
+    dropped and chat rendered as flash banners."""
+
+    def setUp(self):
+        from django.contrib.auth.models import User
+        from therapist_app.models import (Therapist, TherapistMessage,
+                                          TherapistPatientLink)
+        self.t_user = User.objects.create_user('dr_bx3', password='x')
+        Therapist.objects.create(user=self.t_user, full_name='Dr BX3')
+        p_user = User.objects.create_user('bx3_patient', password='x')
+        PatientProfile.objects.create(
+            patient_id='BX3P', name='BX3', phone='9000009988', age=30,
+            goals='Rehab', therapist_managed=True, user=p_user)
+        self.link = TherapistPatientLink.objects.create(
+            therapist=self.t_user.therapist, patient=p_user,
+            full_name='BX3 Patient', email='bx3@x.com', status='active')
+        TherapistMessage.objects.create(
+            link=self.link, sender=p_user, is_system=False,
+            body='Knee felt fine today')
+        self.client.force_login(self.t_user)
+
+    def test_reset_password_flash_is_visible(self):
+        resp = self.client.post(
+            f'/therapist/patient/{self.link.id}/reset-password/', follow=True)
+        self.assertContains(resp, 'Temporary password for BX3 Patient')
+
+    def test_chat_renders_in_messages_tab_not_as_flash(self):
+        resp = self.client.get(f'/therapist/patient/{self.link.id}/?tab=messages')
+        self.assertContains(resp, 'Knee felt fine today')
+        self.assertIn('chat_messages', resp.context)
+
+
 class TestBX1DeleteAccountManagedBlock(TestCase):
     """B-X1 (S1): therapist-managed patients must not be able to cascade-
     delete their clinical record (SessionReports, PainEvent/RedFlagEvent audit

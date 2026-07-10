@@ -733,7 +733,12 @@ def patient_detail(request, link_id):
     seed = _seed_demo_metrics(link)
     history_seed = seed.get('history', []) if seed else []
 
-    msgs = list(link.messages.select_related('sender').all())
+    # B-X3/B-N3 (2026-07 exam): sender__therapist joined so the template's
+    # is_from_therapist check doesn't fire one query per bubble; newest 200
+    # only (chronological), so a long chat can't unbound the page.
+    msgs = list(reversed(
+        link.messages.select_related('sender', 'sender__therapist')
+        .order_by('-sent_at')[:200]))
 
     reports_qs = list(link.progress_reports.all())
 
@@ -790,7 +795,10 @@ def patient_detail(request, link_id):
         'catalog': EXERCISES,
         'history_sessions': history_sessions,
         'history_seed': history_seed,
-        'messages': msgs,
+        # B-X3 (2026-07 exam): 'messages' shadowed django.contrib.messages —
+        # chat rendered as flash banners and every flash aimed at this page
+        # (incl. the one-time reset temp password) was silently dropped.
+        'chat_messages': msgs,
         'reports': reports_qs,
         'session_reports': session_reports,
         'active_section': 'patients',

@@ -481,7 +481,7 @@
       <span class="t-pill t-pill--green"><i class="fas fa-lock"></i> End-to-end encrypted</span>
     </div>
     <div class="t-msg-shell__list" id="msg-list">
-      {% for m in messages %}
+      {% for m in chat_messages %}
         <div class="t-msg-row {% if m.is_from_therapist %}from-me{% else %}from-them{% endif %}">
           <div class="t-msg-bubble {% if m.is_from_therapist %}from-me{% else %}from-them{% endif %}">
             <div>{{ m.body }}</div>
