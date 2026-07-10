@@ -198,3 +198,26 @@ a therapist note first.
 
 ---
 *Every future phase appends its manual steps to this file (standing rule 8).*
+
+---
+
+## Part H-2026-07 — DARK camera coaches: filming-day QA walk (one block per coach)
+
+These coaches are DARK: catalog flags are False, so the ONLY way to run them
+is the therapist QA page (`/therapist/qa/dark-coaches/` → "Test this coach").
+Nothing on these pages is recorded (QA banner confirms). Walk each block on
+the filming day BEFORE flipping that exercise's flag.
+
+### H26. wall_sit_rx — Wall Sit (hold, side view)
+1. Camera to your SIDE at hip height, ~2.5m; whole body + wall in frame.
+2. Slide down to thighs-parallel and hold: hold clock counts UP, skeleton
+   stays green/neutral, no cues while you hold a clean 90°.
+3. Deliberate fault — depth drift: slide UP ~20° (thighs clearly above
+   parallel) and stay there. Within ~1s: thigh segments amber + spoken
+   "Slide down — thighs level with the floor". Slide back down: amber clears,
+   clock resumes.
+4. Deliberate fault — heel rise: lift both heels onto your toes mid-hold.
+   Within ~0.5s: shin/foot segments amber + "Keep both heels on the floor".
+5. Break the hold entirely (stand up): clock pauses (⏸ shows), coach cue
+   "Back into position" class behavior — no red at any point (no safety
+   channel on this coach).

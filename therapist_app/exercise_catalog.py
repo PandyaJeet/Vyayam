@@ -44,8 +44,8 @@ EXERCISES = [
         "movement_pattern": "Squat",
         "equipment": "None",
         "video_url": "",
-        "v2_ghost_supported": False,
-        "v2_exercise_key": "",
+        "v2_ghost_supported": False,  # DARK — flip after filming protocol
+        "v2_exercise_key": "wall_sit_rx",
         "description": "Isometric quad hold at 90° knee flexion against a wall. Builds endurance without axial loading.",
         "default_sets": 3,
         "default_reps": 30,

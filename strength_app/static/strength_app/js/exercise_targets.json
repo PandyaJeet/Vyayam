@@ -6830,6 +6830,28 @@
   "tracking": "camera",
   "unilateral": false
  },
+ "wall_sit_rx": {
+  "display_name": "Wall Sit",
+  "is_hold": true,
+  "js_type": "WALL_SIT_RX",
+  "movement_pattern": "squat",
+  "phases": {
+   "complete": {
+    "avg_knee": 90,
+    "tolerance": 12
+   },
+   "holding": {
+    "avg_knee": 90,
+    "tolerance": 12
+   },
+   "setup": {
+    "avg_knee": 130,
+    "tolerance": 20
+   }
+  },
+  "tracking": "camera",
+  "unilateral": false
+ },
  "wall_slide": {
   "display_name": "Wall Slide",
   "is_hold": true,

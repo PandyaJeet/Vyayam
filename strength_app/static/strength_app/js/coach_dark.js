@@ -125,6 +125,72 @@
   // ══ DARK COACH DEFINITIONS — one block per exercise, appended in build
   //    order. INSERTION MARKER below; do not remove. ══════════════════════
 
+  // ── wall_sit_rx — isometric wall hold, side view ────────────────────────
+  // Primary: knee depth band (90°) + hip stacked under shoulder. Faults:
+  // thighs-above-parallel drift, heel rise. Hold-time counting comes from
+  // the template's single-phase hold machinery (phases.length === 1).
+  function _legKnee(lm, left) {
+    var hp = lm[left ? LM.leftHip : LM.rightHip];
+    var kn = lm[left ? LM.leftKnee : LM.rightKnee];
+    var ak = lm[left ? LM.leftAnkle : LM.rightAnkle];
+    var v = Math.min(vis(hp), vis(kn), vis(ak));
+    return { vis: v, angle: calcAngle(hp, kn, ak) };
+  }
+
+  PHASES.WALL_SIT_RX = {
+    name: 'Wall Sit',
+    bodyOrientation: 'standing',
+    cameraPosition: { view: 'side', instruction: 'Place camera to your side. Your whole body and the wall must be visible.' },
+    setupCues: [
+      'Back flat against the wall. Feet about hip width.',
+      'Walk your feet forward, then slide down the wall.',
+      'Stop when your thighs are level with the floor.',
+      'Knees above your ankles. Hold and breathe.',
+    ],
+    stanceCheck: { kneeOverAnkle: true, label: 'Back on the wall, knees over ankles' },
+    phases: [
+      { name: 'hold', duration: 0, joints: { knee: 90, hip: 95 }, voice: 'Slide down and hold' },
+    ],
+    checkAngles: function (lm) {
+      var knee = (calcAngle(lm[LM.leftHip], lm[LM.leftKnee], lm[LM.leftAnkle]) +
+                  calcAngle(lm[LM.rightHip], lm[LM.rightKnee], lm[LM.rightAnkle])) / 2;
+      var hip = (calcAngle(lm[LM.leftShoulder], lm[LM.leftHip], lm[LM.leftKnee]) +
+                 calcAngle(lm[LM.rightShoulder], lm[LM.rightHip], lm[LM.rightKnee])) / 2;
+      return { knee: knee, hip: hip };
+    },
+    cues: { knee: 'Slide to a right angle at the knee', hip: 'Back against the wall' },
+    forceArrows: [],
+  };
+
+  FAULTS.WALL_SIT_RX = makeFaults([
+    {
+      // Depth band drift: thighs above parallel for >700ms.
+      cue: 'wall_sit_slide_down', modes: ['GUIDING'], minMs: 700,
+      test: function (lm) {
+        var l = _legKnee(lm, true), r = _legKnee(lm, false);
+        var best = (l.vis >= r.vis) ? l : r;
+        if (best.vis < 0.4 || best.angle <= 112) return null;
+        return segs([[23, 25], [24, 26]]);
+      },
+    },
+    {
+      // Heel rise on the camera-facing side.
+      cue: 'wall_sit_heels', modes: ['GUIDING'], minMs: 500,
+      test: function (lm) {
+        var lVis = Math.min(vis(lm[LM.leftHeel]), vis(lm[LM.leftFootIndex]));
+        var rVis = Math.min(vis(lm[LM.rightHeel]), vis(lm[LM.rightFootIndex]));
+        if (Math.max(lVis, rVis) < 0.4) return null;
+        var left = lVis >= rVis;
+        var heel = lm[left ? LM.leftHeel : LM.rightHeel];
+        var toe = lm[left ? LM.leftFootIndex : LM.rightFootIndex];
+        if ((toe.y - heel.y) <= 0.03) return null;
+        return left ? segs([[25, 27], [27, 29], [27, 31]])
+                    : segs([[26, 28], [28, 30], [28, 32]]);
+      },
+    },
+  ]);
+  CUE_IDS.push('wall_sit_slide_down', 'wall_sit_heels');
+
   // [VYAYAM-DARK-DEFS-END]
 
   return {

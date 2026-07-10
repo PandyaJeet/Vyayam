@@ -3991,4 +3991,23 @@ EXERCISE_CONTENT_GAP_FILL = {
         'language_beginner': 'Bend and straighten your elbows overhead to work the back of the arms.',
     },
 
+    # ========================================================================
+    # 2026-07 DARK prescription-tier coaches (*_rx) — plain movement language
+    # only; no clinical claims (mentor queue covers cue strings).
+    # ========================================================================
+    'wall_sit_rx': {
+        'display_name': 'Wall Sit',
+        'movement_pattern': 'squat',
+        'level': 'foundation',
+        'target_muscles': ['Quadriceps', 'Glutes'],
+        'instructions': [
+            'Stand with your back flat against a wall, feet hip-width apart.',
+            'Walk your feet forward and slide down until your thighs are level with the floor.',
+            'Keep your knees above your ankles and your back on the wall.',
+            'Hold the position, breathing steadily, then slide back up.',
+        ],
+        'form_cues': ['Thighs level with the floor', 'Heels stay down', 'Back flat on the wall'],
+        'mind_muscle_cue': {'during': 'Push the floor away through your heels.'},
+    },
+
 }

@@ -216,6 +216,7 @@
 | tuck_jumps | ok | 83.8 | 80.0 | 0 |
 | single_leg_landing | ok | 83.5 | 65.0 | 0 |
 | wall_sit | ok | 83.4 | 50.0 | 0 |
+| wall_sit_rx | ok | 83.4 | 50.0 | 0 |
 | split_squat_static | ok | 82.8 | 49.1 | 0 |
 | box_squat | ok | 82.0 | 48.3 | 0 |
 | straight_leg_raises | ok | 81.8 | 75.0 | 0 |

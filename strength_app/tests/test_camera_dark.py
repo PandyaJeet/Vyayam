@@ -21,6 +21,8 @@ JS_DIR = Path(strength_app.__file__).parent / 'static' / 'strength_app' / 'js'
 
 # key → (catalog exercise_id, js_type, is_hold, new cue ids)
 DARK_COACHES = {
+    'wall_sit_rx': ('ex_wall_sit', 'WALL_SIT_RX', True,
+                    ['wall_sit_slide_down', 'wall_sit_heels']),
 }
 
 # Cue ids the dark coaches reuse from the existing registry.
@@ -85,8 +87,10 @@ class TestDarkCoachIntegrity(TestCase):
             self.assertTrue(content.get('form_cues'), key)
             self.assertTrue(content.get('instructions'), key)
             # 5. js def + cue sync (forever-rule)
-            self.assertIn(js_type + ': {', dark_js,
+            self.assertIn(f'PHASES.{js_type} = {{', dark_js,
                           f'{js_type} def missing in coach_dark.js')
+            self.assertIn(f'FAULTS.{js_type}', dark_js,
+                          f'{js_type} fault observer missing')
             for cue_id in cue_ids:
                 self.assertIn(cue_id, core_ids,
                               f'{cue_id}: missing from coach_core CUES')

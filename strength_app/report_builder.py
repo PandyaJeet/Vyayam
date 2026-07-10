@@ -103,6 +103,9 @@ CUE_TEXT = {
     'orientation_prone': 'Lie face down',
     'orientation_sidelying': 'Lie on your side',
     'hold_position': 'Back into position',
+    # 2026-07 dark coaches — keep in lockstep with coach_core.js CUES.
+    'wall_sit_slide_down': 'Slide down — thighs level with the floor',
+    'wall_sit_heels': 'Keep both heels on the floor',
 }
 
 DIFFICULTY_LABEL = {

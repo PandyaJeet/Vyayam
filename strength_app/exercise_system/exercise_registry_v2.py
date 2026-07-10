@@ -29,6 +29,8 @@ from typing import Dict, List
 # ============================================================================
 
 # STRENGTH - FOUNDATION (9)
+# 2026-07 DARK prescription-tier coaches (catalog flags stay False)
+from .exercises import WallSitRxV2
 from .exercises import PartialSquatsV2
 from .exercises import GluteBridgeV2
 from .exercises import StraightLegRaisesV2
@@ -2976,6 +2978,22 @@ EXERCISE_METADATA = {
         'unilateral': True,
         'movement_pattern': 'push',
         'new_in_v2': True,
+    },
+
+    # ========================================================================
+    # 2026-07 DARK PRESCRIPTION-TIER COACHES — *_rx keys. Reachable only via
+    # therapist-catalog v2_exercise_key entries whose v2_ghost_supported flag
+    # is still False (ship dark; flip per exercise after filming protocol).
+    # ========================================================================
+    'wall_sit_rx': {
+        'class': WallSitRxV2,
+        'category': 'strength',
+        'subcategory': 'foundation',
+        'level': 1,
+        'display_name': 'Wall Sit',
+        'unilateral': False,
+        'movement_pattern': 'squat',
+        'rx_dark_2026_07': True,
     },
 }
 

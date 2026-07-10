@@ -64,6 +64,10 @@
     squat_asymmetry:     { text: "Uneven — you're loading one side more. Even out both knees.", priority: 'safety' },
     // Comfort-conditional depth encouragement — never commands depth.
     squat_depth_gentle:  { text: "You can go a little deeper if it's comfortable.",     priority: 'refinement' },
+    // 2026-07 dark coaches (*_rx exercises — DARK until catalog flags flip;
+    // strings queued for mentor review in MENTOR_REVIEW_QUEUE §2026-07).
+    wall_sit_slide_down: { text: 'Slide down — thighs level with the floor', priority: 'primary' },
+    wall_sit_heels:      { text: 'Keep both heels on the floor',             priority: 'primary' },
   };
 
   // Reinforcement when a specific cue is corrected (R4c) — specific first,

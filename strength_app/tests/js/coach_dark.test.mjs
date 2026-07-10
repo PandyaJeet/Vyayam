@@ -97,4 +97,58 @@ test('fault factory: sustain window, cooldown, hold vs rep gating', () => {
 
 // ══ per-exercise suites appended in build order ══════════════════════════
 
+test('WALL_SIT_RX: hold pose scores, standing does not; depth + heel faults fire', () => {
+  const def = dark.PHASES.WALL_SIT_RX;
+  assert.equal(def.phases.length, 1, 'wall sit is a single-phase hold');
+
+  // Side-view wall sit: thigh horizontal (hip→knee), shin vertical
+  // (knee→ankle), torso vertical (shoulder above hip) → knee 90, hip 90.
+  const sit = frame();
+  sit[L.leftShoulder] = P(0.40, 0.30); sit[L.rightShoulder] = P(0.41, 0.30);
+  sit[L.leftHip] = P(0.40, 0.50);      sit[L.rightHip] = P(0.41, 0.50);
+  sit[L.leftKnee] = P(0.54, 0.50);     sit[L.rightKnee] = P(0.55, 0.50);
+  sit[L.leftAnkle] = P(0.54, 0.66);    sit[L.rightAnkle] = P(0.55, 0.66);
+  sit[L.leftHeel] = P(0.53, 0.68);     sit[L.rightHeel] = P(0.54, 0.68);
+  sit[L.leftFootIndex] = P(0.58, 0.68); sit[L.rightFootIndex] = P(0.59, 0.68);
+  assert.ok(scorePhase(def, 'hold', sit) >= 70,
+            `hold pose scored ${scorePhase(def, 'hold', sit)}`);
+
+  // Standing: everything vertical → knee/hip ~180 → nowhere near the hold.
+  const stand = frame();
+  stand[L.leftShoulder] = P(0.40, 0.20); stand[L.rightShoulder] = P(0.41, 0.20);
+  stand[L.leftHip] = P(0.40, 0.50);      stand[L.rightHip] = P(0.41, 0.50);
+  stand[L.leftKnee] = P(0.40, 0.70);     stand[L.rightKnee] = P(0.41, 0.70);
+  stand[L.leftAnkle] = P(0.40, 0.90);    stand[L.rightAnkle] = P(0.41, 0.90);
+  assert.ok(scorePhase(def, 'hold', stand) < 70,
+            `standing scored ${scorePhase(def, 'hold', stand)}`);
+
+  // Fault: thighs above parallel (knee angle ~135°) sustained → slide-down.
+  const shallow = frame();
+  shallow[L.leftHip] = P(0.40, 0.50);   shallow[L.rightHip] = P(0.41, 0.50);
+  shallow[L.leftKnee] = P(0.50, 0.60);  shallow[L.rightKnee] = P(0.51, 0.60);
+  shallow[L.leftAnkle] = P(0.50, 0.76); shallow[L.rightAnkle] = P(0.51, 0.76);
+  const gs = { mode: 'GUIDING', isHoldExercise: true, repCount: 0 };
+  const obs = dark.FAULTS.WALL_SIT_RX;
+  obs.resetSet(); obs._lastAt = {};
+  let cued = runFaults(obs, [shallow, shallow, shallow, shallow, shallow, shallow], gs);
+  assert.deepEqual(cued, ['wall_sit_slide_down']);
+
+  // Fault: heel rise (heel well above toe on facing side) → heels cue.
+  const heels = frame();
+  heels[L.leftHip] = P(0.40, 0.50);   heels[L.rightHip] = P(0.41, 0.50);
+  heels[L.leftKnee] = P(0.54, 0.50);  heels[L.rightKnee] = P(0.55, 0.50);
+  heels[L.leftAnkle] = P(0.54, 0.66); heels[L.rightAnkle] = P(0.55, 0.66);
+  heels[L.leftHeel] = P(0.53, 0.62);  heels[L.rightHeel] = P(0.54, 0.62);   // lifted
+  heels[L.leftFootIndex] = P(0.58, 0.68); heels[L.rightFootIndex] = P(0.59, 0.68);
+  obs.resetSet(); obs._lastAt = {};
+  cued = runFaults(obs, [heels, heels, heels, heels], gs);
+  assert.deepEqual(cued, ['wall_sit_heels']);
+
+  // Faults stay silent outside GUIDING (demo/waiting frames never cue).
+  obs.resetSet(); obs._lastAt = {};
+  cued = runFaults(obs, [shallow, shallow, shallow],
+                   { mode: 'DEMO', isHoldExercise: true, repCount: 0 });
+  assert.deepEqual(cued, []);
+});
+
 // [VYAYAM-DARK-TESTS-END]

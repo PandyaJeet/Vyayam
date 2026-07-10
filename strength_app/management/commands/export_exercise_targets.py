@@ -137,6 +137,9 @@ CAMERA = {
     'band_pull_apart': 'BAND_PULL_APART', 'face_pull_band': 'PULL',
     # ── Supine core ──
     'dead_bug': 'DEAD_BUG', 'single_leg_dead_bug': 'DEAD_BUG',
+    # ── 2026-07 DARK prescription-tier coaches (*_rx keys; catalog flags
+    #    stay False — nothing patient-reachable routes here yet) ──
+    'wall_sit_rx': 'WALL_SIT_RX',
 }
 
 # Manual — no JS template matches the real movement, the movement travels
