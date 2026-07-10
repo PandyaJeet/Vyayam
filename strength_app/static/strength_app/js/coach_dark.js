@@ -431,6 +431,61 @@
 
   FAULTS.KNEE_TO_CHEST_RX = makeFaults([]);   // hold-loss handled by the hold gate
 
+  // ── prone_knee_bend_rx — prone knee-flexion reps, side view ─────────────
+  // Primary: working knee angle cycling 172° → 90°. Fault: hips lifting
+  // off the floor (compensation — the thigh must stay down).
+  function _pkbWorking(lm) {
+    var lKnee = calcAngle(lm[LM.leftHip], lm[LM.leftKnee], lm[LM.leftAnkle]);
+    var rKnee = calcAngle(lm[LM.rightHip], lm[LM.rightKnee], lm[LM.rightAnkle]);
+    var left = lKnee <= rKnee;
+    return {
+      left: left,
+      knee: left ? lKnee : rKnee,
+      hip: left ? calcAngle(lm[LM.leftShoulder], lm[LM.leftHip], lm[LM.leftKnee])
+                : calcAngle(lm[LM.rightShoulder], lm[LM.rightHip], lm[LM.rightKnee]),
+    };
+  }
+
+  PHASES.PRONE_KNEE_BEND_RX = {
+    name: 'Prone Knee Bend',
+    bodyOrientation: 'prone',
+    cameraPosition: { view: 'side', instruction: 'Place camera to your side at floor level while you lie face down. Full body visible.' },
+    setupCues: [
+      'Lie face down, both legs straight.',
+      'Bend the working knee — heel toward your buttock.',
+      'Hips stay flat. Only the knee moves.',
+      'Lower back down slowly.',
+    ],
+    stanceCheck: null,
+    phases: [
+      { name: 'rest',  duration: 0,    joints: { workingKnee: 172 }, voice: 'Legs flat' },
+      { name: 'bend',  duration: 2000, joints: { workingKnee: 90 },  voice: 'Heel toward your buttock' },
+      { name: 'hold',  duration: 800,  joints: { workingKnee: 90 },  voice: 'Hold' },
+      { name: 'lower', duration: 2000, joints: { workingKnee: 172 }, voice: 'Lower slowly' },
+    ],
+    checkAngles: function (lm) {
+      return { workingKnee: _pkbWorking(lm).knee };
+    },
+    cues: { workingKnee: 'Bring the heel a little closer' },
+    forceArrows: [],
+  };
+
+  FAULTS.PRONE_KNEE_BEND_RX = makeFaults([
+    {
+      // Hip lift: working-side hip angle closes while the knee bends.
+      cue: 'prone_hips_flat', modes: ['USER_FOLLOWS', 'GHOST_LEADS'], minMs: 400,
+      test: function (lm) {
+        if (!allVisible(lm, [LM.leftShoulder, LM.leftHip, LM.leftKnee,
+                             LM.rightShoulder, LM.rightHip, LM.rightKnee])) return null;
+        var w = _pkbWorking(lm);
+        if (w.knee > 150) return null;       // not bending — nothing to judge
+        if (w.hip >= 155) return null;       // hips still flat
+        return HIP_SEGS;
+      },
+    },
+  ]);
+  CUE_IDS.push('prone_hips_flat');
+
   // [VYAYAM-DARK-DEFS-END]
 
   return {

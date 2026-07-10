@@ -272,3 +272,13 @@ the filming day BEFORE flipping that exercise's flag.
    the clock pauses (⏸) because the match score falls below the hold gate;
    "Back into position" class cue. Draw back in: clock resumes.
 4. Both sides. No red at any point.
+
+### H32. prone_knee_bend_rx — Prone Knee Bend (reps, side view)
+1. Camera to your SIDE at floor level; lie face down, full body in frame.
+2. Clean reps (heel to buttock, slow lower, hips flat): rep counter
+   advances once per full cycle.
+3. Deliberate fault — lift your hips off the floor as you bend the knee
+   (tent up through the pelvis). Within ~0.5s: hip segments amber + "Keep
+   your hips on the floor".
+4. Shallow bend (~30°): the bend phase must NOT complete — no rep counted.
+5. Both legs. No red at any point.

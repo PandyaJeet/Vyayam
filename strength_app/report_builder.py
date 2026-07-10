@@ -111,6 +111,7 @@ CUE_TEXT = {
     'side_plank_hip_drop': 'Push your hip up',
     'balance_foot_down': 'Lift your foot to restart the clock',
     'slr_knee_straight': 'Keep that knee locked straight',
+    'prone_hips_flat': 'Keep your hips on the floor',
 }
 
 DIFFICULTY_LABEL = {

@@ -216,6 +216,7 @@
 | partial_squats | ok | 85.2 | 55.4 | 1 |
 | foam_rolling | ok | 85.0 | 85.0 | 0 |
 | single_leg_slider_curl | ok | 84.1 | 50.0 | 0 |
+| prone_knee_bend_rx | ok | 83.9 | 50.0 | 0 |
 | tuck_jumps | ok | 83.8 | 80.0 | 0 |
 | single_leg_landing | ok | 83.5 | 65.0 | 0 |
 | wall_sit | ok | 83.4 | 50.0 | 0 |

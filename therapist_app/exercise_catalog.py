@@ -456,8 +456,8 @@ EXERCISES = [
         "movement_pattern": "Mobility",
         "equipment": "None",
         "video_url": "",
-        "v2_ghost_supported": False,
-        "v2_exercise_key": "",
+        "v2_ghost_supported": False,  # DARK — flip after filming protocol
+        "v2_exercise_key": "prone_knee_bend_rx",
         "description": "Lie face down with both legs straight. Slowly bend the working knee, bringing the heel toward your buttock as far as is comfortable, then lower it back down with control. Keep the hips flat and the thigh still — only the knee moves. Restores knee-bending range; stop at a gentle stretch, not pain.",
         "default_sets": 3,
         "default_reps": 12,

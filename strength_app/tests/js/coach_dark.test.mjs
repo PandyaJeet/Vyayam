@@ -318,4 +318,44 @@ test('KNEE_TO_CHEST_RX: drawn-in knee scores the hold; flat legs do not', () => 
             `flat scored ${scorePhase(def, 'hold', flat)}`);
 });
 
+test('PRONE_KNEE_BEND_RX: flat/bent phases score in sequence; hip lift faults', () => {
+  const def = dark.PHASES.PRONE_KNEE_BEND_RX;
+  assert.equal(def.phases.length, 4);
+
+  // Prone side view, body horizontal, legs flat.
+  const flat = frame();
+  flat[L.leftShoulder] = P(0.25, 0.70); flat[L.rightShoulder] = P(0.25, 0.71);
+  flat[L.leftHip] = P(0.45, 0.70);      flat[L.rightHip] = P(0.45, 0.71);
+  flat[L.leftKnee] = P(0.60, 0.70);     flat[L.rightKnee] = P(0.60, 0.71);
+  flat[L.leftAnkle] = P(0.72, 0.70);    flat[L.rightAnkle] = P(0.72, 0.71);
+  assert.ok(scorePhase(def, 'rest', flat) >= 70);
+  assert.ok(scorePhase(def, 'bend', flat) < 70);
+
+  // Left knee bent ~90°: shank rises vertically from the knee.
+  const bent = frame();
+  bent[L.leftShoulder] = P(0.25, 0.70); bent[L.rightShoulder] = P(0.25, 0.71);
+  bent[L.leftHip] = P(0.45, 0.70);      bent[L.rightHip] = P(0.45, 0.71);
+  bent[L.leftKnee] = P(0.60, 0.70);     bent[L.rightKnee] = P(0.60, 0.71);
+  bent[L.leftAnkle] = P(0.60, 0.56);    bent[L.rightAnkle] = P(0.72, 0.71);
+  assert.ok(scorePhase(def, 'bend', bent) >= 70,
+            `bend scored ${scorePhase(def, 'bend', bent)}`);
+  assert.ok(scorePhase(def, 'rest', bent) < 70);
+
+  // Hip lift while bending: hip rises → working hip angle closes.
+  const lifted = frame();
+  lifted[L.leftShoulder] = P(0.25, 0.70); lifted[L.rightShoulder] = P(0.25, 0.71);
+  lifted[L.leftHip] = P(0.45, 0.58);      lifted[L.rightHip] = P(0.45, 0.59);
+  lifted[L.leftKnee] = P(0.60, 0.70);     lifted[L.rightKnee] = P(0.60, 0.71);
+  lifted[L.leftAnkle] = P(0.60, 0.56);    lifted[L.rightAnkle] = P(0.72, 0.71);
+
+  const gs = { mode: 'USER_FOLLOWS', isHoldExercise: false, repCount: 0 };
+  const obs = dark.FAULTS.PRONE_KNEE_BEND_RX;
+  obs.resetSet(); obs._lastAt = {};
+  assert.deepEqual(runFaults(obs, [lifted, lifted, lifted, lifted], gs),
+                   ['prone_hips_flat']);
+  obs.resetSet(); obs._lastAt = {};
+  assert.deepEqual(runFaults(obs, [bent, bent, bent, bent], gs), []);
+  assert.deepEqual(runFaults(obs, [flat, flat, flat], gs), []);
+});
+
 // [VYAYAM-DARK-TESTS-END]

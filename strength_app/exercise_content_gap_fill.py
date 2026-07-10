@@ -4085,4 +4085,19 @@ EXERCISE_CONTENT_GAP_FILL = {
         'mind_muscle_cue': {'during': 'Let the hip soften a little more with each breath out.'},
     },
 
+    'prone_knee_bend_rx': {
+        'display_name': 'Prone Knee Bend',
+        'movement_pattern': 'mobility',
+        'level': 'foundation',
+        'target_muscles': ['Knee', 'Quadriceps'],
+        'instructions': [
+            'Lie face down with both legs straight.',
+            'Slowly bend the working knee, bringing the heel toward your buttock.',
+            'Go as far as is comfortable — a gentle stretch, never pain.',
+            'Lower back down with control. The hips stay flat throughout.',
+        ],
+        'form_cues': ['Hips stay flat on the floor', 'Only the knee moves', 'Slow both directions'],
+        'mind_muscle_cue': {'during': 'Draw the heel in with the back of your thigh.'},
+    },
+
 }

@@ -4245,6 +4245,28 @@
   "tracking": "manual",
   "unilateral": true
  },
+ "prone_knee_bend_rx": {
+  "display_name": "Prone Knee Bend",
+  "is_hold": false,
+  "js_type": "PRONE_KNEE_BEND_RX",
+  "movement_pattern": "mobility",
+  "phases": {
+   "complete": {
+    "tolerance": 18,
+    "working_knee": 90
+   },
+   "holding": {
+    "tolerance": 18,
+    "working_knee": 90
+   },
+   "setup": {
+    "tolerance": 15,
+    "working_knee": 172
+   }
+  },
+  "tracking": "camera",
+  "unilateral": true
+ },
  "prone_scorpion": {
   "display_name": "Prone Scorpion",
   "is_hold": true,
