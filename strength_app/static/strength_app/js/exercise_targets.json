@@ -309,6 +309,32 @@
   "tracking": "camera",
   "unilateral": false
  },
+ "band_row_rx": {
+  "display_name": "Resistance Band Row",
+  "is_hold": false,
+  "js_type": "ROW_BAND_RX",
+  "movement_pattern": "pull",
+  "phases": {
+   "hanging": {
+    "avg_elbow": 170,
+    "tolerance": 12
+   },
+   "lowering": {
+    "avg_elbow": 120,
+    "tolerance": 15
+   },
+   "pulling": {
+    "avg_elbow": 110,
+    "tolerance": 15
+   },
+   "top": {
+    "avg_elbow": 45,
+    "tolerance": 12
+   }
+  },
+  "tracking": "camera",
+  "unilateral": false
+ },
  "band_woodchop": {
   "display_name": "Band Woodchop",
   "is_hold": false,

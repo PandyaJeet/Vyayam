@@ -114,6 +114,7 @@ CUE_TEXT = {
     'prone_hips_flat': 'Keep your hips on the floor',
     'pelvis_still': 'Keep your pelvis still',
     'press_even': 'Press both arms up together',
+    'row_sit_tall': 'Sit tall — pull with your back',
 }
 
 DIFFICULTY_LABEL = {

@@ -254,6 +254,7 @@
 | skater_squat | ok | 78.7 | 47.9 | 0 |
 | rotational_swings | ok | 78.5 | 55.0 | 0 |
 | dumbbell_rowing | ok | 78.3 | 50.0 | 0 |
+| band_row_rx | ok | 78.3 | 50.0 | 0 |
 | sprint_in_place | ok | 77.5 | 77.5 | 0 |
 | glute_bridge | ok | 77.1 | 67.5 | 0 |
 | hindu_squat | ok | 76.7 | 44.9 | 0 |

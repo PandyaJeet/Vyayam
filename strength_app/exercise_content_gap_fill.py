@@ -4145,4 +4145,19 @@ EXERCISE_CONTENT_GAP_FILL = {
         'mind_muscle_cue': {'during': 'Push the ceiling away evenly with both hands.'},
     },
 
+    'band_row_rx': {
+        'display_name': 'Resistance Band Row',
+        'movement_pattern': 'pull',
+        'level': 'foundation',
+        'target_muscles': ['Mid-back', 'Lats', 'Rear shoulders'],
+        'instructions': [
+            'Sit tall with the band anchored around your feet, arms long.',
+            'Pull the band to your lower ribs, elbows sliding past your sides.',
+            'Squeeze your shoulder blades together at the back.',
+            'Return slowly to arms long. Your torso stays tall throughout.',
+        ],
+        'form_cues': ['Sit tall — no leaning back', 'Elbows brush your sides', 'Squeeze the shoulder blades'],
+        'mind_muscle_cue': {'during': 'Start each pull by drawing the shoulder blades together.'},
+    },
+
 }

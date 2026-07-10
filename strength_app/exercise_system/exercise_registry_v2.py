@@ -40,6 +40,7 @@ from .exercises import ProneKneeBendRxV2
 from .exercises import SupineHipAbductionRxV2
 from .exercises import SidelyingHipAbductionRxV2
 from .exercises import DbShoulderPressRxV2
+from .exercises import BandRowRxV2
 from .exercises import PartialSquatsV2
 from .exercises import GluteBridgeV2
 from .exercises import StraightLegRaisesV2
@@ -3002,6 +3003,16 @@ EXERCISE_METADATA = {
         'display_name': 'Wall Sit',
         'unilateral': False,
         'movement_pattern': 'squat',
+        'rx_dark_2026_07': True,
+    },
+    'band_row_rx': {
+        'class': BandRowRxV2,
+        'category': 'strength',
+        'subcategory': 'foundation',
+        'level': 1,
+        'display_name': 'Resistance Band Row',
+        'unilateral': False,
+        'movement_pattern': 'pull',
         'rx_dark_2026_07': True,
     },
     'db_shoulder_press_rx': {

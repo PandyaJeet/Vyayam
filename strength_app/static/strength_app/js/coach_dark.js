@@ -638,6 +638,59 @@
   ]);
   CUE_IDS.push('press_even');
 
+  // ── band_row_rx — seated/standing band row, side view ───────────────────
+  // Primary: average elbow angle cycling 165° (reach) → 70° (pull).
+  // Fault: leaning back to cheat the pull — trunk angle drifting from its
+  // per-set baseline by >15°.
+  var _rowBase = { v: null };
+  function _rowTrunk(lm) {
+    return (calcAngle(lm[LM.leftShoulder], lm[LM.leftHip], lm[LM.leftKnee]) +
+            calcAngle(lm[LM.rightShoulder], lm[LM.rightHip], lm[LM.rightKnee])) / 2;
+  }
+
+  PHASES.ROW_BAND_RX = {
+    name: 'Resistance Band Row',
+    bodyOrientation: 'standing',
+    cameraPosition: { view: 'side', instruction: 'Place camera to your side. Torso, arms and hips must be visible.' },
+    setupCues: [
+      'Sit tall, band anchored around your feet.',
+      'Arms long, band just taut.',
+      'Pull to your lower ribs — elbows brush your sides.',
+      'Squeeze your shoulder blades, then return slowly.',
+    ],
+    stanceCheck: { shoulderShrug: true, label: 'Sit tall, shoulders down' },
+    phases: [
+      { name: 'reach',   duration: 0,    joints: { elbow: 165 }, voice: 'Arms long, band taut' },
+      { name: 'pull',    duration: 1500, joints: { elbow: 70 },  voice: 'Pull to your ribs' },
+      { name: 'squeeze', duration: 700,  joints: { elbow: 70 },  voice: 'Squeeze the shoulder blades' },
+      { name: 'return',  duration: 1500, joints: { elbow: 165 }, voice: 'Slowly return' },
+    ],
+    checkAngles: function (lm) {
+      var e = _elbows(lm);
+      return { elbow: (e.left + e.right) / 2 };
+    },
+    cues: { elbow: 'Pull all the way to your ribs' },
+    forceArrows: [],
+  };
+
+  FAULTS.ROW_BAND_RX = makeFaults([
+    {
+      // Lean-back cheat: trunk opens >15° past its set baseline.
+      cue: 'row_sit_tall', modes: ['USER_FOLLOWS', 'GHOST_LEADS'], minMs: 400,
+      test: function (lm) {
+        if (!allVisible(lm, [LM.leftShoulder, LM.leftHip, LM.leftKnee,
+                             LM.rightShoulder, LM.rightHip, LM.rightKnee])) return null;
+        var trunk = _rowTrunk(lm);
+        if (_rowBase.v === null) { _rowBase.v = trunk; return null; }
+        if (trunk - _rowBase.v <= 15) return null;
+        return TRUNK_SEGS;
+      },
+    },
+  ]);
+  var _rowReset = FAULTS.ROW_BAND_RX.resetSet.bind(FAULTS.ROW_BAND_RX);
+  FAULTS.ROW_BAND_RX.resetSet = function () { _rowBase.v = null; _rowReset(); };
+  CUE_IDS.push('row_sit_tall');
+
   // [VYAYAM-DARK-DEFS-END]
 
   return {

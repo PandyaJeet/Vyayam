@@ -314,3 +314,14 @@ the filming day BEFORE flipping that exercise's flag.
    appears ("Drop your shoulders away from your ears") — warning only.
 5. Half press (elbows to ~120°): the press phase must NOT complete.
 6. No red at any point.
+
+### H36. band_row_rx — Resistance Band Row (reps, side view)
+1. Camera to your SIDE, ~2m; sit with the band around your feet, torso and
+   arms in frame.
+2. Clean reps (pull to the ribs, squeeze, slow return, torso tall): rep
+   counter advances once per pull-and-return cycle.
+3. Deliberate fault — lean your torso back as you pull (rocking the weight
+   back). Within ~0.5s: trunk segments amber + "Sit tall — pull with your
+   back".
+4. Half pull (elbows to ~120°): the pull phase must NOT complete.
+5. No red at any point.

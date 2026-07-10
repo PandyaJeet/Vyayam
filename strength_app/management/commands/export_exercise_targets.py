@@ -149,6 +149,7 @@ CAMERA = {
     'supine_hip_abduction_rx': 'SUPINE_ABD_RX',
     'sidelying_hip_abduction_rx': 'SIDELYING_ABD_RX',
     'db_shoulder_press_rx': 'PRESS_DB_RX',
+    'band_row_rx': 'ROW_BAND_RX',
 }
 
 # Manual — no JS template matches the real movement, the movement travels

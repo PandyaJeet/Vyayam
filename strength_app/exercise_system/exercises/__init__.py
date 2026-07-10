@@ -269,6 +269,7 @@ from .prone_knee_bend_rx_v2 import ProneKneeBendRxV2
 from .supine_hip_abduction_rx_v2 import SupineHipAbductionRxV2
 from .sidelying_hip_abduction_rx_v2 import SidelyingHipAbductionRxV2
 from .db_shoulder_press_rx_v2 import DbShoulderPressRxV2
+from .band_row_rx_v2 import BandRowRxV2
 from .wall_slide_v2 import WallSlideV2
 from .weighted_pull_up_v2 import WeightedPullUpV2
 from .wide_grip_push_up_v2 import WideGripPushUpV2
@@ -543,6 +544,7 @@ __all__ = [
     "SupineHipAbductionRxV2",
     "SidelyingHipAbductionRxV2",
     "DbShoulderPressRxV2",
+    "BandRowRxV2",
     "WallSlideV2",
     "WeightedPullUpV2",
     "WideGripPushUpV2",

@@ -170,8 +170,8 @@ EXERCISES = [
         "movement_pattern": "Pull",
         "equipment": "Band",
         "video_url": "",
-        "v2_ghost_supported": False,
-        "v2_exercise_key": "",
+        "v2_ghost_supported": False,  # DARK — flip after filming protocol
+        "v2_exercise_key": "band_row_rx",
         "description": "Seated or standing horizontal row with a band. Builds mid-back strength and scapular retraction.",
         "default_sets": 3,
         "default_reps": 12,

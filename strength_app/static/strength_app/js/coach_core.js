@@ -76,6 +76,7 @@
     prone_hips_flat:     { text: 'Keep your hips on the floor',               priority: 'primary' },
     pelvis_still:        { text: 'Keep your pelvis still',                    priority: 'primary' },
     press_even:          { text: 'Press both arms up together',               priority: 'primary' },
+    row_sit_tall:        { text: 'Sit tall — pull with your back',            priority: 'primary' },
   };
 
   // Reinforcement when a specific cue is corrected (R4c) — specific first,

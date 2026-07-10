@@ -466,4 +466,50 @@ test('PRESS_DB_RX: rack/lockout phases score; asymmetric press faults', () => {
   assert.deepEqual(runFaults(obs, [up, up, up, up], gs), []);
 });
 
+test('ROW_BAND_RX: reach/pull phases score; lean-back faults', () => {
+  const def = dark.PHASES.ROW_BAND_RX;
+  assert.equal(def.phases.length, 4);
+
+  // Side view seated: trunk upright, arms long in front (elbow ~straight).
+  const reach = frame();
+  reach[L.leftShoulder] = P(0.40, 0.30); reach[L.rightShoulder] = P(0.41, 0.30);
+  reach[L.leftHip] = P(0.40, 0.55);      reach[L.rightHip] = P(0.41, 0.55);
+  reach[L.leftKnee] = P(0.55, 0.60);     reach[L.rightKnee] = P(0.56, 0.60);
+  reach[L.leftElbow] = P(0.52, 0.36);    reach[L.rightElbow] = P(0.53, 0.36);
+  reach[L.leftWrist] = P(0.64, 0.42);    reach[L.rightWrist] = P(0.65, 0.42);
+  assert.ok(scorePhase(def, 'reach', reach) >= 70,
+            `reach scored ${scorePhase(def, 'reach', reach)}`);
+  assert.ok(scorePhase(def, 'pull', reach) < 70);
+
+  // Pulled: elbow bent to ~70°, wrist back at the ribs.
+  const pull = frame();
+  pull[L.leftShoulder] = P(0.40, 0.30); pull[L.rightShoulder] = P(0.41, 0.30);
+  pull[L.leftHip] = P(0.40, 0.55);      pull[L.rightHip] = P(0.41, 0.55);
+  pull[L.leftKnee] = P(0.55, 0.60);     pull[L.rightKnee] = P(0.56, 0.60);
+  pull[L.leftElbow] = P(0.44, 0.44);    pull[L.rightElbow] = P(0.45, 0.44);
+  pull[L.leftWrist] = P(0.53, 0.38);    pull[L.rightWrist] = P(0.54, 0.38);
+  assert.ok(scorePhase(def, 'pull', pull) >= 70,
+            `pull scored ${scorePhase(def, 'pull', pull)}`);
+  assert.ok(scorePhase(def, 'reach', pull) < 70);
+
+  // Lean-back: shoulders travel behind the hips (trunk opens well past
+  // the upright baseline).
+  const lean = frame();
+  lean[L.leftShoulder] = P(0.28, 0.34); lean[L.rightShoulder] = P(0.29, 0.34);
+  lean[L.leftHip] = P(0.40, 0.55);      lean[L.rightHip] = P(0.41, 0.55);
+  lean[L.leftKnee] = P(0.55, 0.60);     lean[L.rightKnee] = P(0.56, 0.60);
+  lean[L.leftElbow] = P(0.44, 0.44);    lean[L.rightElbow] = P(0.45, 0.44);
+  lean[L.leftWrist] = P(0.53, 0.38);    lean[L.rightWrist] = P(0.54, 0.38);
+
+  const gs = { mode: 'USER_FOLLOWS', isHoldExercise: false, repCount: 0 };
+  const obs = dark.FAULTS.ROW_BAND_RX;
+  obs.resetSet(); obs._lastAt = {};
+  // Baseline set from the upright reach, then the lean sustains → one cue.
+  assert.deepEqual(runFaults(obs, [reach, lean, lean, lean, lean], gs),
+                   ['row_sit_tall']);
+  // Clean rowing never faults.
+  obs.resetSet(); obs._lastAt = {};
+  assert.deepEqual(runFaults(obs, [reach, pull, reach, pull], gs), []);
+});
+
 // [VYAYAM-DARK-TESTS-END]

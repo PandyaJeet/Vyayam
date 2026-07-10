@@ -40,6 +40,7 @@ DARK_COACHES = {
                                    'SIDELYING_ABD_RX', False, []),
     'db_shoulder_press_rx': ('ex_db_shoulder_press', 'PRESS_DB_RX', False,
                              ['press_even']),
+    'band_row_rx': ('ex_band_row', 'ROW_BAND_RX', False, ['row_sit_tall']),
 }
 
 # Cue ids the dark coaches reuse from the existing registry.
