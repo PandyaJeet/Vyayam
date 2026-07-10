@@ -230,3 +230,13 @@ the filming day BEFORE flipping that exercise's flag.
 4. Deliberate fault — pike: push your hips up into a tent. Within ~1s:
    hip segments amber + "Lower your hips — straight line".
 5. Return to a straight line: amber clears, clock resumes. No red ever.
+
+### H28. side_plank_rx — Side Plank (hold, front view)
+1. Camera in FRONT at floor level, ~2.5m; whole side-on body in frame.
+2. Clean side plank (elbow under shoulder, hips up): hold clock counts,
+   skeleton neutral.
+3. Deliberate fault — hip drop: let your hip sink toward the floor and stay.
+   Within ~1s: hip segments amber + "Push your hip up". Lift back: clears.
+4. Both sides: repeat lying on the other side — detection must work
+   mirrored (the coach reads whichever side line is cleaner).
+5. No red at any point.

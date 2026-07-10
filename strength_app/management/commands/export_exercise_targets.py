@@ -141,6 +141,7 @@ CAMERA = {
     #    stay False — nothing patient-reachable routes here yet) ──
     'wall_sit_rx': 'WALL_SIT_RX',
     'plank_hold_rx': 'PLANK_RX',
+    'side_plank_rx': 'SIDE_PLANK_RX',
 }
 
 # Manual — no JS template matches the real movement, the movement travels

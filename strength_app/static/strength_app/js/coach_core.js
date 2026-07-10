@@ -70,6 +70,7 @@
     wall_sit_heels:      { text: 'Keep both heels on the floor',             priority: 'primary' },
     plank_hips_sag:      { text: 'Lift your hips — straight line',           priority: 'primary' },
     plank_hips_pike:     { text: 'Lower your hips — straight line',          priority: 'primary' },
+    side_plank_hip_drop: { text: 'Push your hip up',                          priority: 'primary' },
   };
 
   // Reinforcement when a specific cue is corrected (R4c) — specific first,

@@ -32,6 +32,7 @@ from typing import Dict, List
 # 2026-07 DARK prescription-tier coaches (catalog flags stay False)
 from .exercises import WallSitRxV2
 from .exercises import PlankHoldRxV2
+from .exercises import SidePlankRxV2
 from .exercises import PartialSquatsV2
 from .exercises import GluteBridgeV2
 from .exercises import StraightLegRaisesV2
@@ -2994,6 +2995,16 @@ EXERCISE_METADATA = {
         'display_name': 'Wall Sit',
         'unilateral': False,
         'movement_pattern': 'squat',
+        'rx_dark_2026_07': True,
+    },
+    'side_plank_rx': {
+        'class': SidePlankRxV2,
+        'category': 'strength',
+        'subcategory': 'foundation',
+        'level': 2,
+        'display_name': 'Side Plank',
+        'unilateral': True,
+        'movement_pattern': 'core',
         'rx_dark_2026_07': True,
     },
     'plank_hold_rx': {

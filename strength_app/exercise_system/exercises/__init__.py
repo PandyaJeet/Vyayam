@@ -261,6 +261,7 @@ from .wall_push_up_v2 import WallPushUpV2
 from .wall_sit_v2 import WallSitV2
 from .wall_sit_rx_v2 import WallSitRxV2
 from .plank_hold_rx_v2 import PlankHoldRxV2
+from .side_plank_rx_v2 import SidePlankRxV2
 from .wall_slide_v2 import WallSlideV2
 from .weighted_pull_up_v2 import WeightedPullUpV2
 from .wide_grip_push_up_v2 import WideGripPushUpV2
@@ -527,6 +528,7 @@ __all__ = [
     "WallSitV2",
     "WallSitRxV2",
     "PlankHoldRxV2",
+    "SidePlankRxV2",
     "WallSlideV2",
     "WeightedPullUpV2",
     "WideGripPushUpV2",

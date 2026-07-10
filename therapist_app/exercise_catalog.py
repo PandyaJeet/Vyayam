@@ -280,8 +280,8 @@ EXERCISES = [
         "movement_pattern": "Core",
         "equipment": "None",
         "video_url": "",
-        "v2_ghost_supported": False,
-        "v2_exercise_key": "",
+        "v2_ghost_supported": False,  # DARK — flip after filming protocol
+        "v2_exercise_key": "side_plank_rx",
         "description": "Lateral isometric hold from elbow and feet. Loads the lateral chain and quadratus lumborum.",
         "default_sets": 3,
         "default_reps": 20,

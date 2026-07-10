@@ -122,6 +122,7 @@
 | quad_set_with_shr | ok | 100.0 | 100.0 | 0 |
 | pnf_hamstring_stretch | ok | 100.0 | 100.0 | 0 |
 | single_arm_push_up_prog | ok | 100.0 | 100.0 | 0 |
+| side_plank_rx | ok | 100.0 | 100.0 | 0 |
 | plank_hold_rx | ok | 100.0 | 99.5 | 0 |
 | lateral_gait_training | ok | 99.8 | 98.3 | 0 |
 | static_glutei | ok | 99.3 | 97.5 | 0 |

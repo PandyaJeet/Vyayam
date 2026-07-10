@@ -4930,6 +4930,20 @@
   "tracking": "manual",
   "unilateral": true
  },
+ "side_plank_rx": {
+  "display_name": "Side Plank",
+  "is_hold": true,
+  "js_type": "SIDE_PLANK_RX",
+  "movement_pattern": "core",
+  "phases": {
+   "holding": {
+    "body_line": 178,
+    "tolerance": 12
+   }
+  },
+  "tracking": "camera",
+  "unilateral": true
+ },
  "side_step_downs": {
   "display_name": "Side Step Downs",
   "is_hold": false,

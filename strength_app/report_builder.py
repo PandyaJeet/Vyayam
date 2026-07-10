@@ -108,6 +108,7 @@ CUE_TEXT = {
     'wall_sit_heels': 'Keep both heels on the floor',
     'plank_hips_sag': 'Lift your hips — straight line',
     'plank_hips_pike': 'Lower your hips — straight line',
+    'side_plank_hip_drop': 'Push your hip up',
 }
 
 DIFFICULTY_LABEL = {

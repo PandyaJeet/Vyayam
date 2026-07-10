@@ -4025,4 +4025,19 @@ EXERCISE_CONTENT_GAP_FILL = {
         'mind_muscle_cue': {'during': 'Pull your elbows and toes toward each other.'},
     },
 
+    'side_plank_rx': {
+        'display_name': 'Side Plank',
+        'movement_pattern': 'core',
+        'level': 'foundation',
+        'target_muscles': ['Obliques', 'Glute medius', 'Shoulders'],
+        'instructions': [
+            'Lie on your side, elbow directly under your shoulder, legs straight.',
+            'Stack or stagger your feet, then lift your hips off the floor.',
+            'Hold one straight line from head to feet — hips high.',
+            'Breathe steadily; switch sides after the hold.',
+        ],
+        'form_cues': ['Elbow under the shoulder', 'Hips lifted and stacked', 'Long straight line, head to feet'],
+        'mind_muscle_cue': {'during': 'Push the floor away and lift your hip to the ceiling.'},
+    },
+
 }

@@ -191,4 +191,32 @@ test('PLANK_RX: flat plank scores, standing does not; sag and pike fault', () =>
   assert.deepEqual(runFaults(obs, [plank, plank, plank, plank], gs), []);
 });
 
+test('SIDE_PLANK_RX: straight lateral line scores; dropped hip faults', () => {
+  const def = dark.PHASES.SIDE_PLANK_RX;
+  assert.equal(def.phases.length, 1);
+
+  // Straight side plank: shoulder-hip-ankle collinear near the floor.
+  const hold = frame();
+  hold[L.leftShoulder] = P(0.25, 0.66); hold[L.rightShoulder] = P(0.25, 0.64);
+  hold[L.leftHip] = P(0.50, 0.68);      hold[L.rightHip] = P(0.50, 0.66);
+  hold[L.leftAnkle] = P(0.75, 0.70);    hold[L.rightAnkle] = P(0.75, 0.68);
+  assert.ok(scorePhase(def, 'hold', hold) >= 70,
+            `hold scored ${scorePhase(def, 'hold', hold)}`);
+
+  // Hip dropped toward the floor: line collapses well below 162.
+  const drop = frame();
+  drop[L.leftShoulder] = P(0.25, 0.62); drop[L.rightShoulder] = P(0.25, 0.60);
+  drop[L.leftHip] = P(0.50, 0.78);      drop[L.rightHip] = P(0.50, 0.76);
+  drop[L.leftAnkle] = P(0.75, 0.62);    drop[L.rightAnkle] = P(0.75, 0.60);
+  assert.ok(scorePhase(def, 'hold', drop) < 70);
+
+  const gs = { mode: 'GUIDING', isHoldExercise: true, repCount: 0 };
+  const obs = dark.FAULTS.SIDE_PLANK_RX;
+  obs.resetSet(); obs._lastAt = {};
+  assert.deepEqual(runFaults(obs, [drop, drop, drop, drop, drop], gs),
+                   ['side_plank_hip_drop']);
+  obs.resetSet(); obs._lastAt = {};
+  assert.deepEqual(runFaults(obs, [hold, hold, hold, hold], gs), []);
+});
+
 // [VYAYAM-DARK-TESTS-END]

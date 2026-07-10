@@ -250,6 +250,51 @@
   ]);
   CUE_IDS.push('plank_hips_sag', 'plank_hips_pike');
 
+  // ── side_plank_rx — lateral hold, front view ────────────────────────────
+  // Primary: lateral body line (the supporting side reads closest to 180°)
+  // + horizontal body. Fault: hip drop (line collapses below ~162°).
+  function _lateralLine(lm) {
+    var leftLine = calcAngle(lm[LM.leftShoulder], lm[LM.leftHip], lm[LM.leftAnkle]);
+    var rightLine = calcAngle(lm[LM.rightShoulder], lm[LM.rightHip], lm[LM.rightAnkle]);
+    return (Math.abs(leftLine - 180) < Math.abs(rightLine - 180)) ? leftLine : rightLine;
+  }
+
+  PHASES.SIDE_PLANK_RX = {
+    name: 'Side Plank',
+    bodyOrientation: 'sidelying',
+    cameraPosition: { view: 'front', instruction: 'Place camera in front of you at floor level so it sees your whole side-on body.' },
+    setupCues: [
+      'Lie on your side. Elbow directly under your shoulder.',
+      'Stack your feet, or stagger them for balance.',
+      'Lift your hips — one straight line from head to feet.',
+      'Breathe steadily and hold.',
+    ],
+    stanceCheck: { hipLevel: true, label: 'Elbow under shoulder, hips lifted' },
+    phases: [
+      { name: 'hold', duration: 0, joints: { lateralLine: 178, plankLevel: 0.05 }, voice: 'Hips up — hold the line' },
+    ],
+    checkAngles: function (lm) {
+      var plankLevel = Math.abs(
+        (lm[LM.leftShoulder].y + lm[LM.rightShoulder].y) / 2 -
+        (lm[LM.leftAnkle].y + lm[LM.rightAnkle].y) / 2);
+      return { lateralLine: _lateralLine(lm), plankLevel: plankLevel };
+    },
+    cues: { lateralLine: 'Lift your hip', plankLevel: 'Get into side plank on the floor' },
+    forceArrows: [],
+  };
+
+  FAULTS.SIDE_PLANK_RX = makeFaults([
+    {
+      cue: 'side_plank_hip_drop', modes: ['GUIDING'], minMs: 600,
+      test: function (lm) {
+        if (!allVisible(lm, [LM.leftShoulder, LM.leftHip, LM.leftAnkle])) return null;
+        if (_lateralLine(lm) >= 162) return null;
+        return HIP_SEGS;
+      },
+    },
+  ]);
+  CUE_IDS.push('side_plank_hip_drop');
+
   // [VYAYAM-DARK-DEFS-END]
 
   return {
