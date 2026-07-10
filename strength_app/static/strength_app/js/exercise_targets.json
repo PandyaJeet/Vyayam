@@ -3053,6 +3053,28 @@
   "tracking": "camera",
   "unilateral": false
  },
+ "knee_to_chest_rx": {
+  "display_name": "Knee to Chest",
+  "is_hold": true,
+  "js_type": "KNEE_TO_CHEST_RX",
+  "movement_pattern": "mobility",
+  "phases": {
+   "complete": {
+    "tolerance": 20,
+    "working_hip": 55
+   },
+   "holding": {
+    "tolerance": 20,
+    "working_hip": 55
+   },
+   "setup": {
+    "tolerance": 25,
+    "working_hip": 130
+   }
+  },
+  "tracking": "camera",
+  "unilateral": true
+ },
  "l_sit_floor": {
   "display_name": "L-Sit (Floor)",
   "is_hold": true,

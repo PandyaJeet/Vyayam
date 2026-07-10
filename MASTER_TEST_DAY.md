@@ -263,3 +263,12 @@ the filming day BEFORE flipping that exercise's flag.
 4. Too-shallow lift (a few degrees off the floor): the raise phase should
    NOT complete — the rep must not count.
 5. No red at any point.
+
+### H31. knee_to_chest_rx — Knee to Chest (hold, side view)
+1. Camera to your SIDE at floor level; lie on your back, full body in frame.
+2. Draw one knee to your chest and hold: hold clock counts while the knee
+   stays drawn in; green/neutral skeleton.
+3. Deliberate fault — let the knee drift halfway back out and keep it there:
+   the clock pauses (⏸) because the match score falls below the hold gate;
+   "Back into position" class cue. Draw back in: clock resumes.
+4. Both sides. No red at any point.

@@ -4070,4 +4070,19 @@ EXERCISE_CONTENT_GAP_FILL = {
         'mind_muscle_cue': {'during': 'Squeeze the top of your thigh before the leg leaves the floor.'},
     },
 
+    'knee_to_chest_rx': {
+        'display_name': 'Knee to Chest',
+        'movement_pattern': 'mobility',
+        'level': 'foundation',
+        'target_muscles': ['Hip', 'Lower back'],
+        'instructions': [
+            'Lie on your back with both legs relaxed.',
+            'Draw one knee up toward your chest and clasp behind the thigh.',
+            'Ease the knee in until you feel a comfortable stretch — never force it.',
+            'Hold about twenty seconds, breathing slowly, then lower.',
+        ],
+        'form_cues': ['Draw the knee in gently', 'Other leg stays relaxed on the floor', 'Slow breaths through the hold'],
+        'mind_muscle_cue': {'during': 'Let the hip soften a little more with each breath out.'},
+    },
+
 }

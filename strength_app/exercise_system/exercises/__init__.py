@@ -264,6 +264,7 @@ from .plank_hold_rx_v2 import PlankHoldRxV2
 from .side_plank_rx_v2 import SidePlankRxV2
 from .single_leg_balance_rx_v2 import SingleLegBalanceRxV2
 from .straight_leg_raise_rx_v2 import StraightLegRaiseRxV2
+from .knee_to_chest_rx_v2 import KneeToChestRxV2
 from .wall_slide_v2 import WallSlideV2
 from .weighted_pull_up_v2 import WeightedPullUpV2
 from .wide_grip_push_up_v2 import WideGripPushUpV2
@@ -533,6 +534,7 @@ __all__ = [
     "SidePlankRxV2",
     "SingleLegBalanceRxV2",
     "StraightLegRaiseRxV2",
+    "KneeToChestRxV2",
     "WallSlideV2",
     "WeightedPullUpV2",
     "WideGripPushUpV2",

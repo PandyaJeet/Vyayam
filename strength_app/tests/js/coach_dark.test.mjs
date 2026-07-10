@@ -297,4 +297,25 @@ test('SLR_RX: rest/raise phases score in sequence; bent-knee lift faults', () =>
   assert.deepEqual(runFaults(obs, [flat, flat, flat, flat], gs), []);
 });
 
+test('KNEE_TO_CHEST_RX: drawn-in knee scores the hold; flat legs do not', () => {
+  const def = dark.PHASES.KNEE_TO_CHEST_RX;
+  assert.equal(def.phases.length, 1);
+
+  // Supine side view: left knee drawn toward the chest (hip angle ~55°).
+  const drawn = frame();
+  drawn[L.leftShoulder] = P(0.25, 0.70); drawn[L.rightShoulder] = P(0.25, 0.71);
+  drawn[L.leftHip] = P(0.45, 0.70);      drawn[L.rightHip] = P(0.45, 0.71);
+  // knee up-and-back toward the chest: ~55° from the shoulder direction
+  drawn[L.leftKnee] = P(0.38, 0.58);     drawn[L.rightKnee] = P(0.60, 0.71);
+  assert.ok(scorePhase(def, 'hold', drawn) >= 70,
+            `drawn scored ${scorePhase(def, 'hold', drawn)}`);
+
+  const flat = frame();
+  flat[L.leftShoulder] = P(0.25, 0.70); flat[L.rightShoulder] = P(0.25, 0.71);
+  flat[L.leftHip] = P(0.45, 0.70);      flat[L.rightHip] = P(0.45, 0.71);
+  flat[L.leftKnee] = P(0.60, 0.70);     flat[L.rightKnee] = P(0.60, 0.71);
+  assert.ok(scorePhase(def, 'hold', flat) < 70,
+            `flat scored ${scorePhase(def, 'hold', flat)}`);
+});
+
 // [VYAYAM-DARK-TESTS-END]

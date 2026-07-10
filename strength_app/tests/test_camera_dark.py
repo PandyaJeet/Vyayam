@@ -31,6 +31,7 @@ DARK_COACHES = {
                               ['balance_foot_down']),
     'straight_leg_raise_rx': ('ex_slr', 'SLR_RX', False,
                               ['slr_knee_straight']),
+    'knee_to_chest_rx': ('ex_knee_to_chest', 'KNEE_TO_CHEST_RX', True, []),
 }
 
 # Cue ids the dark coaches reuse from the existing registry.

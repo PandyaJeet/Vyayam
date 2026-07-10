@@ -401,6 +401,36 @@
   ]);
   CUE_IDS.push('slr_knee_straight');
 
+  // ── knee_to_chest_rx — supine hip-flexion hold, side view ───────────────
+  // Primary: working hip angle drawn to ~55°. Position loss simply pauses
+  // the hold clock (score falls under the 40-point hold gate); no separate
+  // fault channel — the movement has no reliable camera-visible error
+  // beyond losing the position (fewer honest checks over noisy ones).
+  PHASES.KNEE_TO_CHEST_RX = {
+    name: 'Knee to Chest',
+    bodyOrientation: 'supine',
+    cameraPosition: { view: 'side', instruction: 'Place camera to your side at floor level while you lie on your back. Full body visible.' },
+    setupCues: [
+      'Lie on your back, both legs relaxed.',
+      'Draw one knee up toward your chest.',
+      'Clasp behind the thigh and ease it in gently.',
+      'Breathe slowly and hold the stretch.',
+    ],
+    stanceCheck: null,
+    phases: [
+      { name: 'hold', duration: 0, joints: { workingHip: 55 }, voice: 'Draw the knee in and hold' },
+    ],
+    checkAngles: function (lm) {
+      var lHip = calcAngle(lm[LM.leftShoulder], lm[LM.leftHip], lm[LM.leftKnee]);
+      var rHip = calcAngle(lm[LM.rightShoulder], lm[LM.rightHip], lm[LM.rightKnee]);
+      return { workingHip: Math.min(lHip, rHip) };
+    },
+    cues: { workingHip: 'Draw the knee a little closer' },
+    forceArrows: [],
+  };
+
+  FAULTS.KNEE_TO_CHEST_RX = makeFaults([]);   // hold-loss handled by the hold gate
+
   // [VYAYAM-DARK-DEFS-END]
 
   return {

@@ -228,6 +228,7 @@
 | straight_leg_raise_rx | ok | 81.8 | 75.0 | 0 |
 | sideways_walking | ok | 81.7 | 75.0 | 0 |
 | deficit_reverse_lunge | ok | 81.7 | 47.9 | 0 |
+| knee_to_chest_rx | ok | 81.5 | 50.0 | 0 |
 | marching_on_spot | ok | 81.3 | 72.5 | 0 |
 | heel_elevated_squat | ok | 80.8 | 44.9 | 0 |
 | hip_thrust_bodyweight | ok | 80.6 | 75.0 | 0 |

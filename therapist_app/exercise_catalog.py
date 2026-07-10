@@ -417,8 +417,8 @@ EXERCISES = [
         "movement_pattern": "Mobility",
         "equipment": "None",
         "video_url": "",
-        "v2_ghost_supported": False,
-        "v2_exercise_key": "",
+        "v2_ghost_supported": False,  # DARK — flip after filming protocol
+        "v2_exercise_key": "knee_to_chest_rx",
         "description": "Lie on your back. Bring one knee up toward your chest and gently clasp behind the thigh, drawing the knee in until you feel a comfortable stretch in the hip and lower back. Keep the other leg relaxed. Hold for about 20 seconds, breathe, then lower slowly. Move gently — never force the range. (Each rep = one ~20s hold.)",
         "default_sets": 3,
         "default_reps": 20,
