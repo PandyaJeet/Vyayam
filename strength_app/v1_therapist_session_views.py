@@ -20,7 +20,7 @@ from datetime import date, timedelta
 from django.contrib import messages as flash
 from django.db import transaction
 from django.db.models import Avg, Count
-from django.http import Http404, JsonResponse
+from django.http import Http404, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
@@ -978,6 +978,23 @@ def therapist_session_report_view(request, report_id):
         'report_obj': report_obj,
         'report': report_obj.report_json,
     })
+
+
+def therapist_session_report_pdf(request, report_id):
+    """2026-07 burn P1: stream the immutable report as a PDF. Same ownership
+    guard as therapist_session_report_view (patient's own report or 404) —
+    the document is a render of report_json, identical to the therapist's."""
+    patient, err = _require_patient(request)
+    if err:
+        return err
+    report_obj = get_object_or_404(SessionReport, id=report_id, patient=patient)
+
+    from .report_pdf import generate_report_pdf, pdf_filename
+    buffer = generate_report_pdf(report_obj.report_json or {})
+    response = HttpResponse(buffer, content_type='application/pdf')
+    response['Content-Disposition'] = (
+        f'attachment; filename="{pdf_filename(report_obj)}"')
+    return response
 
 
 def therapist_session_profile(request):

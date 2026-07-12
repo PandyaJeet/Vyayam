@@ -7,10 +7,16 @@
   <a href="{% url 'therapist_session_progress' %}" style="font-size:.82rem; color:#0c6c3f; text-decoration:none; font-weight:700;">
     <span class="material-symbols-outlined" style="font-size:1rem; vertical-align:-3px;">arrow_back</span> Back
   </a>
-  <button type="button" onclick="window.print()"
-          style="background:#fff; border:1px solid #d4d8d4; border-radius:999px; padding:6px 16px; font-size:.78rem; font-weight:700; cursor:pointer;">
-    Print
-  </button>
+  <div style="display:flex; gap:8px;">
+    <a href="{% url 'therapist_session_report_pdf' report_obj.id %}"
+       style="background:#0c6c3f; color:#fff; border-radius:999px; padding:6px 16px; font-size:.78rem; font-weight:700; text-decoration:none;">
+      Download PDF
+    </a>
+    <button type="button" onclick="window.print()"
+            style="background:#fff; border:1px solid #d4d8d4; border-radius:999px; padding:6px 16px; font-size:.78rem; font-weight:700; cursor:pointer;">
+      Print
+    </button>
+  </div>
 </div>
 
 <div class="ts-card" style="padding:18px;">

@@ -28,6 +28,7 @@ urlpatterns = [
     path('reports/<int:report_id>/download/', views.download_report, name='therapist_download_report'),
     path('patient/<uuid:link_id>/reset-password/', views.reset_patient_password, name='therapist_reset_patient_password'),  # R2-U1
     path('patient/<uuid:link_id>/session-reports/<int:report_id>/', views.session_report_detail, name='therapist_session_report_detail'),  # R3
+    path('patient/<uuid:link_id>/session-reports/<int:report_id>/pdf/', views.session_report_pdf, name='therapist_session_report_pdf_dl'),  # 2026-07 P1
     path('alerts/', views.alerts_inbox, name='therapist_alerts'),                                                            # R2-T2
     path('alerts/<int:alert_id>/reviewed/', views.alert_mark_reviewed, name='therapist_alert_reviewed'),                     # R2-T2
     path('patient/<uuid:link_id>/program/copy-week/', views.copy_previous_week, name='therapist_copy_week'),                 # R2-T3

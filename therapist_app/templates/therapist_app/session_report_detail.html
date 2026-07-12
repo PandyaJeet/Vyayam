@@ -6,9 +6,14 @@
   <a class="t-link" href="{% url 'therapist_patient_detail' link.id %}?tab=reports">
     <i class="fas fa-arrow-left"></i> Back to {{ link.display_name|truncatewords:1 }}'s reports
   </a>
-  <button type="button" class="t-btn t-btn--outline t-btn--sm" onclick="window.print()">
-    <i class="fas fa-print"></i> Print
-  </button>
+  <div style="display:flex; gap:8px;">
+    <a class="t-btn t-btn--sm" href="{% url 'therapist_session_report_pdf_dl' link.id report_obj.id %}">
+      <i class="fas fa-file-pdf"></i> Download PDF
+    </a>
+    <button type="button" class="t-btn t-btn--outline t-btn--sm" onclick="window.print()">
+      <i class="fas fa-print"></i> Print
+    </button>
+  </div>
 </div>
 
 <div class="t-card" style="padding:22px 26px;">

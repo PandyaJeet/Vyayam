@@ -165,6 +165,7 @@ urlpatterns = [
     path('therapist-session/finished/',              views_thrx.therapist_session_finished,  name='therapist_session_finished'),
     path('therapist-session/progress/',              views_thrx.therapist_session_progress,  name='therapist_session_progress'),
     path('therapist-session/report/<int:report_id>/', views_thrx.therapist_session_report_view, name='therapist_session_report'),  # R3
+    path('therapist-session/report/<int:report_id>/pdf/', views_thrx.therapist_session_report_pdf, name='therapist_session_report_pdf'),  # 2026-07 P1
     path('therapist-session/profile/',               views_thrx.therapist_session_profile,   name='therapist_session_profile'),
 
     # ========================================================================

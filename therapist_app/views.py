@@ -429,6 +429,24 @@ def session_report_detail(request, link_id, report_id):
 
 
 @therapist_required
+def session_report_pdf(request, link_id, report_id):
+    """2026-07 burn P1: therapist-side PDF of the same immutable report —
+    cross-therapist firewall + link-scoped lookup, identical bytes to the
+    patient's download (both built from report_json)."""
+    link = get_linked_patient_or_404(request.user.therapist, link_id)
+    from .models import SessionReport
+    report_obj = get_object_or_404(SessionReport, id=report_id, link=link)
+
+    from strength_app.report_pdf import generate_report_pdf, pdf_filename
+    buffer = generate_report_pdf(report_obj.report_json or {})
+    from django.http import HttpResponse
+    response = HttpResponse(buffer, content_type='application/pdf')
+    response['Content-Disposition'] = (
+        f'attachment; filename="{pdf_filename(report_obj)}"')
+    return response
+
+
+@therapist_required
 @require_POST
 def alert_mark_reviewed(request, alert_id):
     from .models import Alert
