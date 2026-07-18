@@ -65,6 +65,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'vyayam_project.context_processors.sentry',
             ],
         },
     },
@@ -205,3 +206,22 @@ EMAIL_HOST_USER = os.environ.get('DJANGO_EMAIL_HOST_USER', '')
 EMAIL_HOST_PASSWORD = os.environ.get('DJANGO_EMAIL_HOST_PASSWORD', '')
 EMAIL_USE_TLS = os.environ.get('DJANGO_EMAIL_USE_TLS', 'True').lower() in ('true', '1', 'yes')
 DEFAULT_FROM_EMAIL = os.environ.get('DJANGO_DEFAULT_FROM_EMAIL', 'VYAYAM <noreply@vyayam.app>')
+
+# ── SDLC Phase 2: Sentry error monitoring ────────────────────────────────
+# Gated on SENTRY_DSN: when unset (dev/CI) sentry_sdk is never even
+# imported — zero behavior change. Clinical platform, so nothing that
+# could carry patient data leaves the server:
+#   send_default_pii=False    → no user ids, cookies, IPs
+#   max_request_body_size     → request bodies (pain values, notes) never
+#                               attached to events
+#   traces_sample_rate=0      → no performance tracing payloads
+SENTRY_DSN = os.environ.get('SENTRY_DSN', '')
+if SENTRY_DSN:
+    import sentry_sdk
+
+    sentry_sdk.init(
+        dsn=SENTRY_DSN,
+        send_default_pii=False,
+        traces_sample_rate=0,
+        max_request_body_size='never',
+    )
