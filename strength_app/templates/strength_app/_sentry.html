@@ -3,7 +3,12 @@
   {# (prod). Bundle version pinned to match the checked CDN asset.       #}
   {# Rule 2: the DSN enters inline JS as a quoted |escapejs string.      #}
   {# Same clinical posture as the server: no PII, no tracing.            #}
-  <script src="https://browser.sentry-cdn.com/10.66.0/bundle.min.js" crossorigin="anonymous"></script>
+  {# SRI: sha384 of the pinned 10.66.0 bundle (90494 bytes, verified     #}
+  {# stable across fetches 2026-07-18). Version bump ⇒ recompute:        #}
+  {# curl -s <url> | openssl dgst -sha384 -binary | openssl base64 -A    #}
+  <script src="https://browser.sentry-cdn.com/10.66.0/bundle.min.js"
+          integrity="sha384-rtwsnRY5j8smljaOw72wBKVSXCYaWu7dWy/6NH+Iy0524oU2b5VpFHc83FOev09R"
+          crossorigin="anonymous"></script>
   <script>
     (function () {
       var dsn = "{{ SENTRY_DSN|escapejs }}";
