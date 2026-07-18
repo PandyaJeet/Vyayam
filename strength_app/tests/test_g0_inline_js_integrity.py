@@ -32,7 +32,7 @@ from pathlib import Path
 from django.contrib.auth.models import User
 from django.core.cache import cache
 from django.core.management import call_command
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.urls import reverse
 
 from strength_app.models import (
@@ -327,3 +327,68 @@ class TestG0CoachPagesJS(InlineJSAuditMixin, TestCase):
             'coach athlete detail',
         )
         self.assert_all_js_clean(min_scripts=1)
+
+
+@unittest.skipUnless(NODE, 'node is required for inline-JS syntax checking')
+class TestG0SentryLoaderJS(InlineJSAuditMixin, TestCase):
+    """Phase 2 (sdlc-2026-07): the Sentry browser loader in _sentry.html is
+    DSN-gated (absent in dev/CI) and the DSN enters inline JS only as a
+    quoted |escapejs string (rule 2) — proven with a hostile DSN carrying
+    both quote styles and a literal </script>."""
+
+    HOSTILE_DSN = (
+        'https://k"\'</script><script>alert(1)@o0.ingest.sentry.io/1')
+
+    def setUp(self):
+        super().setUp()
+        patient = PatientProfile.objects.create(
+            patient_id='G0SNTRY1',
+            name="Sentry O'Probe",
+            phone='9000009974',
+            age=30,
+            goals='Strength',
+            training_history='intermediate',
+        )
+        StrengthProfile.objects.create(
+            patient=patient, assessment_number=1,
+            squat_score=3, hinge_score=3, push_score=3,
+            pull_score=3, core_score=3, rotate_score=3, lunge_score=3,
+        )
+        session = self.client.session
+        session['patient_id'] = patient.patient_id
+        session.save()
+        # Console auth is therapist_app.Therapist (user.therapist), NOT
+        # strength_app.TherapistProfile.
+        from therapist_app.models import Therapist
+        self.therapist_user = User.objects.create_user(
+            'g0sentry_pt', password='g0pass123')
+        Therapist.objects.create(
+            user=self.therapist_user,
+            full_name='G0 Sentry PT',
+            registration_number='PT-G0-002',
+        )
+
+    def test_loader_absent_when_dsn_unset(self):
+        # SENTRY_DSN defaults to '' in dev/CI — no Sentry markup at all.
+        resp = self.client.get(reverse('v1_dashboard'), follow=True)
+        self.assertEqual(resp.status_code, 200)
+        self.assertNotIn(b'sentry-cdn.com', resp.content)
+        self.assertNotIn(b'Sentry.init', resp.content)
+
+    @override_settings(SENTRY_DSN=HOSTILE_DSN)
+    def test_loader_present_and_escaped_on_both_consoles(self):
+        # Patient side — base_gamified (covers v1_exercise_execute's base).
+        resp = self.audit_page(reverse('v1_dashboard'),
+                               'patient dashboard + sentry')
+        self.assertIn(b'browser.sentry-cdn.com', resp.content)
+        # Therapist console — base_therapist.
+        self.client.force_login(self.therapist_user)
+        resp_t = self.audit_page(reverse('therapist_dashboard'),
+                                 'therapist dashboard + sentry')
+        self.assertIn(b'browser.sentry-cdn.com', resp_t.content)
+        for r in (resp, resp_t):
+            # The raw hostile substring must never reach the page — if it
+            # did, the </script> would truncate the block (dead-buttons
+            # class) and node would flag the orphan.
+            self.assertNotIn(b'</script><script>alert(1)@', r.content)
+        self.assert_all_js_clean(min_scripts=2)

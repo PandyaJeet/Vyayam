@@ -18,6 +18,7 @@
 | `DJANGO_EMAIL_HOST_PASSWORD` | yes (smtp) | *(secret)* | |
 | `DJANGO_EMAIL_USE_TLS` | no | `True` | |
 | `DJANGO_DEFAULT_FROM_EMAIL` | no | `VYAYAM <noreply@vyayam.app>` | |
+| `SENTRY_DSN` | no | `https://<key>@o<org>.ingest.sentry.io/<project>` | Unset → Sentry completely off (dev/CI: sentry_sdk never imported). Set on Render (Environment → Add env var) to enable server + browser error monitoring. Clinical posture is hard-coded: `send_default_pii=False`, request bodies never sent, tracing 0 — pain values/notes/user data never leave the server |
 
 ## Render service config
 

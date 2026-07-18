@@ -354,3 +354,31 @@ CI encodes the full gate in `.github/workflows/ci.yml` — push + PR, all branch
 1. On a throwaway branch, break one Django test assertion, push.
 2. Actions: the CI run goes RED at "Django test suite (serial)".
 3. Delete the throwaway branch. Never merge it.
+
+## Part J — Sentry error monitoring (sdlc-2026-07 Phase 2)
+Loader ships in `strength_app/templates/strength_app/_sentry.html`, included by
+`base_gamified.html` (patient, incl. camera page) and `base_therapist.html`
+(console). Renders ONLY when SENTRY_DSN is set.
+
+### J1. Dev/CI silence (no DSN)
+1. Run the dev server WITHOUT SENTRY_DSN. Open the patient dashboard and the
+   therapist console; View Source on both.
+2. Zero hits for "sentry" in either page. DevTools Network: no request to
+   any sentry-cdn.com host.
+
+### J2. Prod wiring (after setting SENTRY_DSN on Render)
+1. Render → service → Environment → add `SENTRY_DSN` (from the Sentry
+   project's Client Keys page) → redeploy.
+2. Open the deployed patient dashboard. View Source: one script from
+   `browser.sentry-cdn.com/10.66.0/bundle.min.js` + one inline block whose
+   DSN is the escaped string — no raw quotes/`</script>` visible.
+3. DevTools console: `window.Sentry.getClient().getDsn()` returns the DSN;
+   `Sentry.captureMessage('vyayam-smoke')` → event appears in the Sentry
+   project within ~1 min.
+4. Same check on the therapist console page.
+5. In Sentry, open the smoke event: confirm NO user context, NO request
+   body, NO cookies attached (clinical posture). If any of those appear,
+   stop and treat as a shipping blocker.
+6. Camera page (`v1_exercise_execute`): start a session, confirm the page
+   still loads and coaches normally with the loader present (it extends
+   base_gamified, so Sentry is on this page — watch for any console error).

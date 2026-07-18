@@ -1,0 +1,19 @@
+{% if SENTRY_DSN %}
+  {# Sentry browser monitoring — renders ONLY when SENTRY_DSN is set     #}
+  {# (prod). Bundle version pinned to match the checked CDN asset.       #}
+  {# Rule 2: the DSN enters inline JS as a quoted |escapejs string.      #}
+  {# Same clinical posture as the server: no PII, no tracing.            #}
+  <script src="https://browser.sentry-cdn.com/10.66.0/bundle.min.js" crossorigin="anonymous"></script>
+  <script>
+    (function () {
+      var dsn = "{{ SENTRY_DSN|escapejs }}";
+      if (window.Sentry && dsn) {
+        window.Sentry.init({
+          dsn: dsn,
+          sendDefaultPii: false,
+          tracesSampleRate: 0
+        });
+      }
+    })();
+  </script>
+{% endif %}
