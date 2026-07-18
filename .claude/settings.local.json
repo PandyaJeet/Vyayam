@@ -156,7 +156,9 @@
       "Bash(cp staticfiles/strength_app/videos/*.mp4 strength_app/static/strength_app/videos/)",
       "Bash(mv wall_sit.mp4 wall_sit_rx.mp4)",
       "Bash(mv lateral_bound_stick.mp4 lateral_bound_and_stick.mp4)",
-      "Bash(mv ankle_pumps_rx.mp4 ankle_pumps.mp4)"
+      "Bash(mv ankle_pumps_rx.mp4 ankle_pumps.mp4)",
+      "Bash(git fetch *)",
+      "Bash(echo \"BASELINE EXIT: $?\")"
     ]
   }
 }
