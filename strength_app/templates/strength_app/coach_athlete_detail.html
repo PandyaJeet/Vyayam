@@ -350,6 +350,21 @@
       {% endif %}
     </div>
 
+    <!-- Mind Lab: latest game session -->
+    <div class="c-card">
+      <div class="c-card-title">Mind Lab — Latest Session</div>
+      {% if mind_lab_latest %}
+      <div class="info-row"><span class="info-label">Game</span><span>{{ mind_lab_latest.game_id }}</span></div>
+      <div class="info-row"><span class="info-label">Played</span><span>{{ mind_lab_latest.started_at|date:"j M Y, H:i" }}</span></div>
+      <div class="info-row"><span class="info-label">Level</span><span>{{ mind_lab_latest.level }}</span></div>
+      <div class="info-row"><span class="info-label">Trials</span><span>{{ mind_lab_latest.n_trials }}</span></div>
+      <div class="info-row"><span class="info-label">Accuracy</span><span>{% if mind_lab_latest.accuracy is not None %}{% widthratio mind_lab_latest.accuracy 1 100 %}%{% else %}—{% endif %}</span></div>
+      <div class="info-row"><span class="info-label">Median reaction</span><span>{% if mind_lab_latest.median_rt_ms is not None %}{{ mind_lab_latest.median_rt_ms|floatformat:0 }} ms{% else %}—{% endif %}</span></div>
+      {% else %}
+      <div class="empty">No Mind Lab sessions yet.</div>
+      {% endif %}
+    </div>
+
     <!-- Coach notes -->
     <div class="c-card">
       <div class="c-card-title">Coach Notes</div>

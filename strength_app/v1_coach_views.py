@@ -31,7 +31,7 @@ from .models import (
     PatientProfile, StrengthProfile, PeriodisationState,
     WorkoutSession, SessionFeedback, TherapistProfile,
     TherapistPrescription, CoachPatientLink,
-    FootballProfile, MatchDate,
+    FootballProfile, MatchDate, GameSession,
 )
 
 
@@ -440,6 +440,7 @@ def coach_athlete_detail(request, patient_id):
         'link': link,
         'coach': request.therapist,
         'adherence': _calc_adherence(patient),
+        'mind_lab_latest': GameSession.objects.filter(athlete=patient).first(),
     }
     return render(request, 'strength_app/coach_athlete_detail.html', context)
 
