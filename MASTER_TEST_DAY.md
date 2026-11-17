@@ -464,3 +464,27 @@ mentor sign-off on MENTOR_REVIEW_QUEUE §2026-07 cue strings. Flip day per
 exercise = one line in therapist_app/exercise_catalog.py + remove that
 exercise's DARK assertions in strength_app/tests/test_camera_dark.py
 (lines 99-101 invariant + '>DARK<' count).
+
+---
+
+## Part M — Exhibition demo walk: 4-week football athlete (K3)
+
+Prep: `DJANGO_SECRET_KEY=test-key DJANGO_DEBUG=True python manage.py seed_football_demo`
+(re-run on the day: the next match is seeded 3 days out). Script: `docs/DEMO_SCRIPT.md`.
+
+### M1. Athlete side (phone)
+1. Warm-up: `/login/` → `9000000005` / `athlete` → open `/athlete/today/` once. Note the load time.
+2. Yellow "DEMO DATA · Not a real athlete" bar shows on Today, Progress and Profile.
+3. Next-match card reads "3 DAYS AWAY" (Rajkot Rovers, "DEMO · League — home").
+4. Amber "Deload" pill is on today's session; the list is short (about 3 exercises).
+5. Progress tab: L3, six battery bars, 14 sessions in four weeks. No pain wording, no "RSI", no ACWR.
+
+### M2. Coach side
+1. `/coach/login/` → `coach_arjun` / `simple` → squad lists "Kabir Singh (DEMO)".
+2. Athlete detail → Asymmetry card shows Hop LSI 87.4 % (below 90 %), flagged.
+3. Coach notes begin "DEMO DATA — fictional athlete".
+
+### M3. Honesty checks
+1. No session shows green/yellow/red rep counts or a form score (all 14 are guided, self-counted).
+2. Wording on every page is training-readiness only; none reads as diagnosis.
+3. `seed_football_demo --reset` removes the athlete; rerun restores it with identical counts.
