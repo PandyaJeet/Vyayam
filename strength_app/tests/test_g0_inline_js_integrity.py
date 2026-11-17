@@ -401,3 +401,33 @@ class TestG0SentryLoaderJS(InlineJSAuditMixin, TestCase):
             # behind window.Sentry, never throw (camera-page safety).
             self.assertIn(b'if (window.Sentry', r.content)
         self.assert_all_js_clean(min_scripts=2)
+
+
+@unittest.skipUnless(NODE, 'node is required for inline-JS syntax checking')
+class TestG0MindLabJS(InlineJSAuditMixin, TestCase):
+    """Mind Lab runner (K4): its config enters inline JS as a quoted
+    |escapejs string. Any game_id the URL accepts must still parse."""
+
+    def setUp(self):
+        super().setUp()
+        athlete = PatientProfile.objects.create(
+            patient_id='G0ML1', name="ML O'Hostile", phone='9000009974',
+            age=22, goals='Football', training_history='intermediate',
+            athlete_tier_eligible=True, athlete_sport='football',
+        )
+        user = User.objects.create_user('g0mlcoach', password='g0pass123')
+        coach = TherapistProfile.objects.create(
+            user=user, therapist_id='G0MLC1', name='G0 ML Coach',
+            license_number='PT-G0-002', specialization='S&C',
+            email='g0ml@example.com', phone='9999900097',
+        )
+        CoachPatientLink.objects.create(coach=coach, patient=athlete, is_active=True)
+        session = self.client.session
+        session['patient_id'] = athlete.patient_id
+        session.save()
+
+    def test_g0_mind_lab_runner_inline_js_parses(self):
+        for game_id in ('some_game', 'a-b_9', 'x' * 50):
+            self.audit_page(reverse('mind_lab_runner', args=[game_id]),
+                            f'mind lab runner {game_id[:8]}')
+        self.assert_all_js_clean(min_scripts=3)
