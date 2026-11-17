@@ -4,6 +4,7 @@ All data structures as Django ORM models
 """
 
 from django.db import models
+from django.utils import timezone
 from django.contrib.auth.models import User
 from django.core.validators import MinValueValidator, MaxValueValidator
 import json
@@ -1495,3 +1496,29 @@ class RestEvent(models.Model):
 
     def __str__(self):
         return f"{self.patient_id} +{self.extra_seconds}s ({self.context})"
+
+
+# ============================================================================
+# MIND LAB — one row per played game session (scaffold; games arrive later)
+# ============================================================================
+
+class GameSession(models.Model):
+    """One play of one Mind Lab game by one athlete. Game-agnostic: game_id is
+    a free slug, and anything game-specific lives in `summary`. Training-
+    readiness data only, never a clinical measure."""
+    athlete = models.ForeignKey('PatientProfile', on_delete=models.CASCADE, related_name='game_sessions')
+    game_id = models.CharField(max_length=50)
+    started_at = models.DateTimeField(default=timezone.now)
+    level = models.PositiveSmallIntegerField(default=1)
+    n_trials = models.PositiveIntegerField(default=0)
+    accuracy = models.FloatField(null=True, blank=True, validators=[MinValueValidator(0.0), MaxValueValidator(1.0)])
+    median_rt_ms = models.FloatField(null=True, blank=True, validators=[MinValueValidator(0.0)])
+    slowmo_factor = models.FloatField(default=1.0, validators=[MinValueValidator(0.0)])
+    summary = models.JSONField(default=dict, blank=True)
+
+    class Meta:
+        ordering = ['-started_at']
+        indexes = [models.Index(fields=['athlete', '-started_at'])]
+
+    def __str__(self):
+        return f"{self.athlete_id} {self.game_id} L{self.level}"
