@@ -1,0 +1,383 @@
+TAP version 13
+# Subtest: one cue at a time: lower priority never interrupts, safety always does
+ok 1 - one cue at a time: lower priority never interrupts, safety always does
+  ---
+  duration_ms: 2.659501
+  type: 'test'
+  ...
+# Subtest: minimum one full rep between spoken cues (safety exempt)
+ok 2 - minimum one full rep between spoken cues (safety exempt)
+  ---
+  duration_ms: 0.509861
+  type: 'test'
+  ...
+# Subtest: refinement cues never fire in the final 2 reps; safety still can
+ok 3 - refinement cues never fire in the final 2 reps; safety still can
+  ---
+  duration_ms: 0.341439
+  type: 'test'
+  ...
+# Subtest: 3-strike fading: quality line once, then silence, set flagged
+ok 4 - 3-strike fading: quality line once, then silence, set flagged
+  ---
+  duration_ms: 1.387069
+  type: 'test'
+  ...
+# Subtest: corrected cue earns ONE specific reinforcement, then silence
+ok 5 - corrected cue earns ONE specific reinforcement, then silence
+  ---
+  duration_ms: 0.42049
+  type: 'test'
+  ...
+# Subtest: independent praise: only after 3 good reps, max one per set, varied
+ok 6 - independent praise: only after 3 good reps, max one per set, varied
+  ---
+  duration_ms: 0.397519
+  type: 'test'
+  ...
+# Subtest: calibration: first set opens frozen + announced, only safety passes, ends after 2 reps
+ok 7 - calibration: first set opens frozen + announced, only safety passes, ends after 2 reps
+  ---
+  duration_ms: 0.355687
+  type: 'test'
+  ...
+# Subtest: confidence gate: trips after 1s, speaks once per episode, resumes
+ok 8 - confidence gate: trips after 1s, speaks once per episode, resumes
+  ---
+  duration_ms: 0.296885
+  type: 'test'
+  ...
+# Subtest: fatigue mode: safety only + one announcement at next set start
+ok 9 - fatigue mode: safety only + one announcement at next set start
+  ---
+  duration_ms: 0.554953
+  type: 'test'
+  ...
+# Subtest: tempo channel yields to cues; adjust line max once per set
+ok 10 - tempo channel yields to cues; adjust line max once per set
+  ---
+  duration_ms: 0.688701
+  type: 'test'
+  ...
+# Subtest: calibrated target math: their range + 5°, clamped both ways
+ok 11 - calibrated target math: their range + 5°, clamped both ways
+  ---
+  duration_ms: 0.511583
+  type: 'test'
+  ...
+# Subtest: every registry cue is <=8 words and never a fault-label
+ok 12 - every registry cue is <=8 words and never a fault-label
+  ---
+  duration_ms: 2.015659
+  type: 'test'
+  ...
+# Subtest: install never overwrites an existing registry key
+ok 13 - install never overwrites an existing registry key
+  ---
+  duration_ms: 2.773012
+  type: 'test'
+  ...
+# Subtest: every dark def carries the full template contract
+ok 14 - every dark def carries the full template contract
+  ---
+  duration_ms: 0.507176
+  type: 'test'
+  ...
+# Subtest: fault factory: sustain window, cooldown, hold vs rep gating
+ok 15 - fault factory: sustain window, cooldown, hold vs rep gating
+  ---
+  duration_ms: 1.544383
+  type: 'test'
+  ...
+# Subtest: WALL_SIT_RX: hold pose scores, standing does not; depth + heel faults fire
+ok 16 - WALL_SIT_RX: hold pose scores, standing does not; depth + heel faults fire
+  ---
+  duration_ms: 1.432556
+  type: 'test'
+  ...
+# Subtest: PLANK_RX: flat plank scores, standing does not; sag and pike fault
+ok 17 - PLANK_RX: flat plank scores, standing does not; sag and pike fault
+  ---
+  duration_ms: 3.249252
+  type: 'test'
+  ...
+# Subtest: SIDE_PLANK_RX: straight lateral line scores; dropped hip faults
+ok 18 - SIDE_PLANK_RX: straight lateral line scores; dropped hip faults
+  ---
+  duration_ms: 0.673612
+  type: 'test'
+  ...
+# Subtest: BALANCE_RX: raised-knee hold scores; foot-down and hip-drop fault
+ok 19 - BALANCE_RX: raised-knee hold scores; foot-down and hip-drop fault
+  ---
+  duration_ms: 0.669932
+  type: 'test'
+  ...
+# Subtest: SLR_RX: rest/raise phases score in sequence; bent-knee lift faults
+ok 20 - SLR_RX: rest/raise phases score in sequence; bent-knee lift faults
+  ---
+  duration_ms: 0.663283
+  type: 'test'
+  ...
+# Subtest: KNEE_TO_CHEST_RX: drawn-in knee scores the hold; flat legs do not
+ok 21 - KNEE_TO_CHEST_RX: drawn-in knee scores the hold; flat legs do not
+  ---
+  duration_ms: 0.744385
+  type: 'test'
+  ...
+# Subtest: PRONE_KNEE_BEND_RX: flat/bent phases score in sequence; hip lift faults
+ok 22 - PRONE_KNEE_BEND_RX: flat/bent phases score in sequence; hip lift faults
+  ---
+  duration_ms: 1.053151
+  type: 'test'
+  ...
+# Subtest: SUPINE_ABD_RX: center/out phases score by spread; pelvis shift faults
+ok 23 - SUPINE_ABD_RX: center/out phases score by spread; pelvis shift faults
+  ---
+  duration_ms: 0.927577
+  type: 'test'
+  ...
+# Subtest: SIDELYING_ABD_RX: stacked/lifted phases score; roll-back faults
+ok 24 - SIDELYING_ABD_RX: stacked/lifted phases score; roll-back faults
+  ---
+  duration_ms: 0.469882
+  type: 'test'
+  ...
+# Subtest: PRESS_DB_RX: rack/lockout phases score; asymmetric press faults
+ok 25 - PRESS_DB_RX: rack/lockout phases score; asymmetric press faults
+  ---
+  duration_ms: 0.519497
+  type: 'test'
+  ...
+# Subtest: ROW_BAND_RX: reach/pull phases score; lean-back faults
+ok 26 - ROW_BAND_RX: reach/pull phases score; lean-back faults
+  ---
+  duration_ms: 0.530751
+  type: 'test'
+  ...
+# Subtest: calcAngle: right angle and straight line
+ok 27 - calcAngle: right angle and straight line
+  ---
+  duration_ms: 2.372402
+  type: 'test'
+  ...
+# Subtest: calcAngle: missing landmark degrades to 90, never throws
+ok 28 - calcAngle: missing landmark degrades to 90, never throws
+  ---
+  duration_ms: 0.225627
+  type: 'test'
+  ...
+# Subtest: matchScore: on-target = 100, distance decays, clamps at 0
+ok 29 - matchScore: on-target = 100, distance decays, clamps at 0
+  ---
+  duration_ms: 0.56627
+  type: 'test'
+  ...
+# Subtest: matchScore: a clearly-short PARTIAL squat cannot pass the 70-point phase gate
+ok 30 - matchScore: a clearly-short PARTIAL squat cannot pass the 70-point phase gate
+  ---
+  duration_ms: 0.289868
+  type: 'test'
+  ...
+# Subtest: matchScore: normalised (sub-1.0) targets use the 500x scale
+ok 31 - matchScore: normalised (sub-1.0) targets use the 500x scale
+  ---
+  duration_ms: 0.451852
+  type: 'test'
+  ...
+# Subtest: squat trajectory: knee angle sweeps from straight to deep and back
+ok 32 - squat trajectory: knee angle sweeps from straight to deep and back
+  ---
+  duration_ms: 0.719289
+  type: 'test'
+  ...
+# Subtest: checkStanceWidth: shoulder-width stance passes, too-narrow fails
+ok 33 - checkStanceWidth: shoulder-width stance passes, too-narrow fails
+  ---
+  duration_ms: 0.610717
+  type: 'test'
+  ...
+# Subtest: detectOrientation: standing vs supine vs sidelying
+ok 34 - detectOrientation: standing vs supine vs sidelying
+  ---
+  duration_ms: 0.353037
+  type: 'test'
+  ...
+# Subtest: findWorstJoint: largest deviation wins, 500x scale for normalized targets, null when unmeasurable
+ok 35 - findWorstJoint: largest deviation wins, 500x scale for normalized targets, null when unmeasurable
+  ---
+  duration_ms: 0.649692
+  type: 'test'
+  ...
+# Subtest: exports exactly the five API names; CONFIG and COLORS match the spec and are frozen
+ok 36 - exports exactly the five API names; CONFIG and COLORS match the spec and are frozen
+  ---
+  duration_ms: 5.814625
+  type: 'test'
+  ...
+# Subtest: red is unreachable unless safetyFlag === true
+ok 37 - red is unreachable unless safetyFlag === true
+  ---
+  duration_ms: 137.364239
+  type: 'test'
+  ...
+# Subtest: safetyFlag === true returns red for any diff and any trend
+ok 38 - safetyFlag === true returns red for any diff and any trend
+  ---
+  duration_ms: 18.501924
+  type: 'test'
+  ...
+# Subtest: frozen === true overrides everything, even safetyFlag; only strict true freezes
+ok 39 - frozen === true overrides everything, even safetyFlag; only strict true freezes
+  ---
+  duration_ms: 10.952586
+  type: 'test'
+  ...
+# Subtest: monotonic with trend 'steady': r never drops, g never rises, bands never go back
+ok 40 - monotonic with trend 'steady': r never drops, g never rises, bands never go back
+  ---
+  duration_ms: 0.905501
+  type: 'test'
+  ...
+# Subtest: band edges and anchor colors follow the spec
+ok 41 - band edges and anchor colors follow the spec
+  ---
+  duration_ms: 0.29562
+  type: 'test'
+  ...
+# Subtest: improving is never worse than steady, worsening never better; each shifts a band somewhere
+ok 42 - improving is never worse than steady, worsening never better; each shifts a band somewhere
+  ---
+  duration_ms: 1.047829
+  type: 'test'
+  ...
+# Subtest: any trend value other than the three exact strings changes nothing
+ok 43 - any trend value other than the three exact strings changes nothing
+  ---
+  duration_ms: 3.173831
+  type: 'test'
+  ...
+# Subtest: diff sign does not matter; large diffs clamp to ORANGE
+ok 44 - diff sign does not matter; large diffs clamp to ORANGE
+  ---
+  duration_ms: 5.421475
+  type: 'test'
+  ...
+# Subtest: invalid input returns neutral and never throws; formColor() with no argument is neutral
+ok 45 - invalid input returns neutral and never throws; formColor() with no argument is neutral
+  ---
+  duration_ms: 1.759648
+  type: 'test'
+  ...
+# Subtest: trendFromErrors: improving, worsening, deadband steady, invalid -> steady
+ok 46 - trendFromErrors: improving, worsening, deadband steady, invalid -> steady
+  ---
+  duration_ms: 0.47693
+  type: 'test'
+  ...
+# Subtest: stabilizeDiff: deadband holds, real change passes, invalid input handled
+ok 47 - stabilizeDiff: deadband holds, real change passes, invalid input handled
+  ---
+  duration_ms: 0.794421
+  type: 'test'
+  ...
+# Subtest: stabilizeDiff: 200 noisy frames of edge +/- 0.9 produce zero band flips
+ok 48 - stabilizeDiff: 200 noisy frames of edge +/- 0.9 produce zero band flips
+  ---
+  duration_ms: 1.224184
+  type: 'test'
+  ...
+# Subtest: inputs are never mutated; CONFIG/COLORS unchanged; every result is a fresh object
+ok 49 - inputs are never mutated; CONFIG/COLORS unchanged; every result is a fresh object
+  ---
+  duration_ms: 3.952476
+  type: 'test'
+  ...
+# Subtest: UNWIRED: no template references the gradient module (delete in the wiring phase)
+ok 50 - UNWIRED: no template references the gradient module (delete in the wiring phase)
+  ---
+  duration_ms: 55.302217
+  type: 'test'
+  ...
+# Subtest: prefers Google over Natural/Enhanced/Samantha/Ava, in order
+ok 51 - prefers Google over Natural/Enhanced/Samantha/Ava, in order
+  ---
+  duration_ms: 2.086136
+  type: 'test'
+  ...
+# Subtest: matches the page language, falls back to first language match
+ok 52 - matches the page language, falls back to first language match
+  ---
+  duration_ms: 0.329689
+  type: 'test'
+  ...
+# Subtest: rate and pitch match the spec
+ok 53 - rate and pitch match the spec
+  ---
+  duration_ms: 0.260247
+  type: 'test'
+  ...
+# Subtest: clip map: every spoken coach phrase resolves to a filename-safe key
+ok 54 - clip map: every spoken coach phrase resolves to a filename-safe key
+  ---
+  duration_ms: 0.684774
+  type: 'test'
+  ...
+# Subtest: tryPlayClip is a safe no-op outside the browser
+ok 55 - tryPlayClip is a safe no-op outside the browser
+  ---
+  duration_ms: 0.358301
+  type: 'test'
+  ...
+# Subtest: tierFromPriority: legacy booleans map true→cue, false→flow; opts pass through
+ok 56 - tierFromPriority: legacy booleans map true→cue, false→flow; opts pass through
+  ---
+  duration_ms: 0.233223
+  type: 'test'
+  ...
+# Subtest: speechDecision: idle channel always speaks
+ok 57 - speechDecision: idle channel always speaks
+  ---
+  duration_ms: 0.316879
+  type: 'test'
+  ...
+# Subtest: speechDecision: busy channel — safety cancels, cue queues, flow drops
+ok 58 - speechDecision: busy channel — safety cancels, cue queues, flow drops
+  ---
+  duration_ms: 0.165473
+  type: 'test'
+  ...
+# Subtest: queueCue: max length 1 — a newer cue replaces a queued older cue
+ok 59 - queueCue: max length 1 — a newer cue replaces a queued older cue
+  ---
+  duration_ms: 1.743876
+  type: 'test'
+  ...
+# Subtest: watchdogMs: 6s floor, scales with text length so long lines are never beheaded
+ok 60 - watchdogMs: 6s floor, scales with text length so long lines are never beheaded
+  ---
+  duration_ms: 0.63892
+  type: 'test'
+  ...
+# Subtest: briefingTempoLine: words only, number only as a 3s+ pacing hint, never a countdown
+ok 61 - briefingTempoLine: words only, number only as a 3s+ pacing hint, never a countdown
+  ---
+  duration_ms: 0.43964
+  type: 'test'
+  ...
+# Subtest: tempoPhaseWord: phrase length matches phase duration, no numbers, 0s silent
+ok 62 - tempoPhaseWord: phrase length matches phase duration, no numbers, 0s silent
+  ---
+  duration_ms: 0.31697
+  type: 'test'
+  ...
+1..62
+# tests 62
+# suites 0
+# pass 62
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 476.440502
+exit=0
