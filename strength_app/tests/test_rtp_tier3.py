@@ -159,3 +159,48 @@ class TestS13Inbox(Tier2Base):
     def test_logged_out_is_redirected(self):
         self.client.logout()
         self.assertEqual(self.client.get('/coach/inbox/').status_code, 302)
+
+
+@override_settings(RTP_ENABLED=True)
+class TestS14CoachSquad(Tier2Base):
+    """SPINE test 15, extended to the squad screen and the notice/inbox rows."""
+
+    def squad(self, user):
+        self.client.force_login(user)
+        resp = self.client.get('/coach/squad/')
+        self.assertEqual(resp.status_code, 200)
+        return resp
+
+    def test_squad_line_has_signal_but_no_raw_values(self):
+        self.open_episode()
+        self.submit(swelling_today='yes', giving_way='yes', locking_or_catching='yes',
+                    tightness_0_10='7', tightness_location=RAW)
+        resp = self.squad(self.coach_user)
+        html = resp.content.decode()
+        self.assertIn('Injury signal: yes', html)
+        self.assertIn('Medical hold', html)
+        self.assertNotIn(RAW, html)
+        with override_settings(RTP_ENABLED=False):
+            base = self.squad(self.coach_user).content.decode().lower()
+        for word in ('swelling', 'giving way', 'giving_way', 'tightness', 'locking', 'catching'):
+            self.assertEqual(html.lower().count(word), base.count(word), word)
+        line = html[html.index('rtp-squad-line">'):].split('</div>')[0].lower()
+        for word in ('swelling', 'giving', 'tightness', 'locking', 'catching'):
+            self.assertNotIn(word, line)
+        for a in resp.context['athletes']:
+            if a['rtp_coach']:
+                self.assertEqual(set(a['rtp_coach']),
+                                 {'traffic_light', 'status', 'restrictions', 'stage_name',
+                                  'checkpoint', 'injury_signal'})
+
+    def test_squad_unchanged_without_episode_or_with_flag_off(self):
+        self.assertNotContains(self.squad(self.coach_user), 'rtp-squad-line')
+        self.open_episode()
+        with override_settings(RTP_ENABLED=False):
+            off = self.squad(self.coach_user)
+            self.assertNotContains(off, 'rtp-squad-line')
+            self.assertNotContains(off, 'rtpInboxLink')
+
+    def test_inbox_link_shows_unread_count_for_therapist(self):
+        av.place_hold(self.athlete, role=av.SYSTEM, reason='session_feedback')
+        self.assertContains(self.squad(self.therapist.user), 'Inbox (1)')

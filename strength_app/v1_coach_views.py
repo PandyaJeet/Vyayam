@@ -62,6 +62,11 @@ def _rtp_coach_summary(patient):
     return visibility.coach_summary(patient)
 
 
+def _rtp_inbox_unread(therapist):
+    from .rtp import inbox
+    return inbox.unread_count(therapist)  # None when RTP is off
+
+
 def _rtp_override_locked(patient):
     from .rtp import availability as rtp
     return rtp.override_lock_message(patient)
@@ -243,6 +248,7 @@ def coach_squad(request):
                 football.get_plyometric_cleared_display() if football else 'Not Cleared'
             ),
             'flagged': flagged,
+            'rtp_coach': _rtp_coach_summary(patient),  # None unless RTP is on and relevant
             'has_assessment': football is not None,
             'adherence': _calc_adherence(patient),
             'sport': patient.athlete_sport or patient.sport_type or 'football',
@@ -262,6 +268,7 @@ def coach_squad(request):
         'on_track': sum(1 for a in athletes if a['status'] == 'green'),
         'no_assessment': sum(1 for a in athletes if not a['has_assessment']),
         'coach': request.therapist,
+        'rtp_inbox_unread': _rtp_inbox_unread(request.therapist),
     }
     return render(request, 'strength_app/coach_squad.html', context)
 
