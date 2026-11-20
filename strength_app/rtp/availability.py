@@ -102,13 +102,17 @@ def place_hold(patient, *, actor=None, role=SYSTEM, reason=''):
         if role is None:
             return _deny('place_hold', actor, None, patient, 'no_link')
     row = _get_or_create(patient)
-    if not row.medical_hold:
+    newly_held = not row.medical_hold
+    if newly_held:
         row.medical_hold = True
         row.save(update_fields=['medical_hold', 'updated_at'])
     # S5: a red flag invalidates an approved clearance. The therapist must decide again.
     invalidated = ClearanceRecord.invalidate_active(patient, 'red_flag')
     audit.log('place_hold', 'allowed', actor=actor, role=role, patient=patient, reason=reason,
               clearances_invalidated=invalidated)
+    if newly_held:
+        from . import notify  # S10: a hold is never silent
+        notify.hold_placed(patient, reason)
     return True
 
 

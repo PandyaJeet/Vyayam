@@ -203,3 +203,26 @@ class CheckpointMeasure(models.Model):
 
     def __str__(self):
         return f"{self.measure} {self.status}"
+
+
+class Notification(models.Model):
+    """S10. In-app notice for a therapist. Written only by strength_app/rtp/notify.py.
+    The body is fixed text chosen by `kind`. It never carries a raw answer
+    (swelling, giving way, tightness, locking), so any role may see a row."""
+    HOLD_PLACED = 'hold_placed'
+    KIND_CHOICES = [(HOLD_PLACED, 'Hold placed')]
+
+    therapist = models.ForeignKey('strength_app.TherapistProfile', on_delete=models.CASCADE,
+                                  related_name='rtp_notifications')
+    patient = models.ForeignKey('strength_app.PatientProfile', on_delete=models.CASCADE,
+                                related_name='+')
+    kind = models.CharField(max_length=20, choices=KIND_CHOICES)
+    body = models.CharField(max_length=200)
+    created_at = models.DateTimeField(auto_now_add=True)
+    read_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ['-created_at', '-id']
+
+    def __str__(self):
+        return f"{self.therapist_id} {self.kind} {'read' if self.read_at else 'unread'}"
