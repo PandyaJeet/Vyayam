@@ -450,6 +450,11 @@ def compute_traffic_light(session_feedback):
 # 11b. PAIN-PATTERN FOLLOW-THROUGH (DA-F3)
 # ============================================================================
 
+def normalise_pain_location(value):
+    """Lowercase and strip a free-text pain location, so 'Left Knee ' == 'left knee'."""
+    return (value or '').strip().lower()
+
+
 def get_pain_pattern_escalation(patient):
     """Escalate repeated pain in the same location across sessions.
 
@@ -468,7 +473,7 @@ def get_pain_pattern_escalation(patient):
     def _patterns_for_location(session, location):
         patterns = set()
         for ex in session.exercises.filter(pain_reported=True):
-            if (ex.pain_location or '').strip().lower() == location:
+            if normalise_pain_location(ex.pain_location) == location:
                 pattern = _pattern_for_exercise_id(ex.exercise_id)
                 if pattern:
                     patterns.add(pattern)
@@ -484,14 +489,14 @@ def get_pain_pattern_escalation(patient):
 
     def _locations(session):
         locs = {
-            (ex.pain_location or '').strip().lower()
+            normalise_pain_location(ex.pain_location)
             for ex in session.exercises.filter(pain_reported=True)
             if (ex.pain_location or '').strip()
         }
         try:
             fb = session.feedback
             if fb.pain_reported not in ('', 'none') and fb.pain_location:
-                locs.add(fb.pain_location.strip().lower())
+                locs.add(normalise_pain_location(fb.pain_location))
         except Exception:
             pass
         return locs
