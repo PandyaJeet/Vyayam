@@ -224,14 +224,15 @@ def check_flag_review(patient, actor, post):
 
 def feedback_triggers_hold(patient, feedback):
     """Newest session feedback only. A null never holds. Swelling and giving way
-    count only for an athlete with an active episode."""
+    count only for an athlete with an active episode. So does a red light."""
     if feedback is None:
         return False
-    if getattr(feedback, 'traffic_light', None) == 'red':
-        return True
     if getattr(feedback, 'locking_or_catching', None) is True:
         return True
     if has_active_episode(patient):
+        # Pawan's ruling: red holds only with an active episode (guardrail 1 beats the spec list).
+        if getattr(feedback, 'traffic_light', None) == 'red':
+            return True
         if config.HOLD_ON_SWELLING and getattr(feedback, 'swelling_today', None) is True:
             return True
         if config.HOLD_ON_GIVING_WAY and getattr(feedback, 'giving_way', None) is True:

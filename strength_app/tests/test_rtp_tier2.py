@@ -119,6 +119,26 @@ class TestS9HoldEndToEnd(Tier2Base):
         self.submit(swelling_today='yes', giving_way='yes')
         self.assertFalse(av.is_held(self.athlete))
 
+    def test_red_without_episode_is_not_held_and_shows_no_hold_text(self):
+        from strength_app.rtp.config import ATHLETE_HOLD_TEXT
+        f = self.submit(pain_reported='severe')
+        self.assertEqual(f.traffic_light, 'red')
+        self.assertFalse(av.is_held(self.athlete))
+        self.assertFalse(AvailabilityStatus.objects.filter(patient=self.athlete,
+                                                           medical_hold=True).exists())
+        today = self.client.get('/athlete/today/')
+        self.assertEqual(today.status_code, 200)
+        self.assertNotContains(today, ATHLETE_HOLD_TEXT)
+        self.assertNotContains(today, 'rtpAthleteStatus')
+
+    def test_red_with_active_episode_is_held(self):
+        from strength_app.rtp.config import ATHLETE_HOLD_TEXT
+        self.open_episode()
+        f = self.submit(pain_reported='severe')
+        self.assertEqual(f.traffic_light, 'red')
+        self.assertTrue(av.is_held(self.athlete))
+        self.assertContains(self.client.get('/athlete/today/'), ATHLETE_HOLD_TEXT)
+
     @override_settings(RTP_ENABLED=False)
     def test_flag_off_never_holds(self):
         self.open_episode()
@@ -432,6 +452,7 @@ class TestSpine15CoachNeverSeesRawValues(Tier2Base):
         self.assertNotIn('tightness', block)
 
     def test_signal_yes_when_comparator_says_worse(self):
+        """Worse verdict: injury signal shows AND (Tier 3 S11, Pawan's ruling) the athlete is held."""
         self.open_episode()
         self.submit(tightness_0_10='2', swelling_today='no')
         self.submit(tightness_0_10='6', swelling_today='no')
