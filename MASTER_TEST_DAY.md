@@ -464,3 +464,50 @@ mentor sign-off on MENTOR_REVIEW_QUEUE §2026-07 cue strings. Flip day per
 exercise = one line in therapist_app/exercise_catalog.py + remove that
 exercise's DARK assertions in strength_app/tests/test_camera_dark.py
 (lines 99-101 invariant + '>DARK<' count).
+
+---
+
+## Part M — Exhibition host acceptance walk, phone over mobile data (2026-11-17, K1)
+
+Do this yourself after `docs/DEPLOY_DECISION.md` runbook step 8, before Wed 25 Nov.
+Needs: the deployed `https://<name>.fly.dev` link, one phone, Wi-Fi OFF
+(mobile data only), seeded demo (`DEMO_SEED=1`).
+
+### M1. Reach + HTTPS
+1. Phone browser (Chrome Android / Safari iOS): open `https://<name>.fly.dev/login/`.
+2. Padlock shows, page loads in under 5 s. `http://` must jump to `https://`.
+3. Open `/healthz/` → `{"status":"ok"}`.
+
+### M2. Athlete login + first page (the slow one)
+1. `/login/` → phone `9000000005`, password `athlete` → Log in.
+2. Expected: lands on `/athlete/today/`, "Today's Training, Kabir", "In-Season" pill.
+3. Time it. First visit after a deploy/restart may take 10–60 s (the registry
+   import). Note the seconds: ______. Second visit must be under 3 s.
+
+### M3. Football assessment on the phone
+1. Bottom nav / Today → "Performance tests due" card → `/football/assessment/`:
+   intro lists 8 tests.
+2. Tap Start → test 1 (Single-Leg Hop) opens with `?side=left`. Enter a value,
+   tap Save → goes to `?side=right`. Save → test 2.
+3. Walk tests 2–6 the same way (Nordic, Sprint, Pogo, COD both sides, Y-Balance
+   both sides). Each Save moves to the next test, no error banner.
+4. Tests 7–8 (bench / leg press): enter 60 kg × 8, Save; tap "No equipment
+   available — skip" on the last, or enter 140 × 10.
+5. Results page renders with a football level. No pain/rehab wording.
+
+### M4. Camera session over HTTPS on the phone
+1. Today → "Start Training" → `/v1/session/` → open the first camera exercise.
+2. Browser asks for camera permission → Allow. Camera must open (needs HTTPS).
+3. Do 3 reps. Skeleton overlay follows you; rep counter climbs; a cue is spoken.
+4. Finish the session, give feedback (sRPE) → Today shows the session done.
+5. Tap Progress and Profile tabs: both render, active tab highlighted.
+
+### M5. Stall conditions
+1. Leave the phone idle on the page 20 minutes, then tap any link. Must
+   respond in under 3 s (server must not have slept).
+2. Second phone (or laptop) logs in as `9100000001 / athletepass123` at the same
+   time and opens `/athlete/today/`. Both phones stay responsive.
+3. Log out on both → back to `/login/`.
+
+If any step fails, write what you saw and the time; run `fly logs` and look for
+`Out of memory` / `Killed`. If seen: `fly scale memory 2048`.

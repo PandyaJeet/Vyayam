@@ -1,0 +1,31 @@
+# Secrets and local data: must never enter the image
+.env
+.env.*
+db.sqlite3
+*.sqlite3
+media/
+staticfiles/
+
+# VCS / CI / editor
+.git
+.gitignore
+.github
+.claude
+.DS_Store
+
+# Python / node cruft
+__pycache__/
+*.pyc
+node_modules/
+venv/
+.venv/
+
+# Test suites and audit output (not used at runtime)
+strength_app/tests/
+therapist_app/tests.py
+therapist_app/test_*.py
+*.log
+
+# Local-only files
+AGENTS.md
+*.pdf
