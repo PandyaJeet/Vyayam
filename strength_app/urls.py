@@ -17,6 +17,8 @@ from . import v1_athlete_views as views_athlete
 from . import v1_mind_lab_views as views_mind_lab
 from . import v1_mind_lab_checkin_views as views_mind_lab_checkin
 from . import v1_mind_lab_visitor_views as views_mind_lab_visitor
+from . import v1_pass_window_views as views_pass_window
+from . import v1_pass_window_visitor_views as views_pass_window_visitor
 from . import v1_nutrition_views as views_nutrition
 from . import v1_therapist_session_views as views_thrx
 
@@ -97,6 +99,9 @@ urlpatterns = [
     path('athlete/profile/',                                          views_athlete.athlete_profile,              name='athlete_profile'),
     path('athlete/mind-lab/checkin/',                                 views_mind_lab_checkin.mind_lab_checkin,    name='mind_lab_checkin'),
     path('exhibition/mind-lab/',                                      views_mind_lab_visitor.mind_lab_visitor,    name='mind_lab_visitor'),
+    path('exhibition/mind-lab/pass-window/',                          views_pass_window_visitor.pass_window_visitor, name='pass_window_visitor'),
+    path('athlete/mind-lab/pass_window/',                             views_pass_window.pass_window_page,         name='pass_window'),
+    path('athlete/mind-lab/pass_window/save/',                        views_pass_window.pass_window_save,         name='pass_window_save'),
     path('athlete/mind-lab/<str:game_id>/',                           views_mind_lab.mind_lab_runner,             name='mind_lab_runner'),
     path('athlete/mind-lab/<str:game_id>/save/',                      views_mind_lab.mind_lab_save,               name='mind_lab_save'),
 

@@ -439,3 +439,17 @@ class TestG0MindLabJS(InlineJSAuditMixin, TestCase):
         self.audit_page(reverse('mind_lab_checkin'), 'mind lab checkin')
         self.audit_page(reverse('mind_lab_visitor'), 'mind lab visitor')
         self.assert_all_js_clean(min_scripts=0)
+
+    @override_settings(MIND_LAB_ENABLED=True)
+    def test_g0_pass_window_pages_inline_js_parse(self):
+        """Pass Window (athlete, on a full day) and its visitor page carry
+        config as a quoted |escapejs string parsed in JS."""
+        from strength_app.models import MindLabCheckIn
+        from strength_app.models import PatientProfile
+        athlete = PatientProfile.objects.get(patient_id=self.client.session['patient_id'])
+        MindLabCheckIn.objects.create(
+            athlete=athlete, sleep_bucket='over_6', stress=2, energy=4, focus=4,
+            pain_light='green', gate_applied='full', day_label='full')
+        self.audit_page(reverse('pass_window'), 'pass window')
+        self.audit_page(reverse('pass_window_visitor'), 'pass window visitor')
+        self.assert_all_js_clean(min_scripts=2)
