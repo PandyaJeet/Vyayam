@@ -491,6 +491,17 @@ class TestG0RtpTier2PagesJS(InlineJSAuditMixin, TestCase):
         self.assertContains(page, 'rtpCoachView')
         self.audit_page(reverse('coach_athlete_detail', args=[self.athlete.patient_id]),
                         'coach detail with rtp strip')
-        # Tier 3: the therapist inbox page.
+        # Tier 3: the therapist inbox page, the squad page and the athlete status line.
         self.audit_page(reverse('rtp_inbox'), 'rtp inbox')
+        self.audit_page(reverse('coach_squad'), 'coach squad with rtp line')
+        from strength_app.rtp import availability as av
+        PatientProfile.objects.filter(pk=self.athlete.pk).update(athlete_sport='football')
+        av.place_hold(self.athlete, role=av.SYSTEM, reason='session_feedback')
+        self.client.logout()
+        session = self.client.session
+        session['patient_id'] = self.athlete.patient_id
+        session.save()
+        page = self.client.get(reverse('athlete_today'))
+        self.assertContains(page, 'rtpAthleteStatus')
+        self.audit_page(reverse('athlete_today'), 'athlete today with status line')
         self.assert_all_js_clean(min_scripts=2)

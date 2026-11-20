@@ -4,7 +4,7 @@ A coach gets: traffic light, status, restrictions, stage name, "checkpoint
 due/passed" and "injury signal: yes/no". Nothing else. Raw swelling, giving way,
 tightness and locking values never leave this module: injury_signal is a bool.
 """
-from . import availability as av
+from . import availability as av, config
 from .checkpoints import checkpoint_state
 from .comparator import compare_pain_feedback
 from .models import AvailabilityStatus, RehabStage
@@ -59,3 +59,21 @@ def coach_summary(patient):
         'checkpoint': checkpoint_state(patient) or '',
         'injury_signal': injury_signal(patient),
     }
+
+
+def athlete_status(patient):
+    """S14: the athlete's own status line, or None when there is nothing to say
+    (RTP off, no availability row, or plain 'available' with no restrictions).
+    Status and restrictions only. No answers, no thresholds."""
+    if not av.enabled():
+        return None
+    row = AvailabilityStatus.objects.filter(patient=patient).first()
+    if row is None:
+        return None
+    status = av.effective_status(patient)
+    restrictions = list(row.restrictions or [])
+    if status == av.AVAILABLE and not restrictions:
+        return None
+    held = status == av.MEDICAL_HOLD
+    return {'status': status, 'restrictions': restrictions, 'held': held,
+            'hold_text': config.ATHLETE_HOLD_TEXT if held else ''}

@@ -204,3 +204,44 @@ class TestS14CoachSquad(Tier2Base):
     def test_inbox_link_shows_unread_count_for_therapist(self):
         av.place_hold(self.athlete, role=av.SYSTEM, reason='session_feedback')
         self.assertContains(self.squad(self.therapist.user), 'Inbox (1)')
+
+
+@override_settings(RTP_ENABLED=True)
+class TestS14AthleteStatusLine(Tier2Base):
+    def today(self):
+        resp = self.client.get('/athlete/today/')
+        self.assertEqual(resp.status_code, 200)
+        return resp
+
+    def test_no_row_or_plain_available_shows_nothing(self):
+        self.assertNotContains(self.today(), 'rtpAthleteStatus')
+        AvailabilityStatus.objects.create(patient=self.athlete)
+        self.assertNotContains(self.today(), 'rtpAthleteStatus')
+
+    def test_restricted_shows_status_and_restrictions(self):
+        av.set_base_status(self.athlete, 'restricted', actor=self.therapist)
+        AvailabilityStatus.objects.filter(patient=self.athlete).update(restrictions=['no_plyo'])
+        resp = self.today()
+        self.assertContains(resp, 'Status: Restricted')
+        self.assertContains(resp, 'Restrictions: no_plyo')
+
+    def test_held_shows_the_hold_text_only_and_no_raw_answers(self):
+        from strength_app.rtp.config import ATHLETE_HOLD_TEXT
+        self.open_episode()
+        self.submit(swelling_today='yes', tightness_0_10='7', tightness_location=RAW)
+        resp = self.today()
+        self.assertContains(resp, ATHLETE_HOLD_TEXT)
+        self.assertNotContains(resp, RAW)
+
+    @override_settings(RTP_ENABLED=False)
+    def test_flag_off_shows_nothing(self):
+        av.place_hold(self.athlete, role=av.SYSTEM, reason='x')
+        self.assertNotContains(self.today(), 'rtpAthleteStatus')
+
+    def test_stage_number_untouched_by_every_auto_action(self):
+        av.set_stage(self.athlete, 3, actor=self.therapist)
+        self.open_episode()
+        self.submit(tightness_0_10='1', swelling_today='no')
+        self.submit(tightness_0_10='8', swelling_today='yes')
+        self.assertEqual(AvailabilityStatus.objects.get(patient=self.athlete).stage_number, 3)
+        self.assertEqual(AuditLog.objects.filter(action='set_stage').count(), 1)  # the therapist's
