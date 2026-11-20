@@ -235,3 +235,211 @@ class TestS7Checkpoints(Tier2Base):
         av.lift_hold(self.athlete, actor=self.therapist)
         self.assertTrue(self.cp.pass_gate(self.point, actor=self.therapist))
         self.assertEqual(AvailabilityStatus.objects.get(patient=self.athlete).stage_number, 2)
+
+
+# --- S9 comparator ---------------------------------------------------------
+
+from datetime import date, timedelta  # noqa: E402
+from types import SimpleNamespace  # noqa: E402
+from unittest import mock  # noqa: E402
+
+from strength_app.rtp import config  # noqa: E402
+from strength_app.rtp.comparator import compare_pain_feedback as cmp  # noqa: E402
+
+DAY0 = date(2026, 11, 1)
+
+
+def rec(day=0, **kw):
+    base = dict(traffic_light='green', pain_severity=0, pain_location='',
+                swelling_today=None, giving_way=None, tightness_0_10=None,
+                locking_or_catching=None)
+    base.update(kw)
+    base['session'] = SimpleNamespace(session_date=DAY0 + timedelta(days=day))
+    return SimpleNamespace(**base)
+
+
+class TestComparator(TestCase):
+    def test_missing_record_is_no_comparison(self):
+        self.assertEqual(cmp(None, rec()), 'no_comparison')
+        self.assertEqual(cmp(rec(), None), 'no_comparison')
+        self.assertEqual(cmp(None, None), 'no_comparison')
+
+    def test_traffic_light_higher_is_worse_lower_is_better(self):
+        self.assertEqual(cmp(rec(traffic_light='green'), rec(1, traffic_light='yellow')), 'worse')
+        self.assertEqual(cmp(rec(traffic_light='yellow'), rec(1, traffic_light='red')), 'worse')
+        self.assertEqual(cmp(rec(traffic_light='red'), rec(1, traffic_light='green')), 'better')
+        self.assertEqual(cmp(rec(traffic_light='red'), rec(1, traffic_light='red')), 'same')
+
+    def test_severity_worse_only_at_delta(self):
+        with mock.patch.object(config, 'SEVERITY_DELTA', 2):
+            self.assertEqual(cmp(rec(pain_severity=3), rec(1, pain_severity=4)), 'same')
+            self.assertEqual(cmp(rec(pain_severity=3), rec(1, pain_severity=5)), 'worse')
+            self.assertEqual(cmp(rec(pain_severity=5), rec(1, pain_severity=3)), 'better')
+
+    def test_swelling_and_giving_way_no_to_yes_is_worse(self):
+        for name in ('swelling_today', 'giving_way'):
+            self.assertEqual(cmp(rec(**{name: False}), rec(1, **{name: True})), 'worse', name)
+            self.assertEqual(cmp(rec(**{name: True}), rec(1, **{name: False})), 'better', name)
+            self.assertEqual(cmp(rec(**{name: True}), rec(1, **{name: True})), 'same', name)
+
+    def test_tightness_worse_only_at_delta(self):
+        with mock.patch.object(config, 'TIGHTNESS_DELTA', 3):
+            self.assertEqual(cmp(rec(tightness_0_10=2), rec(1, tightness_0_10=4)), 'same')
+            self.assertEqual(cmp(rec(tightness_0_10=2), rec(1, tightness_0_10=5)), 'worse')
+            self.assertEqual(cmp(rec(tightness_0_10=6), rec(1, tightness_0_10=2)), 'better')
+
+    def test_locking_yes_in_newer_record_is_worse_even_if_older_also_yes_or_null(self):
+        self.assertEqual(cmp(rec(locking_or_catching=False), rec(1, locking_or_catching=True)), 'worse')
+        self.assertEqual(cmp(rec(locking_or_catching=True), rec(1, locking_or_catching=True)), 'worse')
+        self.assertEqual(cmp(rec(locking_or_catching=None), rec(1, locking_or_catching=True)), 'worse')
+        self.assertEqual(cmp(rec(locking_or_catching=True), rec(1, locking_or_catching=False)), 'better')
+
+    def test_location_ignored_by_default(self):
+        self.assertFalse(config.LOCATION_CHANGE_COUNTS)
+        self.assertEqual(cmp(rec(pain_location='left knee'), rec(1, pain_location='right ankle')), 'same')
+
+    def test_location_counts_when_on_and_uses_shared_normalisation(self):
+        with mock.patch.object(config, 'LOCATION_CHANGE_COUNTS', True):
+            self.assertEqual(cmp(rec(pain_location='Left Knee '), rec(1, pain_location=' left knee')), 'same')
+            self.assertEqual(cmp(rec(pain_location='left knee'), rec(1, pain_location='right ankle')), 'worse')
+            # blank on either side skips the field; nothing else compares, so no_comparison
+            blank = dict(pain_severity=None, traffic_light=None)
+            self.assertEqual(cmp(rec(pain_location='', **blank),
+                                 rec(1, pain_location='left knee', **blank)), 'no_comparison')
+
+    def test_normaliser_is_the_one_in_v1_safety_logic(self):
+        from strength_app import v1_safety_logic
+        from strength_app.rtp import comparator
+        self.assertIs(comparator.normalise_pain_location, v1_safety_logic.normalise_pain_location)
+
+    def test_gap_is_calendar_days_between_session_dates(self):
+        limit = config.MAX_GAP_DAYS
+        self.assertEqual(cmp(rec(0, traffic_light='green'), rec(limit, traffic_light='red')), 'worse')
+        self.assertEqual(cmp(rec(0, traffic_light='green'), rec(limit + 1, traffic_light='red')),
+                         'no_comparison')
+        with mock.patch.object(config, 'MAX_GAP_DAYS', 3):
+            self.assertEqual(cmp(rec(0, traffic_light='green'), rec(3, traffic_light='red')), 'worse')
+            self.assertEqual(cmp(rec(0, traffic_light='green'), rec(4, traffic_light='red')),
+                             'no_comparison')
+
+    def test_gap_counts_dates_not_24_hour_blocks(self):
+        from datetime import datetime
+        from django.utils import timezone
+        a, b = rec(traffic_light='green'), rec(traffic_light='red')
+        a.session.session_date = timezone.make_aware(datetime(2026, 11, 1, 23, 50))
+        b.session.session_date = timezone.make_aware(datetime(2026, 11, 2, 0, 10))
+        with mock.patch.object(config, 'MAX_GAP_DAYS', 1):
+            self.assertEqual(cmp(a, b), 'worse')  # 20 minutes apart, 1 calendar day
+        with mock.patch.object(config, 'MAX_GAP_DAYS', 0):
+            self.assertEqual(cmp(a, b), 'no_comparison')
+
+    def test_missing_or_reversed_dates_are_no_comparison(self):
+        a, b = rec(traffic_light='green'), rec(1, traffic_light='red')
+        b.session = SimpleNamespace(session_date=None)
+        self.assertEqual(cmp(a, b), 'no_comparison')
+        self.assertEqual(cmp(rec(5, traffic_light='green'), rec(0, traffic_light='red')), 'no_comparison')
+
+    def test_null_skips_only_that_field(self):
+        # tightness null on one side is skipped, the light still decides
+        self.assertEqual(cmp(rec(tightness_0_10=None, traffic_light='green'),
+                             rec(1, tightness_0_10=9, traffic_light='red')), 'worse')
+        self.assertEqual(cmp(rec(swelling_today=None), rec(1, swelling_today=True)), 'same')
+
+    def test_all_fields_null_is_no_comparison_and_null_never_holds(self):
+        null = dict(traffic_light=None, pain_severity=None, swelling_today=None,
+                    giving_way=None, tightness_0_10=None, locking_or_catching=None)
+        self.assertEqual(cmp(rec(**null), rec(1, **null)), 'no_comparison')
+
+    def test_precedence_worse_beats_better_beats_same(self):
+        self.assertEqual(cmp(rec(traffic_light='red', swelling_today=False),
+                             rec(1, traffic_light='green', swelling_today=True)), 'worse')
+        self.assertEqual(cmp(rec(traffic_light='red', swelling_today=False),
+                             rec(1, traffic_light='green', swelling_today=False)), 'better')
+        self.assertEqual(cmp(rec(), rec(1)), 'same')
+
+    def test_pure_no_queries_no_writes_inputs_unchanged(self):
+        a, b = rec(traffic_light='green'), rec(1, traffic_light='red')
+        before = (dict(vars(a)), dict(vars(b)))
+        with self.assertNumQueries(0):
+            cmp(a, b)
+        self.assertEqual((dict(vars(a)), dict(vars(b))), before)
+
+
+@override_settings(RTP_ENABLED=True)
+class TestComparatorOnRealRecords(Tier2Base):
+    def test_last_two_feedbacks_feed_the_comparator_without_writes(self):
+        from strength_app.rtp import visibility
+        self.open_episode()
+        self.submit(swelling_today='no')
+        self.submit(swelling_today='yes')
+        prev, newest = visibility.last_two_feedbacks(self.athlete)
+        self.assertEqual(cmp(prev, newest), 'worse')
+        rows = AuditLog.objects.count()
+        cmp(prev, newest)
+        self.assertEqual(AuditLog.objects.count(), rows)
+
+
+# --- SPINE_SPEC test 15: what the coach's response actually contains --------
+
+RAW_PLACE = 'zqxlocation'
+
+
+@override_settings(RTP_ENABLED=True)
+class TestSpine15CoachNeverSeesRawValues(Tier2Base):
+    def coach_page(self):
+        self.client.force_login(self.coach_user)
+        resp = self.client.get(f'/coach/athlete/{self.athlete.patient_id}/')
+        self.assertEqual(resp.status_code, 200)
+        return resp
+
+    def test_coach_sees_allowed_fields_and_signal_but_no_raw_values(self):
+        from strength_app.rtp import checkpoints, config as _c  # noqa: F401
+        self.open_episode()
+        av.set_base_status(self.athlete, 'restricted', actor=self.therapist)
+        AvailabilityStatus.objects.filter(patient=self.athlete).update(restrictions=['no_plyo'])
+        checkpoints.open_checkpoint(self.athlete, actor=self.therapist)
+        self.submit(swelling_today='yes', giving_way='yes', locking_or_catching='yes',
+                    tightness_0_10='7', tightness_location=RAW_PLACE)
+        resp = self.coach_page()
+        html = resp.content.decode()
+        # allowed
+        self.assertContains(resp, 'id="rtpCoachView"')
+        self.assertIn('Injury signal</span> yes', html)
+        self.assertIn('medical hold', html)
+        self.assertIn('no_plyo', html)
+        self.assertIn('Checkpoint</span> due', html)
+        # forbidden: raw values and their labels, in the page and in the template context
+        self.assertNotIn(RAW_PLACE, html)
+        # The base page already contains some of these words in its own CSS/JS, so
+        # compare with the same page rendered with RTP off: counts must not grow.
+        with override_settings(RTP_ENABLED=False):
+            base = self.coach_page().content.decode().lower()
+        for word in ('swelling', 'giving way', 'giving_way', 'tightness', 'locking', 'catching'):
+            self.assertEqual(html.lower().count(word), base.count(word), word)
+        block = html[html.index('id="rtpCoachView"'):].split('</div>')[0].lower()
+        for word in ('swelling', 'giving', 'tightness', 'locking', 'catching'):
+            self.assertNotIn(word, block, word)
+        self.assertEqual(set(resp.context['rtp_coach']),
+                         {'traffic_light', 'status', 'restrictions', 'stage_name',
+                          'checkpoint', 'injury_signal'})
+
+    def test_signal_no_when_answers_are_no(self):
+        self.open_episode()
+        self.submit(swelling_today='no', giving_way='no', locking_or_catching='no', tightness_0_10='9')
+        html = self.coach_page().content.decode()
+        self.assertIn('Injury signal</span> no', html)
+        block = html[html.index('id="rtpCoachView"'):].split('</div>')[0].lower()
+        self.assertNotIn('tightness', block)
+
+    def test_signal_yes_when_comparator_says_worse(self):
+        self.open_episode()
+        self.submit(tightness_0_10='2', swelling_today='no')
+        self.submit(tightness_0_10='6', swelling_today='no')
+        self.assertFalse(av.is_held(self.athlete))
+        self.assertIn('Injury signal</span> yes', self.coach_page().content.decode())
+
+    def test_flag_off_or_no_episode_adds_nothing(self):
+        self.assertNotContains(self.coach_page(), 'rtpCoachView')
+        self.open_episode()
+        with override_settings(RTP_ENABLED=False):
+            self.assertNotContains(self.coach_page(), 'rtpCoachView')

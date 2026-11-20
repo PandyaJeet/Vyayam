@@ -57,6 +57,11 @@ def coach_required(view_func):
 # HELPERS
 # ============================================================================
 
+def _rtp_coach_summary(patient):
+    from .rtp import visibility
+    return visibility.coach_summary(patient)
+
+
 def _rtp_override_locked(patient):
     from .rtp import availability as rtp
     return rtp.override_lock_message(patient)
@@ -447,6 +452,7 @@ def coach_athlete_detail(request, patient_id):
         'adherence': _calc_adherence(patient),
         'mind_lab_latest': GameSession.objects.filter(athlete=patient).first(),
         'rtp_override_locked': _rtp_override_locked(patient),
+        'rtp_coach': _rtp_coach_summary(patient),
     }
     return render(request, 'strength_app/coach_athlete_detail.html', context)
 

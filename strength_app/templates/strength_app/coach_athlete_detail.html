@@ -71,6 +71,18 @@
 
 {% block content %}
 
+{% if rtp_coach %}
+<!-- RTP coach view: only the fields SPINE_SPEC allows a coach to see -->
+<div class="info-row" id="rtpCoachView" style="margin-bottom:16px;flex-wrap:wrap;gap:16px;">
+  <span><span class="info-label">Status</span> {{ rtp_coach.status }}</span>
+  {% if rtp_coach.traffic_light %}<span><span class="info-label">Traffic light</span> {{ rtp_coach.traffic_light|title }}</span>{% endif %}
+  {% if rtp_coach.stage_name %}<span><span class="info-label">Stage</span> {{ rtp_coach.stage_name }}</span>{% endif %}
+  {% if rtp_coach.restrictions %}<span><span class="info-label">Restrictions</span> {{ rtp_coach.restrictions|join:", " }}</span>{% endif %}
+  {% if rtp_coach.checkpoint %}<span><span class="info-label">Checkpoint</span> {{ rtp_coach.checkpoint }}</span>{% endif %}
+  <span><span class="info-label">Injury signal</span> {% if rtp_coach.injury_signal %}yes{% else %}no{% endif %}</span>
+</div>
+{% endif %}
+
 <!-- Header stats -->
 <div class="three-col">
   <div class="stat-box">
