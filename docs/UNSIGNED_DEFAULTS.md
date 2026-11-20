@@ -120,3 +120,7 @@ All unsigned. Hold and notify only: nothing here changes load or a stage number.
 
 - **S10:** a hold now writes one in-app notice per therapist with authority over the athlete (assigned therapist and supervising therapists). A coach gets none. A notice failure never undoes a hold. This removes the "holds are silent" caveat above.
 - **S11:** `feedback_is_worse` in `strength_app/rtp/availability.py` compares the newest two feedback records right after the feedback is saved.
+- **S13 inbox** at `/coach/inbox/` (404 when `RTP_ENABLED` is off) lists unread notices, due checkpoints with pending-result counts, and held athletes ("waiting for your decision"). It has no actions except Mark read. Lifting a hold, clearing and passing a gate still go through the services (shell).
+- **S14:** coach squad line (`rtp-squad-line`), Inbox button, and athlete Today status line (`rtpAthleteStatus`). The athlete line shows the hold text when held, else "Status: X" and "Restrictions: ..." as the therapist stored them.
+- **Wording to review (mentor):** the hold notices above; squad line "Medical hold · Injury signal: yes · Checkpoint due"; inbox headings "Notices", "Checkpoints due", "Waiting for your decision", "On hold", "N result(s) to confirm"; athlete "Status: ..." / "Restrictions: ...".
+- **Holds are no longer silent** once `RTP_ENABLED` is on: S10 and S11 are built.

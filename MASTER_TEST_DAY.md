@@ -614,3 +614,17 @@ Needs `RTP_ENABLED=True`. Laptop for the coach and Django admin, phone for the a
 7. Coach login, athlete page: a strip shows Status, Traffic light, Stage (blank until W1 content exists), Restrictions, Checkpoint (due or passed) and "Injury signal yes/no". Injury signal is "yes" after step 4. View page source and search for "swelling", "giving way", "tightness", "locking": none of the athlete's answers appear.
 8. Shell: `clearance.decide(patient, 'approved', actor=<assigned therapist>)` while held returns None. Lift the hold (`lift_hold`), approve: returns a row. Submit feedback with swelling "Yes": hold is placed and the clearance shows `invalidated_reason = red_flag` in admin shell.
 9. Shell: `cp = checkpoints.open_checkpoint(patient, actor=<therapist>)`. As the coach profile: `enter_measure(cp, 'hop', '150', actor=<coach>)` stays pending. `enter_measure(cp, 'range', 'x', actor=<coach>)` returns None. `pass_gate(cp, actor=<coach>)` returns False. Coach page shows "Checkpoint due". Therapist `confirm_measure` then `pass_gate`: coach page shows "Checkpoint passed". Stage number unchanged. Audit logs list each denied attempt.
+
+## Part S — Return-to-play Tier 3: notices, auto-hold on worse, inbox, status lines (step 4)
+
+Needs `RTP_ENABLED=True`. Laptop for coach and therapist logins (both use `/coach/login/`), phone for the athlete. New wording is UNSIGNED: physio mentor must review it (list in the Tier 3 report). The therapist is the athlete's assigned therapist (admin > Patient profiles).
+
+1. Flag off: coach squad has no Inbox button and no status line under athlete names. `/coach/inbox/` is a 404. Athlete Today has no status line.
+2. Flag on, athlete with no episode and no hold: athlete Today has no status line. Squad shows no status line for that athlete.
+3. Open an episode (admin). Athlete does a session, feedback: tightness 2, swelling No. Next session: tightness 6, swelling No. Athlete is put on hold (answers got worse). Athlete Today shows the hold text. Stage number in admin is unchanged.
+4. Log in as the assigned therapist at `/coach/login/`, open Squad: Inbox button shows (1). Open it: the notice "Training paused for <name>. Their answers got worse since the last session." is under Notices, the athlete is under "Waiting for your decision". No swelling, giving way, tightness or locking values anywhere. Click Mark read: the notice goes, the count clears.
+5. Shell: open a checkpoint, coach enters a hop result. Therapist Inbox shows it under "Checkpoints due" with "1 result to confirm". Confirm and pass: it leaves the list.
+6. Log in as the coach: Squad shows "Medical hold · Injury signal: yes" under the athlete. No raw answers in the page source. Coach `/coach/inbox/` lists nothing about the athlete.
+7. Coach cannot lift the hold or mark the therapist's notice read (shell `lift_hold` with the coach profile returns False, audit row denied).
+8. Athlete with a "restricted" status and restriction `no_plyo` (shell `set_base_status`, then admin edit): Today shows "Status: Restricted" and "Restrictions: no_plyo".
+9. Therapist lifts the hold (`lift_hold`): Today status line clears, session available again.
