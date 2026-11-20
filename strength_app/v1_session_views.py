@@ -106,7 +106,14 @@ def _get_or_refresh_session_data(request, patient):
     today_str = str(date.today())
 
     if stored and stored_date == today_str:
-        return stored
+        # RTP S12: a hold placed after today's session was cached must still stop it.
+        from django.conf import settings as _settings
+        if getattr(_settings, 'RTP_ENABLED', False) and stored.get('status') != 'stopped':
+            from .rtp.availability import is_held
+            if is_held(patient):
+                stored = None
+        if stored:
+            return stored
 
     if patient.patient_id in _DEMO_PATIENT_IDS:
         data = dict(_DEMO_SESSION)
