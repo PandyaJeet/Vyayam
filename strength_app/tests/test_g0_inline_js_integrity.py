@@ -431,3 +431,11 @@ class TestG0MindLabJS(InlineJSAuditMixin, TestCase):
             self.audit_page(reverse('mind_lab_runner', args=[game_id]),
                             f'mind lab runner {game_id[:8]}')
         self.assert_all_js_clean(min_scripts=3)
+
+    @override_settings(MIND_LAB_ENABLED=True)
+    def test_g0_mind_lab_checkin_pages_inline_js_parse(self):
+        """Check-In 4 and the visitor page carry no inline JS of their own;
+        this keeps them under the rule-2 harness if that ever changes."""
+        self.audit_page(reverse('mind_lab_checkin'), 'mind lab checkin')
+        self.audit_page(reverse('mind_lab_visitor'), 'mind lab visitor')
+        self.assert_all_js_clean(min_scripts=0)

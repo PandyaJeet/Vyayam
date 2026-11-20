@@ -15,6 +15,8 @@ from . import v1_progress_views as views_progress
 from . import v1_coach_views as views_coach
 from . import v1_athlete_views as views_athlete
 from . import v1_mind_lab_views as views_mind_lab
+from . import v1_mind_lab_checkin_views as views_mind_lab_checkin
+from . import v1_mind_lab_visitor_views as views_mind_lab_visitor
 from . import v1_nutrition_views as views_nutrition
 from . import v1_therapist_session_views as views_thrx
 
@@ -93,6 +95,8 @@ urlpatterns = [
     path('athlete/today/',                                            views_athlete.athlete_today,                name='athlete_today'),
     path('athlete/progress/',                                         views_athlete.athlete_progress,             name='athlete_progress'),
     path('athlete/profile/',                                          views_athlete.athlete_profile,              name='athlete_profile'),
+    path('athlete/mind-lab/checkin/',                                 views_mind_lab_checkin.mind_lab_checkin,    name='mind_lab_checkin'),
+    path('exhibition/mind-lab/',                                      views_mind_lab_visitor.mind_lab_visitor,    name='mind_lab_visitor'),
     path('athlete/mind-lab/<str:game_id>/',                           views_mind_lab.mind_lab_runner,             name='mind_lab_runner'),
     path('athlete/mind-lab/<str:game_id>/save/',                      views_mind_lab.mind_lab_save,               name='mind_lab_save'),
 

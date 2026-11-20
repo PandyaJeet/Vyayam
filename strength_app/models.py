@@ -1522,3 +1522,25 @@ class GameSession(models.Model):
 
     def __str__(self):
         return f"{self.athlete_id} {self.game_id} L{self.level}"
+
+
+class MindLabCheckIn(models.Model):
+    """One Check-In 4 by one athlete. The athlete's own answers: no coach view
+    shows them (a coach sees only `day_label`, and only with opt-in, not built).
+    Visitor/exhibition mode never writes this table."""
+    athlete = models.ForeignKey('PatientProfile', on_delete=models.CASCADE, related_name='mind_lab_checkins')
+    created_at = models.DateTimeField(default=timezone.now)
+    sleep_bucket = models.CharField(max_length=10)  # under_5 / 5_to_6 / over_6
+    stress = models.PositiveSmallIntegerField(validators=[MinValueValidator(1), MaxValueValidator(5)])
+    energy = models.PositiveSmallIntegerField(validators=[MinValueValidator(1), MaxValueValidator(5)])
+    focus = models.PositiveSmallIntegerField(validators=[MinValueValidator(1), MaxValueValidator(5)])
+    pain_light = models.CharField(max_length=10)    # existing traffic light at the time
+    gate_applied = models.CharField(max_length=20)  # day mode used
+    day_label = models.CharField(max_length=10)     # full / light / recovery
+
+    class Meta:
+        ordering = ['-created_at']
+        indexes = [models.Index(fields=['athlete', '-created_at'])]
+
+    def __str__(self):
+        return f"{self.athlete_id} {self.day_label} {self.created_at:%Y-%m-%d}"
