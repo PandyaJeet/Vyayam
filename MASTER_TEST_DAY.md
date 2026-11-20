@@ -570,3 +570,18 @@ Setup: start the server with `MIND_LAB_ENABLED=True`. Sign in as a coach-linked 
 8. Coach dashboard for the same athlete. Expect NO check-in answers anywhere.
 9. Visitor mode: signed OUT, open `/exhibition/mind-lab/`. Answer sleep and energy. Expect a day label and "Nothing was saved." Tap "Next visitor". Expect a blank form.
 10. After step 9, open `/admin/` and confirm no new Mind Lab check-in row and no new game session from the visitor run. Energy 1 in the visitor run shows the support line.
+
+## Part P — Pass Window + exhibition visitor mode (step 3)
+
+Needs `MIND_LAB_ENABLED=True` in the environment. Phone, portrait. The 8 scenarios are demo scenarios and still UNREVIEWED: do not treat any answer as coaching advice.
+
+1. Log in as an athlete. Open `/athlete/mind-lab/checkin/` and answer Sleep over 6 h, others 3 to 5. Open `/athlete/mind-lab/pass_window/`. The rules card shows "Demo scenarios", the shape key (circle you, squares teammates, triangles defenders), "Time Assist: 0.3x" and the not-a-return-to-play line.
+2. Tap Start. A pitch appears. The triangle(s) slide toward you slowly. Nothing flashes. Tap a teammate square. The screen freezes about 2 s, shows a dashed amber line to the best teammate and a one-line reason ending "(Demo scenario)".
+3. Let one trial run out without tapping. It says "Time ran out" and shows the best pass.
+4. Finish all 8 trials (or 90 s). End card says "N of M best passes at 0.3x Time Assist" and "Compare only with your own earlier sessions at the same level". Status line below reads "Saved." Check no text mentions learning speed, leaderboards or match speed.
+5. Gating, no check-in today (delete today's check-in or use a new athlete): `/athlete/mind-lab/pass_window/` shows "Check-In and Reset Breath only today." and no game. Repeat with Sleep under 5 h: "Recovery only today." and no game.
+6. Sleep 5 to 6 h: game plays. After a perfect session the level does not rise (shortened day holds the level).
+7. Level 3 and up (set by perfect sessions on full days, or edit nothing and trust the node/Django tests): after tapping a teammate a lane choice appears (Direct, or through the gap). Level 5 layouts may be mirrored left to right.
+8. Visitor mode, signed out, phone: open `/exhibition/mind-lab/pass-window/`. It plays exactly 3 trials at Level 2 (0.5x), then reads "Nothing was saved." No login prompt. In the coach view and Django admin, no new GameSession appears.
+
+Unsigned wording and numbers: see `docs/UNSIGNED_DEFAULTS.md` "Pass Window".
