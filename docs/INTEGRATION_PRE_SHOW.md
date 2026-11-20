@@ -46,7 +46,7 @@ Found another file with the destination path 'strength_app/audio/coach/README.tx
 168 static files copied to '/Users/pawandangarwala/Documents/vyayam/worktrees/int/staticfiles', 440 post-processed.
 exit=0
 ```
-(The "Found another file with the destination path" warnings are duplicate static paths; they are in the log and exist on `main` content.)
+(The "Found another file with the destination path" warnings are duplicate static paths; not checked whether `main` shows them too.)
 
 ### 2.3 `python manage.py test --parallel 1` — exit 0
 Full output: `docs/integration_pre_show/3_django.txt`. Tail:
@@ -97,7 +97,7 @@ Neither appeared. Both runs on this branch are green.
 - `therapist_app/test_group4.py:116` (`assertIn('Pain >5 last week', metrics['flags'])`) ran and passed here: `therapist_app.test_group4.TherapistProgramBuilderTests.test_dashboard_pain_flag_fires_from_painevent ... ok` (log line 954). It ran right after `TherapistPermissionTests.test_therapist_required_redirects_anonymous`, `..._forbids_non_therapist` and `..._blocks_other_therapist`, and after `strength_app.tests.test_sentry` and `strength_app.tests.test_report_pdf`.
 - The second failure's identity is not known to me; I was not given its name. No test failed in this run, so there is nothing to match against.
 
-**Cause: not found.** I have no failing traceback to analyse, so I cannot say what made them fail on 0208e84. Your read (fails in a full run, passes alone) is consistent with order dependence or leaked state, but this run neither confirms nor refutes it: one green run is not proof of a fix. The merged code did not touch `therapist_app` tests or `_compute_link_metrics`, so a green result here is not evidence that the branches fixed anything. Possible lead if it recurs: the test is date-window sensitive ("last week" over `PainEvent` rows), so check for time-of-day or timezone dependence; unverified.
+**Cause: not found.** I have no failing traceback to analyse, so I cannot say what made them fail on 0208e84. Your read (fails in a full run, passes alone) is consistent with order dependence or leaked state, but this run neither confirms nor refutes it: one green run is not proof of a fix. `git diff --name-only main..HEAD` shows no file under `therapist_app/`, so a green result here is not evidence that the branches fixed anything. Possible lead if it recurs: the test is date-window sensitive ("last week" over `PainEvent` rows), so check for time-of-day or timezone dependence; unverified.
 
 ## 5. Side effects
 - Running the suite rewrites `strength_app/tests/clinical_audit/reports/H2_RESULTS.md` (known, K4 note). I restored it with `git checkout --` in this worktree only, so it is not part of the branch. Pawan's own checkout was not touched.
