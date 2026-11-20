@@ -10,6 +10,10 @@ HOLD_ON_SWELLING = True
 # UNSIGNED: "giving way = yes" holds an athlete who has an active episode.
 HOLD_ON_GIVING_WAY = True
 
+# UNSIGNED: a "worse" comparator verdict holds an athlete who has an active episode.
+# Hold and notify only. No load change, no stage change.
+HOLD_ON_WORSE = True
+
 # UNSIGNED, wording needs physio mentor review. Shown to the athlete when held.
 # No clinical threshold or claim in it. Not a diagnosis.
 ATHLETE_HOLD_TEXT = 'Your training is paused. Please check with your therapist.'

@@ -59,3 +59,46 @@ class TestS10Notification(Tier2Base):
         self.assertTrue(notify.mark_read(row, actor=self.therapist))
         row.refresh_from_db()
         self.assertIsNotNone(row.read_at)
+
+
+@override_settings(RTP_ENABLED=True)
+class TestS11AutoHoldOnWorse(Tier2Base):
+    def stage(self):
+        av.set_stage(self.athlete, 2, actor=self.therapist)
+
+    def test_worse_holds_notifies_and_keeps_stage(self):
+        self.open_episode()
+        self.stage()
+        self.submit(tightness_0_10='2', swelling_today='no')
+        self.assertFalse(av.is_held(self.athlete))
+        self.submit(tightness_0_10='6', swelling_today='no')
+        self.assertTrue(av.is_held(self.athlete))
+        self.assertEqual(AvailabilityStatus.objects.get(patient=self.athlete).stage_number, 2)
+        self.assertEqual(Notification.objects.count(), 1)
+        self.assertIn('got worse', Notification.objects.get().body)
+        self.assertFalse(AuditLog.objects.filter(action='set_stage', actor_role='system').exists())
+
+    def test_same_or_better_does_not_hold(self):
+        self.open_episode()
+        self.submit(tightness_0_10='6', swelling_today='no')
+        self.submit(tightness_0_10='3', swelling_today='no')
+        self.assertFalse(av.is_held(self.athlete))
+
+    def test_worse_without_episode_never_holds(self):
+        self.submit(pain_reported='mild', pain_severity='2')
+        f = self.submit(pain_reported='mild', pain_severity='5')
+        self.assertNotEqual(f.traffic_light, 'red')  # red holds everyone by S9; not what is tested
+        self.assertFalse(av.is_held(self.athlete))
+
+    @override_settings(RTP_ENABLED=False)
+    def test_flag_off_never_holds(self):
+        self.open_episode()
+        self.submit(tightness_0_10='2')
+        self.submit(tightness_0_10='9')
+        self.assertFalse(av.is_held(self.athlete))
+
+    def test_coach_cannot_lift_the_hold(self):
+        self.open_episode()
+        av.place_hold(self.athlete, role=av.SYSTEM, reason='worse_feedback')
+        self.assertFalse(av.lift_hold(self.athlete, actor=self.coach))
+        self.assertTrue(av.is_held(self.athlete))

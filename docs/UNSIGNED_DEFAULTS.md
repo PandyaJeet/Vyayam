@@ -107,3 +107,16 @@ Other unsigned items (no constant):
 - **Holds are still silent** (S10 not built). A hold writes an AuditLog row only. S11 (auto-hold on "worse") is not built: "worse" feeds the coach's "injury signal" only.
 - **Coach view** shows on `coach_athlete_detail` only, and only when the athlete has an episode or an availability row. The coach squad list is unchanged.
 - **Minors** need a legal check before the injury questions go to under-18 athletes (SPINE_SPEC). No age gate was added.
+
+
+## Return-to-play Tier 3 (step 4)
+
+All unsigned. Hold and notify only: nothing here changes load or a stage number.
+
+| Constant / item | Default | File:line | Note |
+|---|---|---|---|
+| `HOLD_ON_WORSE` | True | `strength_app/rtp/config.py:15` | A "worse" comparator verdict holds an athlete with an active episode. Only for athletes with an episode, because `pain_severity` is noisy for the rest. Conservative side is True. |
+| `HOLD_BODIES`, `HOLD_BODY_DEFAULT` | text | `strength_app/rtp/notify.py:20` | Therapist-facing notice wording. No raw values. Mentor review. |
+
+- **S10:** a hold now writes one in-app notice per therapist with authority over the athlete (assigned therapist and supervising therapists). A coach gets none. A notice failure never undoes a hold. This removes the "holds are silent" caveat above.
+- **S11:** `feedback_is_worse` in `strength_app/rtp/availability.py` compares the newest two feedback records right after the feedback is saved.

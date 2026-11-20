@@ -241,6 +241,23 @@ def feedback_triggers_hold(patient, feedback):
 
 def apply_feedback_hold(patient, feedback):
     """Hold and notify only. Never changes the stage number or any load."""
-    if not enabled() or not feedback_triggers_hold(patient, feedback):
+    if not enabled():
         return False
-    return place_hold(patient, role=SYSTEM, reason='session_feedback')
+    if feedback_triggers_hold(patient, feedback):
+        return place_hold(patient, role=SYSTEM, reason='session_feedback')
+    if feedback_is_worse(patient, feedback):
+        return place_hold(patient, role=SYSTEM, reason='worse_feedback')
+    return False
+
+
+def feedback_is_worse(patient, feedback):
+    """S11: the comparator says the newest answers are worse than the one before.
+    Only for an athlete with an active episode; pain_severity is noisy for the rest."""
+    if feedback is None or not config.HOLD_ON_WORSE or not has_active_episode(patient):
+        return False
+    from .comparator import WORSE, compare_pain_feedback
+    from .visibility import last_two_feedbacks
+    previous, newest = last_two_feedbacks(patient)
+    if newest is None or newest.pk != getattr(feedback, 'pk', None):
+        return False
+    return compare_pain_feedback(previous, newest) == WORSE
