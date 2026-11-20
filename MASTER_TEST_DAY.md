@@ -465,6 +465,26 @@ exercise = one line in therapist_app/exercise_catalog.py + remove that
 exercise's DARK assertions in strength_app/tests/test_camera_dark.py
 (lines 99-101 invariant + '>DARK<' count).
 
+### L4. Mind Lab scaffold (K4) — runner page + coach card
+No game exists yet (games arrive with K5), so this walk checks the shell only.
+1. Sign in as a coached football athlete (e.g. the seeded football demo
+   athlete). Open `/athlete/mind-lab/anything_goes/` on the phone.
+   Expect: page with a "Mind Lab" card and the line "No game is loaded."
+   No console errors (a missing game is not an error).
+2. Open `/athlete/mind-lab/Bad.Id/` → 404. Sign out and reopen step 1's URL →
+   redirected to login.
+3. Sign in as the athlete's coach. Open that athlete's detail page
+   (Squad → athlete). Right column, under "Athlete Profile": card
+   "Mind Lab — Latest Session" reads "No Mind Lab sessions yet."
+4. Optional, to see the filled card: in `python manage.py shell` create
+   `GameSession.objects.create(athlete=<PatientProfile>, game_id='demo',
+   level=2, n_trials=20, accuracy=0.8, median_rt_ms=410)`; reload the coach
+   page → card shows game, date, level 2, trials 20, accuracy 80%,
+   median reaction 410 ms.
+5. Athlete-visible text added: "Mind Lab", "No game is loaded.", "Saved.",
+   "Could not save." — flagged for Pawan's physio mentor (cognitive-performance
+   wording) before any wider release.
+
 ---
 
 ## Part M — Exhibition host acceptance walk, phone over mobile data (2026-11-17, K1)
