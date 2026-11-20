@@ -1,5 +1,6 @@
-"""RTP Tier 1 models: S1 AuditLog, S2 CoachTherapistLink, S3 AvailabilityStatus,
-S6 RehabPathway / RehabStage / InjuryEpisode.
+"""RTP models. Tier 1: S1 AuditLog, S2 CoachTherapistLink, S3 AvailabilityStatus,
+S6 RehabPathway / RehabStage / InjuryEpisode. Tier 2: S5 ClearanceRecord,
+S7 Checkpoint / CheckpointMeasure.
 
 Registered under the strength_app app label (imported at the bottom of
 strength_app/models.py). FKs are strings so this module imports nothing from it.
@@ -116,3 +117,89 @@ class InjuryEpisode(models.Model):
 
     def __str__(self):
         return f"{self.patient_id} episode {'open' if self.closed_at is None else 'closed'}"
+
+
+class ClearanceRecord(models.Model):
+    """S5. A therapist's decision. Only a therapist writes one; nothing approves
+    automatically. A red flag or a hold invalidates an approved row. A clearance
+    never loosens a gate or lifts a hold: no gate reads it."""
+    APPROVED, DECLINED = 'approved', 'declined'
+    DECISION_CHOICES = [(APPROVED, 'Approved'), (DECLINED, 'Declined')]
+
+    patient = models.ForeignKey('strength_app.PatientProfile', on_delete=models.CASCADE,
+                                related_name='clearances')
+    decision = models.CharField(max_length=10, choices=DECISION_CHOICES)
+    restrictions = models.JSONField(default=list, blank=True)
+    note = models.TextField(blank=True, default='')
+    decided_by = models.ForeignKey('strength_app.TherapistProfile', null=True,
+                                   on_delete=models.SET_NULL, related_name='+')
+    decided_at = models.DateTimeField(auto_now_add=True)
+    invalidated_at = models.DateTimeField(null=True, blank=True)
+    invalidated_reason = models.CharField(max_length=40, blank=True, default='')
+
+    class Meta:
+        ordering = ['-decided_at', '-id']
+
+    @classmethod
+    def active_for(cls, patient):
+        return cls.objects.filter(patient=patient, decision=cls.APPROVED,
+                                  invalidated_at__isnull=True)
+
+    @classmethod
+    def invalidate_active(cls, patient, reason):
+        """Returns how many approved clearances were invalidated."""
+        from django.utils import timezone
+        return cls.active_for(patient).update(invalidated_at=timezone.now(),
+                                              invalidated_reason=reason)
+
+    def __str__(self):
+        return f"{self.patient_id} {self.decision}"
+
+
+class Checkpoint(models.Model):
+    """S7. A gate check opened by a therapist. Due while passed_at is null.
+    Passing it never changes the stage number: set_stage is a separate act."""
+    patient = models.ForeignKey('strength_app.PatientProfile', on_delete=models.CASCADE,
+                                related_name='checkpoints')
+    stage_number = models.PositiveSmallIntegerField(null=True, blank=True)
+    opened_by = models.ForeignKey('strength_app.TherapistProfile', null=True,
+                                  on_delete=models.SET_NULL, related_name='+')
+    opened_at = models.DateTimeField(auto_now_add=True)
+    passed_by = models.ForeignKey('strength_app.TherapistProfile', null=True, blank=True,
+                                  on_delete=models.SET_NULL, related_name='+')
+    passed_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ['-opened_at', '-id']
+
+    def __str__(self):
+        return f"{self.patient_id} checkpoint {'passed' if self.passed_at else 'due'}"
+
+
+class CheckpointMeasure(models.Model):
+    """S7. One measure on a checkpoint. A coach-entered measure stays pending
+    until a therapist confirms it."""
+    PENDING, CONFIRMED = 'pending', 'confirmed'
+    STATUS_CHOICES = [(PENDING, 'Pending'), (CONFIRMED, 'Confirmed')]
+    MEASURE_CHOICES = [
+        ('hop', 'Hop'), ('sprint', 'Sprint'), ('nordic', 'Nordic'),
+        ('range', 'Range'), ('manual_strength', 'Manual strength'), ('palpation', 'Palpation'),
+    ]
+
+    checkpoint = models.ForeignKey(Checkpoint, on_delete=models.CASCADE, related_name='measures')
+    measure = models.CharField(max_length=20, choices=MEASURE_CHOICES)
+    value = models.CharField(max_length=60)
+    entered_by = models.ForeignKey('strength_app.TherapistProfile', null=True,
+                                   on_delete=models.SET_NULL, related_name='+')
+    entered_by_role = models.CharField(max_length=12)  # therapist / coach
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default=PENDING)
+    confirmed_by = models.ForeignKey('strength_app.TherapistProfile', null=True, blank=True,
+                                     on_delete=models.SET_NULL, related_name='+')
+    confirmed_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['created_at', 'id']
+
+    def __str__(self):
+        return f"{self.measure} {self.status}"

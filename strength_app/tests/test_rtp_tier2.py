@@ -124,3 +124,114 @@ class TestS9HoldEndToEnd(Tier2Base):
         self.open_episode()
         self.submit(swelling_today='yes')
         self.assertFalse(AvailabilityStatus.objects.filter(patient=self.athlete).exists())
+
+
+@override_settings(RTP_ENABLED=True)
+class TestS5Clearance(Tier2Base):
+    def test_therapist_approves_and_it_is_recorded(self):
+        from strength_app.rtp import clearance
+        row = clearance.decide(self.athlete, 'approved', actor=self.therapist,
+                               restrictions=['no_plyo'])
+        self.assertEqual(clearance.active_clearance(self.athlete), row)
+        self.assertEqual(row.restrictions, ['no_plyo'])
+
+    def test_coach_cannot_decide_and_is_audited(self):
+        from strength_app.rtp import clearance
+        self.assertIsNone(clearance.decide(self.athlete, 'approved', actor=self.coach))
+        self.assertIsNone(clearance.active_clearance(self.athlete))
+        self.assertTrue(AuditLog.objects.filter(action='clearance_decision', outcome='denied',
+                                                actor_role='coach').exists())
+
+    def test_nothing_in_the_app_approves_on_its_own(self):
+        from strength_app.rtp import clearance
+        from strength_app.rtp.models import ClearanceRecord
+        self.open_episode()
+        self.submit(swelling_today='no', giving_way='no', locking_or_catching='no')
+        av.apply_feedback_hold(self.athlete, SessionFeedback.objects.first())
+        self.assertEqual(ClearanceRecord.objects.count(), 0)
+        self.assertIsNone(clearance.decide(self.athlete, 'maybe', actor=self.therapist))
+
+    def test_red_flag_invalidates_clearance_end_to_end(self):
+        from strength_app.rtp import clearance
+        self.open_episode()
+        clearance.decide(self.athlete, 'approved', actor=self.therapist)
+        self.assertIsNotNone(clearance.active_clearance(self.athlete))
+        self.submit(giving_way='yes')  # through the real view
+        self.assertTrue(av.is_held(self.athlete))
+        self.assertIsNone(clearance.active_clearance(self.athlete))
+
+    def test_cannot_approve_while_held_and_approval_never_lifts_hold(self):
+        from strength_app.rtp import clearance
+        av.place_hold(self.athlete, role='system')
+        self.assertIsNone(clearance.decide(self.athlete, 'approved', actor=self.therapist))
+        self.assertTrue(av.is_held(self.athlete))
+        declined = clearance.decide(self.athlete, 'declined', actor=self.therapist)
+        self.assertIsNotNone(declined)
+        self.assertTrue(av.is_held(self.athlete))
+
+    def test_new_decision_supersedes_old_approval(self):
+        from strength_app.rtp import clearance
+        first = clearance.decide(self.athlete, 'approved', actor=self.therapist)
+        second = clearance.decide(self.athlete, 'approved', actor=self.therapist)
+        first.refresh_from_db()
+        self.assertEqual(first.invalidated_reason, 'superseded')
+        self.assertEqual(clearance.active_clearance(self.athlete), second)
+
+
+@override_settings(RTP_ENABLED=True)
+class TestS7Checkpoints(Tier2Base):
+    def setUp(self):
+        super().setUp()
+        from strength_app.rtp import checkpoints
+        self.cp = checkpoints
+        self.point = checkpoints.open_checkpoint(self.athlete, actor=self.therapist, stage_number=2)
+
+    def test_spine16_coach_entry_stays_pending_and_cannot_pass_gate(self):
+        for m in ('hop', 'sprint', 'nordic'):
+            row = self.cp.enter_measure(self.point, m, '1.0', actor=self.coach)
+            self.assertEqual((row.status, row.entered_by_role), ('pending', 'coach'))
+        self.assertFalse(self.cp.pass_gate(self.point, actor=self.coach))
+        self.assertFalse(self.cp.pass_gate(self.point, actor=self.therapist))  # still pending
+        self.point.refresh_from_db()
+        self.assertIsNone(self.point.passed_at)
+        self.assertEqual(self.cp.checkpoint_state(self.athlete), 'due')
+        self.assertTrue(AuditLog.objects.filter(action='pass_gate', outcome='denied',
+                                                actor_role='coach').exists())
+
+    def test_coach_cannot_confirm_therapist_can_then_pass(self):
+        row = self.cp.enter_measure(self.point, 'hop', '150', actor=self.coach)
+        self.assertFalse(self.cp.confirm_measure(row, actor=self.coach))
+        row.refresh_from_db()
+        self.assertEqual(row.status, 'pending')
+        self.assertTrue(self.cp.confirm_measure(row, actor=self.therapist))
+        self.assertTrue(self.cp.pass_gate(self.point, actor=self.therapist))
+        self.assertEqual(self.cp.checkpoint_state(self.athlete), 'passed')
+
+    def test_spine17_coach_cannot_enter_range_strength_palpation(self):
+        from strength_app.rtp.models import CheckpointMeasure
+        for m in ('range', 'manual_strength', 'palpation'):
+            self.assertIsNone(self.cp.enter_measure(self.point, m, 'x', actor=self.coach))
+        self.assertEqual(CheckpointMeasure.objects.count(), 0)
+        self.assertEqual(AuditLog.objects.filter(action='enter_measure', outcome='denied',
+                                                 actor_role='coach').count(), 3)
+
+    def test_therapist_enters_any_measure_as_confirmed(self):
+        for m in ('range', 'manual_strength', 'palpation', 'hop'):
+            row = self.cp.enter_measure(self.point, m, 'x', actor=self.therapist)
+            self.assertEqual((row.status, row.entered_by_role), ('confirmed', 'therapist'))
+
+    def test_unlinked_user_and_junk_measure_rejected(self):
+        stranger = make_therapist('9')
+        self.assertIsNone(self.cp.enter_measure(self.point, 'hop', '1', actor=stranger))
+        self.assertIsNone(self.cp.enter_measure(self.point, 'bogus', '1', actor=self.therapist))
+
+    def test_coach_cannot_open_checkpoint(self):
+        self.assertIsNone(self.cp.open_checkpoint(self.athlete, actor=self.coach))
+
+    def test_pass_gate_refused_while_held_and_never_changes_stage(self):
+        av.set_stage(self.athlete, 2, actor=self.therapist)
+        av.place_hold(self.athlete, role='system')
+        self.assertFalse(self.cp.pass_gate(self.point, actor=self.therapist))
+        av.lift_hold(self.athlete, actor=self.therapist)
+        self.assertTrue(self.cp.pass_gate(self.point, actor=self.therapist))
+        self.assertEqual(AvailabilityStatus.objects.get(patient=self.athlete).stage_number, 2)

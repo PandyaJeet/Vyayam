@@ -14,7 +14,7 @@ Everything here is inert unless settings.RTP_ENABLED is on.
 from django.conf import settings
 
 from . import audit, config
-from .models import AvailabilityStatus, CoachTherapistLink, InjuryEpisode
+from .models import AvailabilityStatus, ClearanceRecord, CoachTherapistLink, InjuryEpisode
 
 AVAILABLE, MODIFIED, REHAB_STAGE, RESTRICTED = 'available', 'modified', 'rehab_stage', 'restricted'
 MEDICAL_HOLD = 'medical hold'
@@ -105,7 +105,10 @@ def place_hold(patient, *, actor=None, role=SYSTEM, reason=''):
     if not row.medical_hold:
         row.medical_hold = True
         row.save(update_fields=['medical_hold', 'updated_at'])
-    audit.log('place_hold', 'allowed', actor=actor, role=role, patient=patient, reason=reason)
+    # S5: a red flag invalidates an approved clearance. The therapist must decide again.
+    invalidated = ClearanceRecord.invalidate_active(patient, 'red_flag')
+    audit.log('place_hold', 'allowed', actor=actor, role=role, patient=patient, reason=reason,
+              clearances_invalidated=invalidated)
     return True
 
 

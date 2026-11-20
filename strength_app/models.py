@@ -1559,4 +1559,5 @@ class MindLabCheckIn(models.Model):
 from .rtp.models import (  # noqa: E402,F401
     AuditLog, CoachTherapistLink, AvailabilityStatus,
     RehabPathway, RehabStage, InjuryEpisode,
+    ClearanceRecord, Checkpoint, CheckpointMeasure,
 )
