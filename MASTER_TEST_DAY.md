@@ -585,3 +585,18 @@ Needs `MIND_LAB_ENABLED=True` in the environment. Phone, portrait. The 8 scenari
 8. Visitor mode, signed out, phone: open `/exhibition/mind-lab/pass-window/`. It plays exactly 3 trials at Level 2 (0.5x), then reads "Nothing was saved." No login prompt. In the coach view and Django admin, no new GameSession appears.
 
 Unsigned wording and numbers: see `docs/UNSIGNED_DEFAULTS.md` "Pass Window".
+
+
+## Part Q — Return-to-play Tier 1: holds and coach lock (step 4)
+
+Needs `RTP_ENABLED=True`. Laptop, coach login plus Django admin. There is no therapist screen yet, so set status in `python manage.py shell` with `strength_app.rtp.availability` (functions `place_hold`, `lift_hold`, `set_stage`, `set_base_status`). Wording of the athlete hold text is UNSIGNED: physio mentor must review it.
+
+1. Flag off (`RTP_ENABLED` unset): coach athlete page, Override page and athlete Today look exactly as before. No "Override locked" anywhere.
+2. Flag on, athlete with no hold: same screens, same session as step 1.
+3. Place a hold (shell: `place_hold(patient, role='system')`). Athlete Today shows "Training paused" with the hold text. Starting a session shows the stopped page. A session cached earlier the same day is also stopped.
+4. Coach athlete page: "Override locked" shows instead of the Override button. Open `/coach/athlete/<id>/override/` by URL: a red locked message, no form. Admin > Audit logs shows a "denied" row only after a POST attempt.
+5. Flag for Review with a note still works while held. The athlete stays on hold.
+6. As therapist (shell: `lift_hold(patient, actor=<assigned TherapistProfile>)`): hold lifts, athlete gets a session again. Try the same call as the coach profile: returns False and a "denied" audit row appears.
+7. `set_stage(patient, 2, actor=<assigned therapist>)`: coach Override is locked again (rehab stage). Place and lift a hold: stage stays 2.
+8. `set_base_status(patient, 'restricted', ...)`: Override opens with "you can only remove exercises". Adding an exercise is rejected (denied row). Removing is saved.
+9. Admin: Audit logs, Availability statuses and Injury episodes are listed. Rehab pathways shows `hamstring` and `ankle` with no stages.

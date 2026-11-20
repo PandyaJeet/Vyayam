@@ -60,3 +60,24 @@ Other unsigned Pass Window items (no constant):
 - **Shortened day** holds the level (`PLAN_TEXT['shortened']` says "Your level holds").
 - **Manual Assist High/Medium/Low/Off picker, last-5 trend and coach error-pattern view** from the spec are not built.
 - **Athlete-facing wording** in `pass_window.js` and the Pass Window templates needs physio mentor review.
+
+## Return-to-play Tier 1 (step 4)
+
+`[Clinician sets]` values from SPINE_SPEC. All in `strength_app/rtp/config.py`. None signed off. Conservative = more likely to hold.
+
+| Constant | Default | File:line | Spec blank |
+|---|---|---|---|
+| `HOLD_ON_SWELLING` | True | `strength_app/rtp/config.py:9` | "swelling today = yes" holds an athlete with an active episode |
+| `HOLD_ON_GIVING_WAY` | True | `strength_app/rtp/config.py:11` | "giving way = yes" holds an athlete with an active episode |
+| `ATHLETE_HOLD_TEXT` | "Your training is paused. Please check with your therapist." | `strength_app/rtp/config.py:15` | Not a spec blank. Athlete-facing wording, needs physio mentor review |
+
+Other unsigned items (no constant):
+
+- **W1 content is missing.** `W1_output.md` was never delivered. `RehabPathway` has two empty rows (`hamstring`, `ankle`), no `RehabStage` rows, no stage names, no criteria. Nothing clinical was written.
+- **The hold rule is built but not wired.** `feedback_triggers_hold` in `strength_app/rtp/availability.py` reads `swelling_today`, `giving_way`, `locking_or_catching` with `getattr`. Those fields do not exist yet (S8). Nothing calls `apply_feedback_hold` from a view, so no athlete is held automatically. Red light holds every athlete once wired; that is the spec, confirm before wiring.
+- **Holds are silent.** S10 (notify) is not built, so a hold writes an AuditLog row only.
+- **No therapist screen.** Status changes by a therapist go through the service functions only (shell). Admin pages for status and audit are read-only on purpose.
+- **Restricted = remove or keep only.** On `restricted`, a coach override with any action other than `remove` or `keep` is rejected. "Reduce load" is not measured by sets or reps.
+- **Coach screens treat every user as a coach**, even the assigned therapist. A therapist acts through the service, not those screens.
+- **Rehab stage blocks coach overrides but not the athlete's session.** Only medical hold stops the session.
+
