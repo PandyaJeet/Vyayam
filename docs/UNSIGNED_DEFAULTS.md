@@ -29,3 +29,34 @@ Score for Check-In 4 is `energy + focus + (6 - stress)`, range 3 to 15 (`strengt
 - **S3 hold.** No hold source exists. Hook: `s3_hold_active` at `strength_app/mind_lab/day_mode.py:31`, always False.
 - **Athlete-facing wording** (`PLAN_TEXT`, `LABEL_TEXT`, form text in `mind_lab_checkin*.html`, `mind_lab_visitor.html`) needs physio mentor review before release.
 - **Coach day-label opt-in.** Not built. No coach screen shows check-in data.
+
+## Pass Window (step 3)
+
+Blanks from the G2 Pass Window spec (`[Pawan sets]`). All in `strength_app/mind_lab/config.py`. None signed off. Conservative = more Time Assist, slower promotion, quicker demotion.
+
+| Constant | Default | File:line | Spec blank |
+|---|---|---|---|
+| `PASS_WINDOW_BASE_CLOSING_MS` | 4000 | `strength_app/mind_lab/config.py:43` | Base closing time (closing = base / factor) |
+| `PASS_WINDOW_SESSION_MAX_S` | 90 | `strength_app/mind_lab/config.py:45` | Session timer (spec max 90 s) |
+| `PASS_WINDOW_TRIALS` | 8 | `strength_app/mind_lab/config.py:47` | Trial count |
+| `PASS_WINDOW_BLOCK_SIZE` | 4 | `strength_app/mind_lab/config.py:49` | Block size |
+| `PASS_WINDOW_ACCURACY_UP_PCT` | 90 | `strength_app/mind_lab/config.py:51` | Accuracy % to raise |
+| `PASS_WINDOW_ACCURACY_DOWN_PCT` | 70 | `strength_app/mind_lab/config.py:53` | Accuracy % below which a block counts toward a drop |
+| `PASS_WINDOW_BLOCKS_TO_RAISE` | 2 | `strength_app/mind_lab/config.py:55` | Blocks in a row to raise |
+| `PASS_WINDOW_TIMEOUTS_TO_LOWER` | 2 | `strength_app/mind_lab/config.py:57` | Timeouts that drop a level |
+| `PASS_WINDOW_L5_DECISION_LIMIT_MS` | 4000 | `strength_app/mind_lab/config.py:60` | Level 5 decision time limit (equals the base closing time, so no extra pressure yet) |
+| `PASS_WINDOW_ACCEPTABLE_COUNTS_AS_CORRECT` | False | `strength_app/mind_lab/config.py:63` | Not a spec blank. My choice: an "acceptable" pass does not count toward the level rule |
+
+Fixed by the spec, not blank: `PASS_WINDOW_FREEZE_MS` (2000, line 65), `PASS_WINDOW_VISITOR_TRIALS` (3, line 67), `PASS_WINDOW_VISITOR_LEVEL` (2, line 68).
+
+Other unsigned Pass Window items (no constant):
+
+- **All 8 scenarios are `UNREVIEWED`** (`strength_app/mind_lab/pass_window_scenarios.json`). A coach or physio must review every `correct` and `acceptable` before use. They are labelled "demo scenarios" in the UI.
+- **Pillar mapping `[Pawan maps]`.** Not guessed. No pillar appears in code.
+- **Youth guardian consent `[Pawan checks]`.** Unbuilt. No consent gate was added.
+- **Intermediate Time Assist factors** 0.5, 0.7, 0.85 are the spec author's proposal (`LEVEL_FACTORS` in `strength_app/mind_lab/pass_window.py`).
+- **Thin scenario pool.** Level 3 and Level 5 have one scenario each, Levels 1, 2 and 4 have two. A session repeats them. The visitor run (3 trials at Level 2) shows PD-004, PD-005, PD-004.
+- **"2 blocks" for a drop** is read as the last 2 complete blocks.
+- **Shortened day** holds the level (`PLAN_TEXT['shortened']` says "Your level holds").
+- **Manual Assist High/Medium/Low/Off picker, last-5 trend and coach error-pattern view** from the spec are not built.
+- **Athlete-facing wording** in `pass_window.js` and the Pass Window templates needs physio mentor review.

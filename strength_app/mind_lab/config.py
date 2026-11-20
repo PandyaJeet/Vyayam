@@ -36,3 +36,33 @@ STILL_SWITCH_ACCURACY_UP_PCT = 90
 STILL_SWITCH_ACCURACY_DOWN_PCT = 70
 # UNSIGNED: in-session accuracy drop (percentage points) that stops the game early.
 STILL_SWITCH_STOP_EARLY_DROP_PCT = 15
+
+# --- Pass Window (G2 spec; every [Pawan sets] blank, conservative defaults) --
+# UNSIGNED: base closing time in ms. Closing time = this / Time Assist factor,
+# so a bigger base means more time at every level.
+PASS_WINDOW_BASE_CLOSING_MS = 4000
+# UNSIGNED: session timer in seconds. The spec's own maximum is 90.
+PASS_WINDOW_SESSION_MAX_S = 90
+# UNSIGNED: trials in a session (the session also stops at the timer).
+PASS_WINDOW_TRIALS = 8
+# UNSIGNED: trials per block. The level rule is checked per block.
+PASS_WINDOW_BLOCK_SIZE = 4
+# UNSIGNED: accuracy % a block needs to count toward a raise (high = slow promotion).
+PASS_WINDOW_ACCURACY_UP_PCT = 90
+# UNSIGNED: accuracy % below which a block counts toward a drop (high = quick demotion).
+PASS_WINDOW_ACCURACY_DOWN_PCT = 70
+# UNSIGNED: blocks in a row at or above the up % (and no timeouts) before a raise.
+PASS_WINDOW_BLOCKS_TO_RAISE = 2
+# UNSIGNED: timeouts in a session that drop one level.
+PASS_WINDOW_TIMEOUTS_TO_LOWER = 2
+# UNSIGNED: Level 5 decision time limit in ms. Equal to the base closing time,
+# so it adds no pressure until Pawan sets a shorter value.
+PASS_WINDOW_L5_DECISION_LIMIT_MS = 4000
+# UNSIGNED: does an "acceptable" (defensible) pass count as correct for the
+# level rule? False = only the listed best pass counts (slower promotion).
+PASS_WINDOW_ACCEPTABLE_COUNTS_AS_CORRECT = False
+# Stated by the spec (not blank): the freeze-and-explain step lasts about 2 s.
+PASS_WINDOW_FREEZE_MS = 2000
+# Stated by the spec (not blank): exhibition visitor = 3 trials at Level 2, fixed.
+PASS_WINDOW_VISITOR_TRIALS = 3
+PASS_WINDOW_VISITOR_LEVEL = 2
