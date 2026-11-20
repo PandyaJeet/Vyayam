@@ -435,7 +435,7 @@ class TestSpine15CoachNeverSeesRawValues(Tier2Base):
         self.open_episode()
         self.submit(tightness_0_10='2', swelling_today='no')
         self.submit(tightness_0_10='6', swelling_today='no')
-        self.assertFalse(av.is_held(self.athlete))
+        self.assertTrue(av.is_held(self.athlete))  # Tier 3 S11: worse now holds (was signal only)
         self.assertIn('Injury signal</span> yes', self.coach_page().content.decode())
 
     def test_flag_off_or_no_episode_adds_nothing(self):
