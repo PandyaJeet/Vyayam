@@ -555,3 +555,18 @@ Prep: `DJANGO_SECRET_KEY=test-key DJANGO_DEBUG=True python manage.py seed_footba
 1. No session shows green/yellow/red rep counts or a form score (all 14 are guided, self-counted).
 2. Wording on every page is training-readiness only; none reads as diagnosis.
 3. `seed_football_demo --reset` removes the athlete; rerun restores it with identical counts.
+
+## Part O — Check-In 4, Mind Lab day gating, visitor mode (step 2)
+
+Setup: start the server with `MIND_LAB_ENABLED=True`. Sign in as a coach-linked football athlete (phone, mobile data or Wi-Fi). Flag unset = every URL below is 404.
+
+1. Open `/athlete/mind-lab/checkin/`. Expect 4 questions: sleep (3 choices) and three 1-5 sliders. Tap Done without a sleep choice. Expect it refuses.
+2. Sleep over 6 h, stress 2, energy 5, focus 5, athlete's last traffic light green. Expect "Full day" and "Full Mind Lab today."
+3. Sleep 5 to 6 h, same sliders. Expect "Light day" and the shorter-day line.
+4. Sleep under 5 h, same sliders. Expect "Recovery-only day".
+5. Last traffic light yellow (give a session feedback with joint pain), sleep over 6 h. Expect the shorter-day line.
+6. Last traffic light red, sleep over 6 h. Expect "Recovery-only day" and "Check-In and Reset Breath only today." Red must win over good sleep.
+7. Energy 1 (then stress 1 in a new check-in). Expect the line "If you feel very low, please talk to your coach or a qualified professional." The athlete is never blocked.
+8. Coach dashboard for the same athlete. Expect NO check-in answers anywhere.
+9. Visitor mode: signed OUT, open `/exhibition/mind-lab/`. Answer sleep and energy. Expect a day label and "Nothing was saved." Tap "Next visitor". Expect a blank form.
+10. After step 9, open `/admin/` and confirm no new Mind Lab check-in row and no new game session from the visitor run. Energy 1 in the visitor run shows the support line.
