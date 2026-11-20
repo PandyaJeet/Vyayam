@@ -7,9 +7,15 @@
 {% endblock %}
 
 {% block header_actions %}
+{% if rtp_override_locked %}
+<span class="btn-coach btn-sm-c" style="margin-right:8px;opacity:.5;cursor:not-allowed;" title="{{ rtp_override_locked }}">
+  <i class="fas fa-lock"></i> Override locked
+</span>
+{% else %}
 <a href="{% url 'coach_override_prescription' patient.patient_id %}" class="btn-coach btn-primary-c btn-sm-c" style="margin-right:8px;">
   <i class="fas fa-edit"></i> Override Prescription
 </a>
+{% endif %}
 <button class="btn-coach btn-danger-c btn-sm-c" onclick="document.getElementById('flagModal').style.display='flex'">
   <i class="fas fa-flag"></i> Flag for Review
 </button>
