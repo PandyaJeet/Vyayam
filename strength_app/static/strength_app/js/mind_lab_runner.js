@@ -32,8 +32,10 @@
     if (!factory) { status.textContent = 'No game is loaded.'; return; }
     var slowmo = 1.0;
     var game = factory({
-      host: host, level: cfg.level, slowmo: slowmo,
+      host: host, level: cfg.level, slowmo: slowmo, cfg: cfg,
       finish: function (result) {
+        // No save_url (exhibition visitor mode) means nothing is sent anywhere.
+        if (!cfg.save_url) { status.textContent = 'Nothing was saved.'; return; }
         save(cfg, cfg.level, slowmo, result).then(function (r) {
           status.textContent = r.ok ? 'Saved.' : 'Could not save.';
         }).catch(function () { status.textContent = 'Could not save.'; });
