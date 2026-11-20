@@ -27,6 +27,11 @@ CSRF_TRUSTED_ORIGINS = [
 ]
 
 
+# Feature flags. Both default OFF: with both off every screen and prescription
+# behaves exactly as before.
+MIND_LAB_ENABLED = os.environ.get('MIND_LAB_ENABLED', 'False').lower() in ('true', '1', 'yes')
+RTP_ENABLED = os.environ.get('RTP_ENABLED', 'False').lower() in ('true', '1', 'yes')
+
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
