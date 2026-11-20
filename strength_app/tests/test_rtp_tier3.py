@@ -102,3 +102,60 @@ class TestS11AutoHoldOnWorse(Tier2Base):
         av.place_hold(self.athlete, role=av.SYSTEM, reason='worse_feedback')
         self.assertFalse(av.lift_hold(self.athlete, actor=self.coach))
         self.assertTrue(av.is_held(self.athlete))
+
+
+@override_settings(RTP_ENABLED=True)
+class TestS13Inbox(Tier2Base):
+    def get_inbox(self, user):
+        self.client.force_login(user)
+        return self.client.get('/coach/inbox/')
+
+    def setUp(self):
+        super().setUp()
+        from strength_app.rtp import checkpoints
+        self.open_episode()
+        cp = checkpoints.open_checkpoint(self.athlete, actor=self.therapist, stage_number=2)
+        checkpoints.enter_measure(cp, 'hop', '150', actor=self.coach)  # pending
+        self.submit(swelling_today='yes', giving_way='yes', locking_or_catching='yes',
+                    tightness_0_10='7', tightness_location=RAW)
+
+    def test_therapist_sees_notice_checkpoint_and_decision(self):
+        resp = self.get_inbox(self.therapist.user)
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, 'Training paused for')
+        self.assertContains(resp, '1 result to confirm')
+        self.assertContains(resp, 'On hold')
+        self.assertContains(resp, self.athlete.name)
+
+    def test_coach_inbox_shows_nothing_about_the_athlete(self):
+        resp = self.get_inbox(self.coach_user)
+        self.assertEqual(resp.status_code, 200)
+        self.assertNotContains(resp, self.athlete.name)
+        self.assertContains(resp, 'No new notices.')
+
+    def test_no_raw_values_on_the_therapist_inbox_either(self):
+        html = self.get_inbox(self.therapist.user).content.decode().lower()
+        block = html[html.index('id="rtpinbox"'):]
+        for word in ('swelling', 'giving', 'tightness', 'locking', 'catching', RAW):
+            self.assertNotIn(word, block)
+
+    def test_mark_read_only_by_recipient(self):
+        n = Notification.objects.get(therapist=self.therapist)
+        self.client.force_login(self.coach_user)
+        self.client.post(f'/coach/inbox/{n.id}/read/')
+        n.refresh_from_db()
+        self.assertIsNone(n.read_at)
+        self.assertTrue(AuditLog.objects.filter(action='notify_read', outcome='denied').exists())
+        self.client.force_login(self.therapist.user)
+        self.client.post(f'/coach/inbox/{n.id}/read/')
+        n.refresh_from_db()
+        self.assertIsNotNone(n.read_at)
+        self.assertContains(self.client.get('/coach/inbox/'), 'No new notices.')
+
+    @override_settings(RTP_ENABLED=False)
+    def test_flag_off_is_404(self):
+        self.assertEqual(self.get_inbox(self.therapist.user).status_code, 404)
+
+    def test_logged_out_is_redirected(self):
+        self.client.logout()
+        self.assertEqual(self.client.get('/coach/inbox/').status_code, 302)

@@ -1,0 +1,34 @@
+{% extends 'strength_app/coach_base.html' %}
+{% block title %}Inbox — VYAYAM{% endblock %}
+{% block page_title %}Inbox{% endblock %}
+
+{% block content %}
+<div id="rtpInbox">
+  <div class="c-card" id="rtpInboxNotices">
+    <div class="c-card-title">Notices</div>
+    {% for n in notifications %}
+    <div class="info-row">
+      <span>{{ n.body }} <span class="info-label">{{ n.created_at|date:"j M, H:i" }}</span></span>
+      <form method="post" action="{% url 'rtp_inbox_read' n.id %}">{% csrf_token %}
+        <button class="btn-coach btn-sm-c" type="submit">Mark read</button>
+      </form>
+    </div>
+    {% empty %}<div class="empty">No new notices.</div>{% endfor %}
+  </div>
+
+  <div class="c-card" id="rtpInboxCheckpoints">
+    <div class="c-card-title">Checkpoints due</div>
+    {% for c in checkpoints %}
+    <div class="info-row"><span>{{ c.patient.name }}{% if c.stage_number %}, stage {{ c.stage_number }}{% endif %}</span>
+      <span class="info-label">{{ c.pending }} result{{ c.pending|pluralize }} to confirm</span></div>
+    {% empty %}<div class="empty">No checkpoints due.</div>{% endfor %}
+  </div>
+
+  <div class="c-card" id="rtpInboxClearances">
+    <div class="c-card-title">Waiting for your decision</div>
+    {% for h in clearances %}
+    <div class="info-row"><span>{{ h.patient.name }}</span><span class="info-label">On hold</span></div>
+    {% empty %}<div class="empty">Nobody is waiting.</div>{% endfor %}
+  </div>
+</div>
+{% endblock %}

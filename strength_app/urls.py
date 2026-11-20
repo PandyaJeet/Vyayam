@@ -13,6 +13,7 @@ from . import v1_football_views as views_football
 from . import v1_session_views as views_session
 from . import v1_progress_views as views_progress
 from . import v1_coach_views as views_coach
+from . import v1_rtp_inbox_views
 from . import v1_athlete_views as views_athlete
 from . import v1_mind_lab_views as views_mind_lab
 from . import v1_mind_lab_checkin_views as views_mind_lab_checkin
@@ -116,6 +117,8 @@ urlpatterns = [
     path('coach/athlete/<str:patient_id>/flag/',                      views_coach.coach_flag_review,              name='coach_flag_review'),
     path('coach/athlete/<str:patient_id>/competition/',               views_coach.coach_set_competition,          name='coach_set_competition'),
     path('coach/athlete/<str:patient_id>/notes/',                     views_coach.coach_save_notes,               name='coach_save_notes'),
+    path('coach/inbox/',                                              v1_rtp_inbox_views.rtp_inbox,               name='rtp_inbox'),
+    path('coach/inbox/<int:notification_id>/read/',                   v1_rtp_inbox_views.rtp_inbox_read,          name='rtp_inbox_read'),
     path('coach/add-athlete/',                                        views_coach.coach_add_athlete,              name='coach_add_athlete'),
 
     # ========================================================================

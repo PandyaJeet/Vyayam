@@ -491,4 +491,6 @@ class TestG0RtpTier2PagesJS(InlineJSAuditMixin, TestCase):
         self.assertContains(page, 'rtpCoachView')
         self.audit_page(reverse('coach_athlete_detail', args=[self.athlete.patient_id]),
                         'coach detail with rtp strip')
+        # Tier 3: the therapist inbox page.
+        self.audit_page(reverse('rtp_inbox'), 'rtp inbox')
         self.assert_all_js_clean(min_scripts=2)
