@@ -453,3 +453,42 @@ class TestG0MindLabJS(InlineJSAuditMixin, TestCase):
         self.audit_page(reverse('pass_window'), 'pass window')
         self.audit_page(reverse('pass_window_visitor'), 'pass window visitor')
         self.assert_all_js_clean(min_scripts=2)
+
+
+@unittest.skipUnless(NODE, 'node is required for inline-JS syntax checking')
+@override_settings(RTP_ENABLED=True)
+class TestG0RtpTier2PagesJS(InlineJSAuditMixin, TestCase):
+    """RTP Tier 2: the post-session form with the injury questions and the coach
+    page with the status strip. Neither block adds inline JS; this keeps both
+    pages under the rule-2 harness with the new markup rendered."""
+
+    def setUp(self):
+        super().setUp()
+        from strength_app.rtp.models import InjuryEpisode
+        user = User.objects.create_user('g0rtpcoach', password='g0pass123')
+        coach = TherapistProfile.objects.create(
+            user=user, therapist_id='G0RTPC1', name='G0 RTP Coach',
+            license_number='PT-G0-RTP', specialization='S&C',
+            email='g0rtp@example.com', phone='9999900096',
+        )
+        athlete = PatientProfile.objects.create(
+            patient_id='G0RTP1', name="Rtp O'Hostile", phone='9000009971', age=22,
+            goals='Football', training_history='intermediate', athlete_tier_eligible=True,
+        )
+        CoachPatientLink.objects.create(coach=coach, patient=athlete, is_active=True)
+        InjuryEpisode.objects.create(patient=athlete)
+        self.athlete, self.coach_user = athlete, user
+        session = self.client.session
+        session['patient_id'] = athlete.patient_id
+        session.save()
+
+    def test_g0_rtp_feedback_and_coach_pages_inline_js_parse(self):
+        page = self.client.get(reverse('v1_post_session_feedback'))
+        self.assertContains(page, 'rtpInjuryQuestions')
+        self.audit_page(reverse('v1_post_session_feedback'), 'feedback with injury questions')
+        self.client.force_login(self.coach_user)
+        page = self.client.get(reverse('coach_athlete_detail', args=[self.athlete.patient_id]))
+        self.assertContains(page, 'rtpCoachView')
+        self.audit_page(reverse('coach_athlete_detail', args=[self.athlete.patient_id]),
+                        'coach detail with rtp strip')
+        self.assert_all_js_clean(min_scripts=2)
