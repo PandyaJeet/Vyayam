@@ -600,3 +600,17 @@ Needs `RTP_ENABLED=True`. Laptop, coach login plus Django admin. There is no the
 7. `set_stage(patient, 2, actor=<assigned therapist>)`: coach Override is locked again (rehab stage). Place and lift a hold: stage stays 2.
 8. `set_base_status(patient, 'restricted', ...)`: Override opens with "you can only remove exercises". Adding an exercise is rejected (denied row). Removing is saved.
 9. Admin: Audit logs, Availability statuses and Injury episodes are listed. Rehab pathways shows `hamstring` and `ankle` with no stages.
+
+## Part R — Return-to-play Tier 2: injury questions, hold on feedback, coach view (step 4)
+
+Needs `RTP_ENABLED=True`. Laptop for the coach and Django admin, phone for the athlete. There is no therapist screen yet: open an episode in Django admin (Injury episodes > Add, tick nothing for closed) or `python manage.py shell` with `strength_app.rtp.availability`, `clearance` and `checkpoints`. The wording of the five athlete questions is UNSIGNED: physio mentor must review it.
+
+1. Flag off: the post-session feedback page has no injury questions and the coach athlete page has no status strip. Same as before.
+2. Flag on, athlete with NO episode: feedback page has no injury questions. Submit with pain "None": no hold, coach page unchanged.
+3. Open an episode for the athlete (admin). Flag on. Do a session and reach the feedback page: a card "A few quick questions about your injury" shows swelling, giving way, locking, tightness (0 to 10) and where. Answer all "No" and tightness 2, submit. Athlete is not on hold. Admin > Session feedbacks shows the five values saved.
+4. Next session, answer swelling "Yes", submit. Athlete Today now shows "Training paused" and a new session is refused. Admin > Audit logs shows `place_hold` allowed, role system, reason `session_feedback`. Stage number unchanged.
+5. Repeat on a second athlete with an active episode using giving way "Yes". Same result. Repeat with locking "Yes". Same result.
+6. Leave every question blank and submit: no hold (blank never holds).
+7. Coach login, athlete page: a strip shows Status, Traffic light, Stage (blank until W1 content exists), Restrictions, Checkpoint (due or passed) and "Injury signal yes/no". Injury signal is "yes" after step 4. View page source and search for "swelling", "giving way", "tightness", "locking": none of the athlete's answers appear.
+8. Shell: `clearance.decide(patient, 'approved', actor=<assigned therapist>)` while held returns None. Lift the hold (`lift_hold`), approve: returns a row. Submit feedback with swelling "Yes": hold is placed and the clearance shows `invalidated_reason = red_flag` in admin shell.
+9. Shell: `cp = checkpoints.open_checkpoint(patient, actor=<therapist>)`. As the coach profile: `enter_measure(cp, 'hop', '150', actor=<coach>)` stays pending. `enter_measure(cp, 'range', 'x', actor=<coach>)` returns None. `pass_gate(cp, actor=<coach>)` returns False. Coach page shows "Checkpoint due". Therapist `confirm_measure` then `pass_gate`: coach page shows "Checkpoint passed". Stage number unchanged. Audit logs list each denied attempt.

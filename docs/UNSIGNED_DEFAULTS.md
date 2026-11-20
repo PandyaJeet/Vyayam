@@ -81,3 +81,29 @@ Other unsigned items (no constant):
 - **Coach screens treat every user as a coach**, even the assigned therapist. A therapist acts through the service, not those screens.
 - **Rehab stage blocks coach overrides but not the athlete's session.** Only medical hold stops the session.
 
+
+## Return-to-play Tier 2 (step 4)
+
+`[Clinician sets]` values from SPINE_SPEC, comparator parameters. All in `strength_app/rtp/config.py`. None signed off.
+
+| Constant | Default | File:line | Spec blank |
+|---|---|---|---|
+| `MAX_GAP_DAYS` | 14 | `strength_app/rtp/config.py:21` | Two sessions further apart than this (calendar days between session dates) give `no_comparison`. Larger is more conservative. |
+| `SEVERITY_DELTA` | 1 | `strength_app/rtp/config.py:23` | `pain_severity` up by this much is "worse". Smaller is more conservative. |
+| `TIGHTNESS_DELTA` | 1 | `strength_app/rtp/config.py:25` | `tightness_0_10` up by this much is "worse". Smaller is more conservative. |
+| `LOCATION_CHANGE_COUNTS` | False | `strength_app/rtp/config.py:28` | Off per SPINE_SPEC. The conservative setting would be True. |
+
+Other unsigned items (no constant):
+
+- **The hold rule is now wired.** `v1_post_session_feedback` calls `apply_feedback_hold` after saving the feedback (`strength_app/v1_session_views.py`). With `RTP_ENABLED` on, **a red traffic light holds any athlete, with or without an episode** (SPINE_SPEC: "Hold if traffic light red"). Swelling and giving way hold only an athlete with an active episode. Confirm the red-light-holds-everyone reading.
+- **Athlete-facing wording** of the five injury questions (`strength_app/templates/strength_app/v1_post_session_feedback.html`, block `rtpInjuryQuestions`) needs physio mentor review. It says "Any swelling today?", "Did it give way?", "Any locking or catching?", "Tightness today (0 to 10)", "Where is the tightness?".
+- **A location change counts as "worse"** when `LOCATION_CHANGE_COUNTS` is on. SPINE_SPEC gives no direction. Blank on either side skips the field.
+- **`pain_severity` is compared as stored.** It is not nullable and the form posts a default of 3 even when pain is "none", so the severity part of the comparator is noisy until the form stops posting it for "none". Not changed (outside this step).
+- **Locking:** yes in the newer record is "worse" even if the older record is yes or null. A "no" with a null older record is skipped.
+- **A negative gap** (older record dated after the newer) and a **missing session date** give `no_comparison`.
+- **Clearance (S5):** approving is refused while the athlete is on hold. Any hold (`place_hold`, from any role) invalidates the approved clearance with reason `red_flag`. A new decision supersedes the old approval. No gate reads a clearance, so it cannot loosen one.
+- **Checkpoint pass (S7):** `pass_gate` is refused while the athlete is on hold or any measure is still pending. With no measures a therapist may still pass it. Criteria stay blank (W1 missing). Passing never changes the stage number.
+- **No therapist screen for S5 or S7.** Decisions, checkpoints and measures go through `strength_app/rtp/clearance.py` and `checkpoints.py` only (shell). S13 is not built.
+- **Holds are still silent** (S10 not built). A hold writes an AuditLog row only. S11 (auto-hold on "worse") is not built: "worse" feeds the coach's "injury signal" only.
+- **Coach view** shows on `coach_athlete_detail` only, and only when the athlete has an episode or an availability row. The coach squad list is unchanged.
+- **Minors** need a legal check before the injury questions go to under-18 athletes (SPINE_SPEC). No age gate was added.
