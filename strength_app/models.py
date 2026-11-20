@@ -1544,3 +1544,10 @@ class MindLabCheckIn(models.Model):
 
     def __str__(self):
         return f"{self.athlete_id} {self.day_label} {self.created_at:%Y-%m-%d}"
+
+
+# RTP Tier 1 models (strength_app/rtp/). Imported last so the registry sees them.
+from .rtp.models import (  # noqa: E402,F401
+    AuditLog, CoachTherapistLink, AvailabilityStatus,
+    RehabPathway, RehabStage, InjuryEpisode,
+)
