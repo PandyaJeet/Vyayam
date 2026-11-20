@@ -24,6 +24,7 @@ from .models import (
     PatientProfile, StrengthProfile, PeriodisationState,
     WorkoutSession, ExerciseExecution, SessionFeedback,
 )
+from .rtp import availability as rtp_availability, feedback as rtp_feedback
 from .v1_prescription_engine import generate_v1_session
 from .v1_safety_logic import compute_pattern_priorities, advance_periodisation
 
@@ -1066,7 +1067,10 @@ def v1_post_session_feedback(request):
             energy_level=energy_level,
             hormonal_phase=hormonal_phase,
             session_rpe=safe_int(request.POST.get('session_rpe'), 5, 1, 10),  # DA-C13
+            **rtp_feedback.injury_fields_from_post(patient, request.POST),  # RTP S8
         )
+        # RTP S9: newest feedback decides a hold. Hold and notify only; inert unless RTP_ENABLED.
+        rtp_availability.apply_feedback_hold(patient, feedback)
 
         # Update patient's sleep_quality from latest feedback for next session's modifier
         sleep_map = {'under_5': 'poor', '5_to_6': 'moderate', '7_to_8': 'good', 'over_8': 'good'}
@@ -1096,6 +1100,7 @@ def v1_post_session_feedback(request):
         'hormonal_phase': hormonal_phase,
         'working_sets':   working_sets,
         'has_strength_profile': True,
+        'rtp_ask_injury': rtp_feedback.ask_injury_questions(patient),
     }
     return render(request, 'strength_app/v1_post_session_feedback.html', context)
 

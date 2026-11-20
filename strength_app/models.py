@@ -636,6 +636,15 @@ class SessionFeedback(models.Model):
     ]
     traffic_light = models.CharField(max_length=10, choices=TRAFFIC_LIGHT_CHOICES, default='green')
 
+    # RTP S8: asked only of an athlete with an active injury episode. All
+    # nullable: null means "not asked", and a null never holds (strength_app/rtp).
+    swelling_today = models.BooleanField(null=True, blank=True)
+    giving_way = models.BooleanField(null=True, blank=True)
+    tightness_0_10 = models.PositiveSmallIntegerField(
+        null=True, blank=True, validators=[MaxValueValidator(10)])
+    tightness_location = models.CharField(max_length=100, blank=True, default='')
+    locking_or_catching = models.BooleanField(null=True, blank=True)
+
     class Meta:
         ordering = ['-created_at']
 
