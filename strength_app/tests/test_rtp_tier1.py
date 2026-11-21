@@ -128,11 +128,17 @@ class TestSpine19SwellingGivingWay(RtpBase):
         self.assertFalse(av.apply_feedback_hold(self.athlete, fb()))
 
     def test_red_and_locking_hold(self):
-        # Red holds only with an active episode (Pawan's ruling); locking holds regardless.
+        # Red and locking hold only with an active episode (Pawan's rulings).
         self.assertFalse(av.feedback_triggers_hold(self.athlete, fb(traffic_light='red')))
+        self.assertFalse(av.feedback_triggers_hold(self.athlete, fb(locking_or_catching=True)))
         InjuryEpisode.objects.create(patient=self.athlete)
         self.assertTrue(av.feedback_triggers_hold(self.athlete, fb(traffic_light='red')))
         self.assertTrue(av.feedback_triggers_hold(self.athlete, fb(locking_or_catching=True)))
+
+    def test_locking_without_active_episode_does_not_hold(self):
+        self.assertFalse(av.feedback_triggers_hold(self.athlete, fb(locking_or_catching=True)))
+        self.assertFalse(av.apply_feedback_hold(self.athlete, fb(locking_or_catching=True)))
+        self.assertFalse(av.is_held(self.athlete))
 
 
 class TestCoachScreens(RtpBase):
