@@ -291,10 +291,21 @@ class TestComparator(TestCase):
         self.assertEqual(cmp(rec(traffic_light='red'), rec(1, traffic_light='red')), 'same')
 
     def test_severity_worse_only_at_delta(self):
+        # yellow + a location, so the green-and-empty noise gate does not apply
+        y = dict(traffic_light='yellow', pain_location='knee')
         with mock.patch.object(config, 'SEVERITY_DELTA', 2):
-            self.assertEqual(cmp(rec(pain_severity=3), rec(1, pain_severity=4)), 'same')
-            self.assertEqual(cmp(rec(pain_severity=3), rec(1, pain_severity=5)), 'worse')
-            self.assertEqual(cmp(rec(pain_severity=5), rec(1, pain_severity=3)), 'better')
+            self.assertEqual(cmp(rec(pain_severity=3, **y), rec(1, pain_severity=4, **y)), 'same')
+            self.assertEqual(cmp(rec(pain_severity=3, **y), rec(1, pain_severity=5, **y)), 'worse')
+            self.assertEqual(cmp(rec(pain_severity=5, **y), rec(1, pain_severity=3, **y)), 'better')
+
+    def test_severity_3_to_4_with_green_light_and_empty_location_is_not_worse(self):
+        self.assertEqual(config.SEVERITY_DELTA, 1)
+        self.assertEqual(cmp(rec(pain_severity=3, traffic_light='green', pain_location=''),
+                             rec(1, pain_severity=4, traffic_light='green', pain_location='  ')), 'same')
+
+    def test_severity_3_to_5_with_yellow_light_and_location_is_worse(self):
+        y = dict(traffic_light='yellow', pain_location='left knee')
+        self.assertEqual(cmp(rec(pain_severity=3, **y), rec(1, pain_severity=5, **y)), 'worse')
 
     def test_swelling_and_giving_way_no_to_yes_is_worse(self):
         for name in ('swelling_today', 'giving_way'):

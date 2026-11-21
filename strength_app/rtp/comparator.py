@@ -7,7 +7,12 @@ Every threshold is read from config at call time.
 
 Rules, per field:
 - traffic_light: higher is worse.
-- pain_severity: up by SEVERITY_DELTA is worse.
+- pain_severity: up by SEVERITY_DELTA is worse. Ignored (skipped like a null)
+  when a record has a green traffic light AND an empty pain_location, because
+  the athlete form posts severity 3 by default when no pain is reported.
+  Reading: the gate is per record, so if EITHER record is green with an empty
+  location (after normalise_pain_location) the severity field is skipped.
+  Green with a location, or yellow/red with an empty location, still counts.
 - swelling_today, giving_way: no to yes is worse.
 - tightness_0_10: up by TIGHTNESS_DELTA is worse.
 - locking_or_catching: yes in the NEWER record is worse.
@@ -83,6 +88,18 @@ def _location(prev, curr):
     return SAME if p == c else WORSE
 
 
+def _severity_is_noise(rec):
+    return (getattr(rec, 'traffic_light', None) == 'green'
+            and not normalise_pain_location(getattr(rec, 'pain_location', None)))
+
+
+def _severity(prev, curr):
+    if _severity_is_noise(prev) or _severity_is_noise(curr):
+        return None
+    return _number(getattr(prev, 'pain_severity', None), getattr(curr, 'pain_severity', None),
+                   config.SEVERITY_DELTA)
+
+
 def compare_pain_feedback(prev, curr):
     if prev is None or curr is None:
         return NO_COMPARISON
@@ -98,7 +115,7 @@ def compare_pain_feedback(prev, curr):
 
     verdicts = [
         _light(g(prev, 'traffic_light'), g(curr, 'traffic_light')),
-        _number(g(prev, 'pain_severity'), g(curr, 'pain_severity'), config.SEVERITY_DELTA),
+        _severity(prev, curr),
         _no_to_yes(g(prev, 'swelling_today'), g(curr, 'swelling_today')),
         _no_to_yes(g(prev, 'giving_way'), g(curr, 'giving_way')),
         _number(g(prev, 'tightness_0_10'), g(curr, 'tightness_0_10'), config.TIGHTNESS_DELTA),
