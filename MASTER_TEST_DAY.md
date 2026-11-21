@@ -628,3 +628,13 @@ Needs `RTP_ENABLED=True`. Laptop for coach and therapist logins (both use `/coac
 7. Coach cannot lift the hold or mark the therapist's notice read (shell `lift_hold` with the coach profile returns False, audit row denied).
 8. Athlete with a "restricted" status and restriction `no_plyo` (shell `set_base_status`, then admin edit): Today shows "Status: Restricted" and "Restrictions: no_plyo".
 9. Therapist lifts the hold (`lift_hold`): Today status line clears, session available again.
+
+## Part T — Check-In 4 and Pass Window, phone walk (pre-merge round 3)
+
+Needs `MIND_LAB_ENABLED=True`. Phone, portrait. Login: `/login/` → `9000000005` / `athlete` (seeded football demo athlete, Kabir Singh). Seeded: the athlete, his 14 sessions and the login. Live: today's check-in, the Pass Window game and its saved session. Pass Window scenarios are UNREVIEWED demo scenarios.
+
+1. Log in, open `/athlete/mind-lab/checkin/`. Tap Done with no sleep choice: it refuses. Pick Sleep over 6 h, stress 2, energy 5, focus 5, tap Done: "Full day" shows.
+2. Open `/athlete/mind-lab/pass_window/`. The rules card shows "Demo scenarios", "Time Assist: 0.3x" and the not-a-return-to-play line. Tap Start.
+3. Tap a teammate square: the screen freezes about 2 s and a dashed amber line and a one-line reason ending "(Demo scenario)" show. Let one trial time out: "Time ran out" shows.
+4. Finish the session: the end card shows "N of M best passes at 0.3x Time Assist" and the status line reads "Saved."
+5. New check-in with Sleep under 5 h, then reopen `/athlete/mind-lab/pass_window/`: it shows "Recovery only today." and no game.
