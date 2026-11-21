@@ -93,7 +93,7 @@ def feedback_triggers_hold(patient, feedback):
 
 - New: `strength_app.tests.test_rtp_tier1.TestSpine19SwellingGivingWay.test_locking_without_active_episode_does_not_hold`. Locking yes, no episode: `feedback_triggers_hold` is False, `apply_feedback_hold` is False, athlete not held.
 - Edited: `strength_app.tests.test_rtp_tier1.TestSpine19SwellingGivingWay.test_red_and_locking_hold`. The comment "locking holds regardless" is gone. It now also asserts locking does NOT hold before the episode opens, and still asserts it holds after.
-- Searched all of `strength_app/tests/` for `locking`. No other test asserted the old rule. `test_rtp_tier2.TestFeedbackHold.test_locking_yes_holds_athlete_with_episode` and the Tier 3 tests that submit locking "yes" already open an episode first, so they are unchanged and still pass. The comparator locking test (`test_locking_yes_in_newer_record_is_worse_even_if_older_also_yes_or_null`) is unchanged.
+- Searched all of `strength_app/tests/` for `locking`. No other test asserted the old rule. `test_rtp_tier2.TestS9HoldEndToEnd.test_locking_yes_holds_athlete_with_episode` and the Tier 3 tests that submit locking "yes" already open an episode first, so they are unchanged and still pass. The comparator locking test (`test_locking_yes_in_newer_record_is_worse_even_if_older_also_yes_or_null`) is unchanged.
 
 ## MASTER_TEST_DAY.md: Part T
 
@@ -147,4 +147,4 @@ Totals against baseline: Django 592 run, 0 failures (baseline 591, +1 new test).
 ## UNVERIFIED
 
 - Part T was not walked on a phone. That 9000000005 reaches Mind Lab with `MIND_LAB_ENABLED=True` is inferred from Parts N and O, not tried.
-- `RTP_ENABLED` default False is unchanged by this round (no settings touched); not re-read live.
+- Nothing else. `RTP_ENABLED` still defaults False (`vyayam_project/settings.py:33`, read live).
