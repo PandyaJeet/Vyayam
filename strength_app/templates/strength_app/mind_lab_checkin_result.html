@@ -1,0 +1,11 @@
+{% extends 'strength_app/athlete_base.html' %}
+{% block title %}Check-In — VYAYAM{% endblock %}
+
+{% block content %}
+<div class="ath-card">
+  <div class="ath-eyebrow" style="margin-bottom:10px;">Today</div>
+  <div style="font-size:1.3rem; font-weight:800;">{{ label_text }}</div>
+  <p>{{ plan_text }}</p>
+  {% if support_line %}<p style="opacity:.85;">{{ support_line }}</p>{% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,32 @@
+# Fly.io config for the exhibition demo (docs/DEPLOY_DECISION.md). UNVERIFIED: no flyctl on the
+# build host; first `fly deploy` is the first run of this file.
+# `app` must be unique on Fly: change it, or let `fly launch --no-deploy --copy-config` rename it.
+app = "vyayam-demo"
+primary_region = "bom"   # Mumbai, closest to the stall; change if `fly platform regions` differs
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  DJANGO_DEBUG = "False"
+  DEMO_SEED = "1"        # public logins with fixed passwords: demo app only
+  # Set DJANGO_ALLOWED_HOSTS / DJANGO_CSRF_ORIGINS to the real app hostname after `fly launch`.
+  DJANGO_ALLOWED_HOSTS = "vyayam-demo.fly.dev"
+  DJANGO_CSRF_ORIGINS = "https://vyayam-demo.fly.dev"
+
+[http_service]
+  internal_port = 7860
+  force_https = true
+  auto_stop_machines = "off"      # never sleep at the stall
+  auto_start_machines = false
+  min_machines_running = 1
+
+  [[http_service.checks]]
+    path = "/healthz/"
+    interval = "30s"
+    timeout = "10s"
+    grace_period = "90s"          # first boot: migrate + seed
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "1gb"

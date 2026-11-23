@@ -4,6 +4,7 @@ All data structures as Django ORM models
 """
 
 from django.db import models
+from django.utils import timezone
 from django.contrib.auth.models import User
 from django.core.validators import MinValueValidator, MaxValueValidator
 import json
@@ -634,6 +635,15 @@ class SessionFeedback(models.Model):
         ('red', 'Red — Reduce load, assess'),
     ]
     traffic_light = models.CharField(max_length=10, choices=TRAFFIC_LIGHT_CHOICES, default='green')
+
+    # RTP S8: asked only of an athlete with an active injury episode. All
+    # nullable: null means "not asked", and a null never holds (strength_app/rtp).
+    swelling_today = models.BooleanField(null=True, blank=True)
+    giving_way = models.BooleanField(null=True, blank=True)
+    tightness_0_10 = models.PositiveSmallIntegerField(
+        null=True, blank=True, validators=[MaxValueValidator(10)])
+    tightness_location = models.CharField(max_length=100, blank=True, default='')
+    locking_or_catching = models.BooleanField(null=True, blank=True)
 
     class Meta:
         ordering = ['-created_at']
@@ -1495,3 +1505,59 @@ class RestEvent(models.Model):
 
     def __str__(self):
         return f"{self.patient_id} +{self.extra_seconds}s ({self.context})"
+
+
+# ============================================================================
+# MIND LAB — one row per played game session (scaffold; games arrive later)
+# ============================================================================
+
+class GameSession(models.Model):
+    """One play of one Mind Lab game by one athlete. Game-agnostic: game_id is
+    a free slug, and anything game-specific lives in `summary`. Training-
+    readiness data only, never a clinical measure."""
+    athlete = models.ForeignKey('PatientProfile', on_delete=models.CASCADE, related_name='game_sessions')
+    game_id = models.CharField(max_length=50)
+    started_at = models.DateTimeField(default=timezone.now)
+    level = models.PositiveSmallIntegerField(default=1)
+    n_trials = models.PositiveIntegerField(default=0)
+    accuracy = models.FloatField(null=True, blank=True, validators=[MinValueValidator(0.0), MaxValueValidator(1.0)])
+    median_rt_ms = models.FloatField(null=True, blank=True, validators=[MinValueValidator(0.0)])
+    slowmo_factor = models.FloatField(default=1.0, validators=[MinValueValidator(0.0)])
+    summary = models.JSONField(default=dict, blank=True)
+
+    class Meta:
+        ordering = ['-started_at']
+        indexes = [models.Index(fields=['athlete', '-started_at'])]
+
+    def __str__(self):
+        return f"{self.athlete_id} {self.game_id} L{self.level}"
+
+
+class MindLabCheckIn(models.Model):
+    """One Check-In 4 by one athlete. The athlete's own answers: no coach view
+    shows them (a coach sees only `day_label`, and only with opt-in, not built).
+    Visitor/exhibition mode never writes this table."""
+    athlete = models.ForeignKey('PatientProfile', on_delete=models.CASCADE, related_name='mind_lab_checkins')
+    created_at = models.DateTimeField(default=timezone.now)
+    sleep_bucket = models.CharField(max_length=10)  # under_5 / 5_to_6 / over_6
+    stress = models.PositiveSmallIntegerField(validators=[MinValueValidator(1), MaxValueValidator(5)])
+    energy = models.PositiveSmallIntegerField(validators=[MinValueValidator(1), MaxValueValidator(5)])
+    focus = models.PositiveSmallIntegerField(validators=[MinValueValidator(1), MaxValueValidator(5)])
+    pain_light = models.CharField(max_length=10)    # existing traffic light at the time
+    gate_applied = models.CharField(max_length=20)  # day mode used
+    day_label = models.CharField(max_length=10)     # full / light / recovery
+
+    class Meta:
+        ordering = ['-created_at']
+        indexes = [models.Index(fields=['athlete', '-created_at'])]
+
+    def __str__(self):
+        return f"{self.athlete_id} {self.day_label} {self.created_at:%Y-%m-%d}"
+
+
+# RTP Tier 1 models (strength_app/rtp/). Imported last so the registry sees them.
+from .rtp.models import (  # noqa: E402,F401
+    AuditLog, CoachTherapistLink, AvailabilityStatus,
+    RehabPathway, RehabStage, InjuryEpisode,
+    ClearanceRecord, Checkpoint, CheckpointMeasure, Notification,
+)

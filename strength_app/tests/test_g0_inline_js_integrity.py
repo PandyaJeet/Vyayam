@@ -401,3 +401,107 @@ class TestG0SentryLoaderJS(InlineJSAuditMixin, TestCase):
             # behind window.Sentry, never throw (camera-page safety).
             self.assertIn(b'if (window.Sentry', r.content)
         self.assert_all_js_clean(min_scripts=2)
+
+
+@unittest.skipUnless(NODE, 'node is required for inline-JS syntax checking')
+class TestG0MindLabJS(InlineJSAuditMixin, TestCase):
+    """Mind Lab runner (K4): its config enters inline JS as a quoted
+    |escapejs string. Any game_id the URL accepts must still parse."""
+
+    def setUp(self):
+        super().setUp()
+        athlete = PatientProfile.objects.create(
+            patient_id='G0ML1', name="ML O'Hostile", phone='9000009974',
+            age=22, goals='Football', training_history='intermediate',
+            athlete_tier_eligible=True, athlete_sport='football',
+        )
+        user = User.objects.create_user('g0mlcoach', password='g0pass123')
+        coach = TherapistProfile.objects.create(
+            user=user, therapist_id='G0MLC1', name='G0 ML Coach',
+            license_number='PT-G0-002', specialization='S&C',
+            email='g0ml@example.com', phone='9999900097',
+        )
+        CoachPatientLink.objects.create(coach=coach, patient=athlete, is_active=True)
+        session = self.client.session
+        session['patient_id'] = athlete.patient_id
+        session.save()
+
+    def test_g0_mind_lab_runner_inline_js_parses(self):
+        for game_id in ('some_game', 'a-b_9', 'x' * 50):
+            self.audit_page(reverse('mind_lab_runner', args=[game_id]),
+                            f'mind lab runner {game_id[:8]}')
+        self.assert_all_js_clean(min_scripts=3)
+
+    @override_settings(MIND_LAB_ENABLED=True)
+    def test_g0_mind_lab_checkin_pages_inline_js_parse(self):
+        """Check-In 4 and the visitor page carry no inline JS of their own;
+        this keeps them under the rule-2 harness if that ever changes."""
+        self.audit_page(reverse('mind_lab_checkin'), 'mind lab checkin')
+        self.audit_page(reverse('mind_lab_visitor'), 'mind lab visitor')
+        self.assert_all_js_clean(min_scripts=0)
+
+    @override_settings(MIND_LAB_ENABLED=True)
+    def test_g0_pass_window_pages_inline_js_parse(self):
+        """Pass Window (athlete, on a full day) and its visitor page carry
+        config as a quoted |escapejs string parsed in JS."""
+        from strength_app.models import MindLabCheckIn
+        from strength_app.models import PatientProfile
+        athlete = PatientProfile.objects.get(patient_id=self.client.session['patient_id'])
+        MindLabCheckIn.objects.create(
+            athlete=athlete, sleep_bucket='over_6', stress=2, energy=4, focus=4,
+            pain_light='green', gate_applied='full', day_label='full')
+        self.audit_page(reverse('pass_window'), 'pass window')
+        self.audit_page(reverse('pass_window_visitor'), 'pass window visitor')
+        self.assert_all_js_clean(min_scripts=2)
+
+
+@unittest.skipUnless(NODE, 'node is required for inline-JS syntax checking')
+@override_settings(RTP_ENABLED=True)
+class TestG0RtpTier2PagesJS(InlineJSAuditMixin, TestCase):
+    """RTP Tier 2: the post-session form with the injury questions and the coach
+    page with the status strip. Neither block adds inline JS; this keeps both
+    pages under the rule-2 harness with the new markup rendered."""
+
+    def setUp(self):
+        super().setUp()
+        from strength_app.rtp.models import InjuryEpisode
+        user = User.objects.create_user('g0rtpcoach', password='g0pass123')
+        coach = TherapistProfile.objects.create(
+            user=user, therapist_id='G0RTPC1', name='G0 RTP Coach',
+            license_number='PT-G0-RTP', specialization='S&C',
+            email='g0rtp@example.com', phone='9999900096',
+        )
+        athlete = PatientProfile.objects.create(
+            patient_id='G0RTP1', name="Rtp O'Hostile", phone='9000009971', age=22,
+            goals='Football', training_history='intermediate', athlete_tier_eligible=True,
+        )
+        CoachPatientLink.objects.create(coach=coach, patient=athlete, is_active=True)
+        InjuryEpisode.objects.create(patient=athlete)
+        self.athlete, self.coach_user = athlete, user
+        session = self.client.session
+        session['patient_id'] = athlete.patient_id
+        session.save()
+
+    def test_g0_rtp_feedback_and_coach_pages_inline_js_parse(self):
+        page = self.client.get(reverse('v1_post_session_feedback'))
+        self.assertContains(page, 'rtpInjuryQuestions')
+        self.audit_page(reverse('v1_post_session_feedback'), 'feedback with injury questions')
+        self.client.force_login(self.coach_user)
+        page = self.client.get(reverse('coach_athlete_detail', args=[self.athlete.patient_id]))
+        self.assertContains(page, 'rtpCoachView')
+        self.audit_page(reverse('coach_athlete_detail', args=[self.athlete.patient_id]),
+                        'coach detail with rtp strip')
+        # Tier 3: the therapist inbox page, the squad page and the athlete status line.
+        self.audit_page(reverse('rtp_inbox'), 'rtp inbox')
+        self.audit_page(reverse('coach_squad'), 'coach squad with rtp line')
+        from strength_app.rtp import availability as av
+        PatientProfile.objects.filter(pk=self.athlete.pk).update(athlete_sport='football')
+        av.place_hold(self.athlete, role=av.SYSTEM, reason='session_feedback')
+        self.client.logout()
+        session = self.client.session
+        session['patient_id'] = self.athlete.patient_id
+        session.save()
+        page = self.client.get(reverse('athlete_today'))
+        self.assertContains(page, 'rtpAthleteStatus')
+        self.audit_page(reverse('athlete_today'), 'athlete today with status line')
+        self.assert_all_js_clean(min_scripts=2)

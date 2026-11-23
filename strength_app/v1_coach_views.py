@@ -31,7 +31,7 @@ from .models import (
     PatientProfile, StrengthProfile, PeriodisationState,
     WorkoutSession, SessionFeedback, TherapistProfile,
     TherapistPrescription, CoachPatientLink,
-    FootballProfile, MatchDate,
+    FootballProfile, MatchDate, GameSession,
 )
 
 
@@ -56,6 +56,21 @@ def coach_required(view_func):
 # ============================================================================
 # HELPERS
 # ============================================================================
+
+def _rtp_coach_summary(patient):
+    from .rtp import visibility
+    return visibility.coach_summary(patient)
+
+
+def _rtp_inbox_unread(therapist):
+    from .rtp import inbox
+    return inbox.unread_count(therapist)  # None when RTP is off
+
+
+def _rtp_override_locked(patient):
+    from .rtp import availability as rtp
+    return rtp.override_lock_message(patient)
+
 
 def _get_phase(patient):
     try:
@@ -233,6 +248,7 @@ def coach_squad(request):
                 football.get_plyometric_cleared_display() if football else 'Not Cleared'
             ),
             'flagged': flagged,
+            'rtp_coach': _rtp_coach_summary(patient),  # None unless RTP is on and relevant
             'has_assessment': football is not None,
             'adherence': _calc_adherence(patient),
             'sport': patient.athlete_sport or patient.sport_type or 'football',
@@ -252,6 +268,7 @@ def coach_squad(request):
         'on_track': sum(1 for a in athletes if a['status'] == 'green'),
         'no_assessment': sum(1 for a in athletes if not a['has_assessment']),
         'coach': request.therapist,
+        'rtp_inbox_unread': _rtp_inbox_unread(request.therapist),
     }
     return render(request, 'strength_app/coach_squad.html', context)
 
@@ -440,6 +457,9 @@ def coach_athlete_detail(request, patient_id):
         'link': link,
         'coach': request.therapist,
         'adherence': _calc_adherence(patient),
+        'mind_lab_latest': GameSession.objects.filter(athlete=patient).first(),
+        'rtp_override_locked': _rtp_override_locked(patient),
+        'rtp_coach': _rtp_coach_summary(patient),
     }
     return render(request, 'strength_app/coach_athlete_detail.html', context)
 
@@ -473,6 +493,17 @@ def coach_override_prescription(request, patient_id):
             exercises = json.loads(exercises_raw)
         except json.JSONDecodeError:
             exercises = []
+
+        # RTP S4: service-layer guard. Hold or rehab stage rejects every override,
+        # restricted allows load reduction only. Denied writes are audited.
+        from .rtp import availability as rtp
+        allowed, rtp_message = rtp.check_coach_override(patient, request.therapist, exercises)
+        if not allowed:
+            return render(request, 'strength_app/coach_override.html', {
+                'patient': patient, 'error': rtp_message,
+                'rtp_locked': rtp.override_lock_message(patient),
+                'rtp_reduce_only': rtp.override_reduce_only(patient),
+            }, status=403)
 
         # DA-P4 (Phase 4 row 5): validate the override payload — every
         # item must reference a known exercise and carry sane dosage.
@@ -542,10 +573,13 @@ def coach_override_prescription(request, patient_id):
     except Exception:
         pass
 
+    from .rtp import availability as rtp
     context = {
         'patient': patient,
         'ai_session': ai_session,
         'coach': request.therapist,
+        'rtp_locked': rtp.override_lock_message(patient),
+        'rtp_reduce_only': rtp.override_reduce_only(patient),
     }
     return render(request, 'strength_app/coach_override.html', context)
 
@@ -556,6 +590,11 @@ def coach_flag_review(request, patient_id):
     link = get_object_or_404(
         CoachPatientLink, coach=request.therapist, patient__patient_id=patient_id, is_active=True
     )
+    # RTP S4: a flag review may acknowledge, never change status.
+    from .rtp import availability as rtp
+    allowed, rtp_message = rtp.check_flag_review(link.patient, request.therapist, request.POST)
+    if not allowed:
+        return JsonResponse({'status': 'denied', 'error': rtp_message}, status=403)
     note = request.POST.get('note', '').strip()
     if note:
         link.notes = (link.notes or '') + f"\n[FLAGGED {date.today()}] {note}"
