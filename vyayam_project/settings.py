@@ -31,6 +31,8 @@ CSRF_TRUSTED_ORIGINS = [
 # behaves exactly as before.
 MIND_LAB_ENABLED = os.environ.get('MIND_LAB_ENABLED', 'False').lower() in ('true', '1', 'yes')
 RTP_ENABLED = os.environ.get('RTP_ENABLED', 'False').lower() in ('true', '1', 'yes')
+# Stall pages (/exhibition/ index and /exhibition/squat/). Off: those URLs 404.
+EXHIBITION_MODE = os.environ.get('EXHIBITION_MODE', 'False').lower() in ('true', '1', 'yes')
 
 INSTALLED_APPS = [
     'django.contrib.admin',

@@ -638,3 +638,85 @@ Needs `MIND_LAB_ENABLED=True`. Phone, portrait. Login: `/login/` → `9000000005
 3. Tap a teammate square: the screen freezes about 2 s and a dashed amber line and a one-line reason ending "(Demo scenario)" show. Let one trial time out: "Time ran out" shows.
 4. Finish the session: the end card shows "N of M best passes at 0.3x Time Assist" and the status line reads "Saved."
 5. New check-in with Sleep under 5 h, then reopen `/athlete/mind-lab/pass_window/`: it shows "Recovery only today." and no game.
+
+## Part U — Exhibition squat page, phone walk (`/exhibition/squat/`)
+
+Needs `EXHIBITION_MODE=True` and HTTPS (or `localhost`): camera access needs a secure context. Phone, portrait, no login. Nothing on this page is saved.
+
+1. Start the server with `EXHIBITION_MODE=True` (for example `EXHIBITION_MODE=True DJANGO_SECRET_KEY=test-key DJANGO_DEBUG=True python manage.py runserver 0.0.0.0:8000` behind an HTTPS tunnel). Without the flag, `/exhibition/` and `/exhibition/squat/` must give 404.
+2. On the phone open `/exhibition/`. See the line "VYAYAM: a training plan that progresses on its own", a large "Try the squat coach" link and the dashed QR box. Tap the link.
+3. `/exhibition/squat/` opens on the Start screen: a large Start button and the placement hint. No voice and no camera yet.
+4. Tap Start. Allow the camera. You hear "Ready." and see it as a large caption. The header, camera box and rep card fit a 375 x 667 screen with no scrolling, and the rep count and position cue are visible. There is no "Show demo" button under 860 px.
+5. Do 3 squats. Every spoken coach line appears as a large black caption bar at the TOP of the screen (it must never cover the rep card), in step with the voice. Turn the phone volume off: you can still follow every line.
+6. On an iPhone in Safari, repeat steps 3 to 5: the voice must be audible after the first tap (known to fail without the tap unlock).
+7. Reload, tap Start, and choose Don't Allow on the camera prompt: a "Camera not available" panel shows with a looped muted demo video (`full_squats.mp4`) and "Try again". "Try again" returns to the Start screen.
+8. Block `cdn.jsdelivr.net` (airplane mode after loading the page, or a content blocker), reload, tap Start: the same failure panel shows.
+9. Back on the Start screen, tap Start and leave the phone untouched, out of frame, for 60 s: the page returns to the Start screen on its own and the camera light goes off. Squat in frame instead: the reset does not fire while reps change.
+10. In the browser network tab (or server log) confirm no POST request happens during the whole walk, and `db.sqlite3` row counts do not change.
+11. Squat fixes (2026-11 review): while the camera runs, unplug or disable it (iPad: revoke camera in Settings, or cover and switch app so the track ends): the "Camera not available" panel shows within a few seconds, not a frozen frame.
+12. Stand in frame but do not squat for 50 s, move to a different phase (go down, then up) at 50 s: the 60 s clock restarts on the phase change, so no reload at 60 s.
+13. Phone layout: on a 375 x 667 phone (or browser device mode) there is no bottom gap and no scroll after the camera starts. Measure: header about 40 px, camera box 100dvh minus 230 px, rep card about 135 px.
+
+## Part U2 — Exhibition games page, iPad walk (`/exhibition/games/`)
+
+Needs `EXHIBITION_MODE=True`. iPad, Safari, landscape and portrait, no login. Nothing is saved. Optional: put a QR image at `strength_app/static/strength_app/exhibition/games_qr.png` and run `collectstatic`.
+
+1. With the flag off, `/exhibition/games/` gives 404. With it on, `/exhibition/` shows a large "Play the demo games" link. Tap it.
+2. The choice screen fills the iPad screen with no scrolling and no bounce: two large buttons (Pass Window, Go / No-Go Pass), the demo note, a QR box (dashed "QR code goes here" until the image exists, the image after) and the page URL in large text.
+3. Tap Pass Window once. The round starts at once (no rules screen). Tap teammate squares. Each scenario shows the labels "Demo scenario". Scenarios repeat. Let the round run to its end: it must end by 60 s at most.
+4. The "Done" text shows, with "Play again" and "Choose a game". Tap Play again: a new round starts. Tap Choose a game: back to the choice screen.
+5. Tap Go / No-Go Pass. See the legend (blue circle = tap, orange triangle = do not tap) and Start. Tap Start. After a short "Get ready" the shapes appear one after another in the middle. Tap blue circles; do not tap orange triangles. The whole screen never flashes and the shape never changes more than about twice a second.
+6. After 3 right in a row the shapes stay up a little less time. Make an error: the speed stays the same. Keep going: it never gets faster than 0.6 s per shape.
+7. At 45 s the score screen shows accuracy and mean response time. Tap Play again, Start, play a second round: the table now shows the first round beside the second. Tap fast on every blue circle (under 0.15 s is hard): the mean must not count those. Tap an orange triangle: it must not count in the mean.
+8. Tap Choose a game, then play Pass Window, then return: the Go / No-Go comparison is still there. Leave the iPad untouched for 60 s on any screen: the page reloads to the choice screen and the earlier round is gone (next visitor starts fresh).
+9. Taps register on touch down (no 300 ms wait) and double-tap does not zoom the page. Rotate the iPad: the layout fits (100dvh), the Safari address bar changing size does not cut anything off.
+10. No sound plays anywhere. In the network tab or server log no POST happens during the walk, and `db.sqlite3` row counts do not change.
+
+
+## Part U3 — Games and squat review fixes (2026-11, slice 1)
+
+1. iPad, `/exhibition/games/`, Pass Window: the teammate squares are at least 40 px wide (about 6 percent of a pitch up to 92 vw or 68 dvh wide). A finger hits them without missing.
+2. A line under the pitch reads "Circle: you. Squares: teammates. Triangles: defenders."
+3. Finish a round. Tap "Play again" with a finger placed where a teammate square will appear. The first scenario must not be answered by that tap (no instant "best" or "other" reveal at once).
+4. On the "Done" screen the sentence about "your own earlier sessions" is gone. "Demo scenarios. Not a return-to-play test." stays.
+5. Go / No-Go: no white ring appears on a tap. The shape never changes more than 3 times a second.
+6. Play a Go / No-Go round, tap "Choose a game", then start Go / No-Go again: the table still shows the first round under "Your previous round". Leave the iPad alone for 60 s: the page reloads and the earlier round is gone.
+7. With no QR file in the build, the dashed QR box is not shown. With the file, the image shows.
+8. Phone 375 x 667, squat page: say a long cue so it wraps to 2 lines. The page does not scroll. The partial-rep line does not show.
+
+## Part U4 — Progression page, laptop walk (`/exhibition/progression/`)
+
+Needs `EXHIBITION_MODE=True`. Laptop, any browser, no login.
+
+1. With the flag off, `/exhibition/progression/` gives 404. With it on, `/exhibition/` shows a link "See how a plan changes". Click it.
+2. The page loads. The very first load after a server start can take about 10 seconds while the engine loads. Later loads take well under a second. The persona text says "returned to training" and "Training state set for this demo".
+3. "Last 6 weeks" table: 6 rows, 3 sessions each, Week 4 (the lighter week) has fewer sets. Tagged "Illustrative demo data". "Last 7 days": 3 rows, the last one yesterday, pain column "No pain logged".
+4. Symmetry table: lunge 50.0% then 63.6%, hop about 78% then 87.4% against 90%. The note says the hop result is not used by the plan.
+5. Two plans side by side, tagged as computed live. Lunge rows: weaker-side sets are sets + 2 in "4 weeks ago" and sets + 1 in "Now". In "What changed" the Why column says "Symmetry band significant" and "Progression blocked" for the first run, and "Symmetry band moderate" and "Ready to progress" for the second.
+6. No word like fracture, cleared, healing or diagnosis appears anywhere. The page has no script and no form.
+7. Reload 5 times: the numbers stay the same (the non-lunge rows can change with the day of the week). In the Django admin the counts of patients, sessions and strength profiles do not change. No patient named EXHDEMO_ exists.
+8. Open the page in two browser tabs at the same moment: both load, neither shows an error.
+
+## Part U5 — Progression review fixes (2026-11)
+
+1. `/exhibition/progression/`, "What changed", lunge row, Now column: Level reads 2 and the Why line says "Ready to progress: level 3 saved for the next session". Nothing on the page says the level is already 3.
+2. The lunge rows are still in both plans (persona session length is 90 minutes, the top of the onboarding slider). The weaker-side sets are still sets + 2 and sets + 1.
+3. The history table's last row reads "Week 6 (latest)". No other week number is on the page.
+4. Phone 375 x 667, `/exhibition/squat/`, camera on: let a cue wrap to 2 lines. Both lines show in full, nothing is cut, the page does not scroll. A third line is not shown.
+5. Page tab titles: index "VYAYAM", squat "Full Squats — VYAYAM", games "VYAYAM demo games", progression "VYAYAM: How a plan changes".
+6. On Render free plan (512 MB), after deploy, open each page once. Compare with the memory table in `audit/EXHIBITION_FIXES2.md`. Order to try: `/exhibition/`, `/exhibition/squat/`, `/exhibition/games/`, `/exhibition/progression/`. Check the Render memory graph does not hit the limit.
+
+## Part U6 — Squat flow: demo twice, then camera (`/exhibition/squat/`)
+
+Needs `EXHIBITION_MODE=True` and HTTPS. Phone 375 x 667, portrait, no login. Clip: `strength_app/static/strength_app/videos/full_squats.mp4` (2.9 s).
+
+1. Open `/exhibition/squat/`. Only the placement hint and the big Start button show. No video, no camera prompt. No scrolling.
+2. Tap Start. The clip plays large, once, with the camera off, and the voice says "Watch me first. I will show you the movement." The caption bar shows the same words. No camera prompt yet.
+3. The clip plays a second time and the voice says "One more time." (caption too). Then the clip hides and the camera prompt appears. Allow it. No third demo runs inside the camera view.
+4. Step in. The first 2 full reps set your natural depth. Those 2 reps also count when they reach depth. Shallow reps do not count and get the "almost" cue.
+5. Do a rep with a form fault (for example knees caving): a spoken cue plays and shows in the caption bar. A correct rep counts. The caption bar does not cover the rep count. The page does not scroll.
+6. Tap "Show demo" under the rep count at any time: the camera page's own demo runs again.
+7. Reload, tap Start, and choose Don't Allow: "Camera not available" shows with the message, a looping muted clip, "Show demo" (restarts the clip) and "Try again" (returns to Start).
+8. Reload, tap Start, then turn the phone screen off for 15 s during the clip (or block video): the camera still starts after at most 15 s.
+9. After Start, leave the page alone for 60 s once the camera is on: it reloads to the Start screen. It does not reload during the two plays.
+10. With the flag off, `/exhibition/squat/` gives 404.

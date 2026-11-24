@@ -124,3 +124,101 @@ All unsigned. Hold and notify only: nothing here changes load or a stage number.
 - **S14:** coach squad line (`rtp-squad-line`), Inbox button, and athlete Today status line (`rtpAthleteStatus`). The athlete line shows the hold text when held, else "Status: X" and "Restrictions: ..." as the therapist stored them.
 - **Wording to review (mentor):** the hold notices above; squad line "Medical hold · Injury signal: yes · Checkpoint due"; inbox headings "Notices", "Checkpoints due", "Waiting for your decision", "On hold", "N result(s) to confirm"; athlete "Status: ..." / "Restrictions: ...".
 - **Holds are no longer silent** once `RTP_ENABLED` is on: S10 and S11 are built.
+
+## Exhibition pages (`EXHIBITION_MODE`) — wording for Pawan's mentor
+
+Every new athlete-facing string on `/exhibition/` and `/exhibition/squat/`. None is signed off. The strings live in `strength_app/v1_exhibition_views.py` (`SQUAT_TEXT`) and `strength_app/templates/strength_app/exhibition_index.html`. Captions show the existing camera coach lines word for word; they add no new text.
+
+| Where | String |
+|---|---|
+| Index, tagline | VYAYAM: a training plan that progresses on its own |
+| Index, link | Try the squat coach |
+| Index, QR box | Lead form QR goes here |
+| Squat, Start button | Start |
+| Squat, placement hint (follows the SQUAT `cameraPosition` text in `v1_exercise_execute.html`) | Prop your phone at waist height, facing you. Step back so your whole body is on screen. |
+| Squat, spoken unlock line (also shown as a caption) | Ready. |
+| Squat, camera failure title | Camera not available |
+| Squat, camera failure body | We could not start the camera. Watch the demo below. |
+| Squat, retry button | Try again |
+| Squat, demo line 1 (spoken and captioned on play 1; the camera page's own line) | Watch me first. I will show you the movement. |
+| Squat, demo line 2 (spoken and captioned on play 2) | One more time. |
+| Squat, demo replay button (failure panel only; the existing camera-page label) | Show demo |
+| Squat, header | VYAYAM |
+| Page titles (<title>) | `VYAYAM` (index) · `Full Squats — VYAYAM` (squat; the camera page's own title) · `VYAYAM demo games` (games) · `VYAYAM: How a plan changes` (progression) |
+
+Other defaults: idle reset 60 s (`IDLE_SECONDS`), camera-frame timeout 10 s (`NO_FRAME_SECONDS`). The squat page runs `full_squats` as 1 set of 5 reps with tempo 3-1-2-0 (nothing is saved, so these only set the on-screen targets).
+
+### `/exhibition/games/` (iPad)
+
+Strings live in `strength_app/v1_exhibition_views.py` (`GAMES_TEXT`), shown by `exhibition_games.html` and `exhibition_games.js`. None is signed off. Pass Window keeps its own existing in-game text ("Demo scenario", "Demo scenarios", "Best pass.", and so on, unchanged in `pass_window.js`). The games are described as demo games, not a test of reaction time, ability or readiness.
+
+| Where | String |
+|---|---|
+| Index, link | Play the demo games |
+| Games, title | Demo games |
+| Games, subtitle | Tap a game to start. |
+| Pass Window, choice | Pass Window / Pick the best pass. About 60 seconds. |
+| Pass Window, header | Pass Window · Demo scenarios |
+| Go / No-Go, choice | Go / No-Go Pass / Tap teammates. Leave opponents. 45 seconds. |
+| Go / No-Go, rules | Tap the blue circles. They are teammates. Do not tap the orange triangles. They are opponents. It gets a little faster when you get 3 right in a row. |
+| Go / No-Go, legend | Teammate: tap · Opponent: do not tap |
+| Go / No-Go, play bar | Blue circle: tap. Orange triangle: do not tap. |
+| Go / No-Go, buttons and states | Start · Get ready · Round over · Play again · Choose a game |
+| Go / No-Go, score table | This round · Your previous round · Accuracy · Mean response time · No earlier round yet · No taps counted · - |
+| Go / No-Go, score note | Compared only with your own previous round on this page. |
+| Every games screen | Demo games. Not a test of reaction time, ability or readiness. Nothing is saved. |
+| QR box and caption | Scan to open this page, or type: · QR code for this page (the box stays hidden until the image file loads) |
+| Pass Window, key under the pitch | Circle: you. Squares: teammates. Triangles: defenders. |
+| Page title and heading | VYAYAM demo games · VYAYAM |
+| Units | N s (clock) · N ms (response time) |
+| Pass Window Done screen | The game's own sentence "Compare only with your own earlier sessions at the same level." is cut by the page; the rest of the game's text stays |
+
+Defaults: Go / No-Go round 45 s; stimulus time starts at 1200 ms (ceiling), drops 100 ms after every 3 correct in a row, floor 600 ms (at most 1.67 screen changes a second, limit 3); taps under 150 ms are left out of the mean response time; Pass Window round: no new scenario starts after 50 s (a scenario is at most 8 s plus a 2 s reveal, so the round ends by 60 s); level 2 scenarios repeat. Idle reset 60 s.
+
+### `/exhibition/progression/` (laptop)
+
+Strings live in `strength_app/v1_exhibition_progression.py` (`TEXT`). None is signed off. The page runs the real engine twice per request on a demo history, inside a database transaction that is rolled back, so nothing is stored. The history is labelled "Illustrative demo data" and the two plans are labelled as computed live by the engine. The page shows nothing from the visitor.
+
+**For the mentor:**
+- The persona is a demo athlete who "returned to training". The page says nothing about why they stopped. Any fracture or injury context for the stall (spoken, not on the page) needs your wording first.
+- The persona text says "Training state set for this demo". It means the phase, week count and date of the last lighter week are set by hand so the rules do not call a deload (the week count is the latest week in the history table, 6, and 2 for the earlier run). The demo athlete's session length is 90 minutes and training age 18 months, values the onboarding screens can send. The engine would otherwise call one after about 4 weeks of loading.
+- The hop result (shown against the benchmark of 90 percent) is shown only. The plan uses the lunge result. The page says so.
+- The extra-set bands are the engine's own: 85 and above none, 70 to 84 mild, 55 to 69 moderate, under 55 significant. Moderate adds 1 set on the weaker side. Significant adds 2 and blocks progression of that pattern.
+- Pain column: shows the pain events logged (none in the demo data). Nothing is claimed about the cause of any change.
+
+| Key in `TEXT` | String |
+|---|---|
+| title | How a plan changes |
+| persona | Demo athlete, 24, returned to training. Trained, not new to lifting. One leg is weaker (the left), the same leg in both tests. Training state set for this demo: the phase, the week count and the date of the last lighter week are set by hand so the rules do not call a deload. |
+| history_label | Illustrative demo data |
+| history_h | Last 6 weeks |
+| week_cols | Week · Sessions · Sets · Note |
+| light_note | Lighter week |
+| days_h | Last 7 days |
+| day_cols | Day · Exercises · Rest · Pain |
+| pain_none | No pain logged |
+| pain_some | Pain logged |
+| sym_h | Symmetry tests (weaker side as % of stronger side) |
+| sym_cols | Test · 4 weeks ago · Now · Benchmark |
+| lunge | Lunge (used by the engine) |
+| hop | Hop distance (shown here only) |
+| hop_note | The hop result is not used by the plan. The lunge result is. |
+| bands | Bands used by the plan: 85 and above none, 70 to 84 mild, 55 to 69 moderate, under 55 significant. |
+| proto_h | Two runs of the same rules on the demo history |
+| proto_label | Computed live by the engine on this request. Not a replay of the earlier plan. |
+| run_a | 4 weeks ago |
+| run_b | Now |
+| diff_h | What changed |
+| diff_cols | Exercise · Sets · Reps · Level · Weaker-side sets · Why |
+| no_ex | Not in this run |
+| same_side | same |
+| status_other | The engine returned this status instead of a plan: |
+| footer | Demo data and demo plans. Nothing is saved. The plans follow the same rules for every user. |
+| back | Back |
+| why_sym | Symmetry band {rule}: {extra} extra set(s) on the weaker side |
+| why_blocked | Progression blocked while the band is significant |
+| why_adv | Ready to progress: level {level} saved for the next session |
+| why_deload | Deload |
+| why_none | No rule changed this row |
+
+Link text on `/exhibition/`: See how a plan changes. Page title: VYAYAM: How a plan changes. Week labels: "Week N", "Week 6 (latest)". Generated labels: "4 weeks ago: ..." and "Now: ..." prefixes in the Why column. Exercise names are the engine's own names.
