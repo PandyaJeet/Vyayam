@@ -47,9 +47,28 @@ test('fetch guard: a blocked POST resolves to a 204 response and never reaches t
   assert.equal(calls.length, 1);
 });
 
-test('startMode: Start runs the demo sequence when showDemo exists and tracking is camera', () => {
-  const f = () => {};
-  assert.equal(ex.startMode(f, 'camera'), 'demo');
-  assert.equal(ex.startMode(f, 'guided'), 'camera');
-  assert.equal(ex.startMode(undefined, 'camera'), 'camera');
+test('sequencer: play 1, play 2, then camera', () => {
+  const q = ex.createSequencer(2, 15000);
+  assert.deepEqual(q.start(0), { do: 'play', n: 1 });
+  assert.deepEqual(q.ended(), { do: 'play', n: 2 });
+  assert.deepEqual(q.ended(), { do: 'camera' });
+  assert.equal(q.ended(), null);
+  assert.equal(q.tick(99999), null);
+});
+
+test('sequencer: an error goes straight to the camera, once', () => {
+  const q = ex.createSequencer(2, 15000);
+  q.start(0);
+  assert.deepEqual(q.error(), { do: 'camera' });
+  assert.equal(q.error(), null);
+  assert.equal(q.ended(), null);
+});
+
+test('sequencer: 15 s timeout goes to the camera, not before', () => {
+  const q = ex.createSequencer(2, 15000);
+  q.start(1000);
+  q.ended();
+  assert.equal(q.tick(15999), null);
+  assert.deepEqual(q.tick(16000), { do: 'camera' });
+  assert.equal(q.isDone(), true);
 });

@@ -706,14 +706,17 @@ Needs `EXHIBITION_MODE=True`. Laptop, any browser, no login.
 5. Page tab titles: index "VYAYAM", squat "Full Squats — VYAYAM", games "VYAYAM demo games", progression "VYAYAM: How a plan changes".
 6. On Render free plan (512 MB), after deploy, open each page once. Compare with the memory table in `audit/EXHIBITION_FIXES2.md`. Order to try: `/exhibition/`, `/exhibition/squat/`, `/exhibition/games/`, `/exhibition/progression/`. Check the Render memory graph does not hit the limit.
 
-## Part U6 — Squat demo first (`/exhibition/squat/`)
+## Part U6 — Squat flow: demo twice, then camera (`/exhibition/squat/`)
 
-Needs `EXHIBITION_MODE=True` and HTTPS. Phone 375 x 667, portrait, no login. The clip is `strength_app/static/strength_app/videos/full_squats.mp4`.
+Needs `EXHIBITION_MODE=True` and HTTPS. Phone 375 x 667, portrait, no login. Clip: `strength_app/static/strength_app/videos/full_squats.mp4` (2.9 s).
 
-1. Open `/exhibition/squat/`. Before any tap, the squat demo plays (muted, looped) above the Start button. No camera prompt appears. Start, "Show demo" and the hint all show without scrolling.
-2. Tap "Show demo" on the Start screen: the clip restarts from the top.
-3. Tap Start and allow the camera. The camera page's own demo runs on the Start tap: camera on, setup guidance, "Watch me first" with the small Reference video playing `full_squats.mp4`, then "Now you try", then live rep counting and form cues. Every spoken line shows in the caption bar. Tap "Show demo" under the rep count: the demo runs again. The page does not scroll, and the rep count is not covered.
-4. Let a long cue wrap. The caption bar shows at most 3 lines and does not cover the rep count.
-5. Reload, tap Start, choose Don't Allow: the "Camera not available" panel shows the message, the playing demo, "Show demo" and "Try again". "Show demo" restarts the clip.
-6. Leave the page alone for 60 s after Start: it reloads to the Start screen.
-7. With the flag off, `/exhibition/squat/` gives 404.
+1. Open `/exhibition/squat/`. Only the placement hint and the big Start button show. No video, no camera prompt. No scrolling.
+2. Tap Start. The clip plays large, once, with the camera off, and the voice says "Watch me first. I will show you the movement." The caption bar shows the same words. No camera prompt yet.
+3. The clip plays a second time and the voice says "One more time." (caption too). Then the clip hides and the camera prompt appears. Allow it. No third demo runs inside the camera view.
+4. Step in. The first 2 full reps set your natural depth. Those 2 reps also count when they reach depth. Shallow reps do not count and get the "almost" cue.
+5. Do a rep with a form fault (for example knees caving): a spoken cue plays and shows in the caption bar. A correct rep counts. The caption bar does not cover the rep count. The page does not scroll.
+6. Tap "Show demo" under the rep count at any time: the camera page's own demo runs again.
+7. Reload, tap Start, and choose Don't Allow: "Camera not available" shows with the message, a looping muted clip, "Show demo" (restarts the clip) and "Try again" (returns to Start).
+8. Reload, tap Start, then turn the phone screen off for 15 s during the clip (or block video): the camera still starts after at most 15 s.
+9. After Start, leave the page alone for 60 s once the camera is on: it reloads to the Start screen. It does not reload during the two plays.
+10. With the flag off, `/exhibition/squat/` gives 404.

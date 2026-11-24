@@ -135,13 +135,14 @@ Every new athlete-facing string on `/exhibition/` and `/exhibition/squat/`. None
 | Index, link | Try the squat coach |
 | Index, QR box | Lead form QR goes here |
 | Squat, Start button | Start |
-| Squat, under Start | Tap to turn on the camera and the voice. |
 | Squat, placement hint (follows the SQUAT `cameraPosition` text in `v1_exercise_execute.html`) | Prop your phone at waist height, facing you. Step back so your whole body is on screen. |
 | Squat, spoken unlock line (also shown as a caption) | Ready. |
 | Squat, camera failure title | Camera not available |
 | Squat, camera failure body | We could not start the camera. Watch the demo below. |
 | Squat, retry button | Try again |
-| Squat, demo replay button (Start screen and failure panel; the existing camera-page label) | Show demo |
+| Squat, demo line 1 (spoken and captioned on play 1; the camera page's own line) | Watch me first. I will show you the movement. |
+| Squat, demo line 2 (spoken and captioned on play 2) | One more time. |
+| Squat, demo replay button (failure panel only; the existing camera-page label) | Show demo |
 | Squat, header | VYAYAM |
 | Page titles (<title>) | `VYAYAM` (index) · `Full Squats — VYAYAM` (squat; the camera page's own title) · `VYAYAM demo games` (games) · `VYAYAM: How a plan changes` (progression) |
 

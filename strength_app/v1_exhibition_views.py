@@ -21,7 +21,6 @@ SQUAT_KEY = 'full_squats'
 # docs/UNSIGNED_DEFAULTS.md under "Exhibition pages".
 SQUAT_TEXT = {
     'start': 'Start',
-    'start_sub': 'Tap to turn on the camera and the voice.',
     # Wording follows the SQUAT cameraPosition data in v1_exercise_execute.html.
     'hint': 'Prop your phone at waist height, facing you. '
             'Step back so your whole body is on screen.',
@@ -29,6 +28,9 @@ SQUAT_TEXT = {
     'fail_title': 'Camera not available',
     'fail_body': 'We could not start the camera. Watch the demo below.',
     'retry': 'Try again',
+    # Line 1 is the camera page's own demo line (v1_exercise_execute.html startDemoSequence).
+    'demo_line1': 'Watch me first. I will show you the movement.',
+    'demo_line2': 'One more time.',
     'demo_again': 'Show demo',  # same label as the camera page's own button
 }
 # Games page wording. Also unsigned: see docs/UNSIGNED_DEFAULTS.md.
@@ -74,6 +76,7 @@ PW_LEVEL = 2
 PW_ORDER_LEN = 40
 IDLE_SECONDS = 60
 NO_FRAME_SECONDS = 10
+DEMO_TIMEOUT_SECONDS = 15  # both demo plays; after this the camera starts anyway
 
 
 def _require_flag():
@@ -111,7 +114,8 @@ def exhibition_squat(request):
         'is_hold': bool(cfg.get('is_hold')),
     }
     wrapper_cfg = dict(SQUAT_TEXT, idle_seconds=IDLE_SECONDS,
-                       no_frame_seconds=NO_FRAME_SECONDS)
+                       no_frame_seconds=NO_FRAME_SECONDS,
+                       demo_timeout_seconds=DEMO_TIMEOUT_SECONDS)
     return render(request, 'strength_app/exhibition_squat.html', {
         'exercise': exercise,
         'exercise_index': 0,

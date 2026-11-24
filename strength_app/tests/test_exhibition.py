@@ -117,35 +117,50 @@ class ExhibitionFlagOnTests(TestCase):
         self.assertEqual(resolve('/exhibition/mind-lab/pass-window/').url_name,
                          'pass_window_visitor')
 
-    def test_demo_video_is_before_start_and_outside_failure_panel(self):
+    def test_start_screen_has_no_video_and_demo_stage_does_not_autoplay(self):
         html = self.client.get('/exhibition/squat/').content.decode()
-        start = html[html.index('id="exhStart"'):html.index('id="exhFail"')]
-        self.assertIn('id="exhDemo"', start)
-        self.assertIn('videos/full_squats', start)
-        self.assertRegex(start, r'<video id="exhDemo" muted loop playsinline autoplay')
-        self.assertNotIn('exhFailVideo', start)
+        start = html[html.index('id="exhStart"'):html.index('id="exhDemoStage"')]
+        self.assertNotIn('<video', start)
+        self.assertNotIn('exhReplay', html)
+        stage = html[html.index('id="exhDemoStage"'):html.index('id="exhFail"')]
+        tag = re.search(r'<video id="exhDemo"[^>]*>', stage).group(0)
+        self.assertIn('muted', tag)
+        self.assertIn('playsinline', tag)
+        self.assertNotIn('autoplay', tag)
+        self.assertNotIn('loop', tag)
+        self.assertIn('videos/full_squats', stage)
+
+    def test_failure_panel_keeps_clip_replay_and_retry(self):
+        html = self.client.get('/exhibition/squat/').content.decode()
         fail = html[html.index('id="exhFail"'):html.index('id="exhCaption"')]
-        self.assertNotIn('id="exhDemo"', fail)
-        self.assertIn('id="exhFailVideo"', fail)   # still there on camera failure
+        self.assertRegex(fail, r'<video id="exhFailVideo" muted loop playsinline')
+        self.assertIn('videos/full_squats', fail)
+        self.assertRegex(fail, r'<button id="exhFailReplay"[^>]*>Show demo</button>')
         self.assertIn('id="exhRetry"', fail)
 
-    def test_replay_controls_present_and_not_hidden_by_wrapper_css(self):
+    def test_cameras_own_show_demo_stays_visible(self):
         html = self.client.get('/exhibition/squat/').content.decode()
-        for bid in ('exhReplay', 'exhFailReplay'):
-            self.assertRegex(html, r'<button id="%s"[^>]*>Show demo</button>' % bid)
-        # The camera page's own Show demo buttons stay, and no wrapper rule hides them.
         self.assertIn('show-demo-label', html)
         css = html[html.index('<style>'):html.index('</style>')]
         self.assertNotIn('ghostStatusCard > button', css)
         self.assertNotRegex(css, r'show-demo[^{]*\{[^}]*display\s*:\s*none')
-        self.assertNotRegex(css, r'#exh(Fail)?Replay[^{]*\{[^}]*display\s*:\s*none')
 
-    def test_start_handler_calls_showdemo_with_startcamera_fallback(self):
+    def test_start_handler_starts_camera_after_second_ended_and_never_showdemo(self):
         js = (STATIC_JS / 'exhibition_squat.js').read_text()
-        self.assertIn("core.startMode(window.showDemo, tracking) === 'demo'", js)
-        self.assertIn('window.showDemo();', js)
-        self.assertIn('window.startCamera();', js)   # fallback path kept
-        self.assertIn('fail(', js)
+        self.assertNotIn('showDemo', js)
+        self.assertIn('createSequencer(2,', js)
+        self.assertIn("addEventListener('ended'", js)
+        self.assertIn("act.do === 'camera'", js)
+        self.assertEqual(js.count('window.startCamera()'), 1)
+        # startCamera is only reached from startCameraNow, which only the sequencer calls.
+        self.assertEqual(js.count('startCameraNow()'), 2)   # definition + one call
+        self.assertIn('CFG.demo_line1', js)
+        self.assertIn('CFG.demo_line2', js)
+
+    def test_demo_wording_listed_in_unsigned_defaults(self):
+        doc = (Path(__file__).resolve().parents[2] / 'docs' / 'UNSIGNED_DEFAULTS.md').read_text()
+        from strength_app.v1_exhibition_views import SQUAT_TEXT
+        self.assertIn(SQUAT_TEXT['demo_line2'], doc)
 
     def test_squat_page_runs_video_mode_and_uses_only_full_squats_clip(self):
         from strength_app.cv_targets import get_video_mode_exercises

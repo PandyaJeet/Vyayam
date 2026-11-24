@@ -29,16 +29,17 @@
   #exhGo { width: 100%; max-width: 420px; padding: 22px 12px; font-size: 2.4rem;
     font-weight: 800; border: 0; border-radius: 22px; color: #fff; cursor: pointer;
     background: linear-gradient(135deg,#0c6c3f,#6bbf8a); }
-  .exh-sub { font-size: 1.1rem; margin: 16px 0 6px; }
   .exh-hint { font-size: 1.2rem; font-weight: 700; color: #fde68a; max-width: 420px;
     margin: 14px 0 0; line-height: 1.35; }
   #exhFail h2 { font-size: 1.6rem; margin: 0; }
   #exhFail p { font-size: 1.1rem; margin: 0; }
   #exhFailVideo { width: 100%; max-width: 420px; max-height: 32vh; border-radius: 14px;
     background: #000; }
-  #exhDemo { max-width: 100%; max-height: 30vh; border-radius: 14px; background: #000;
-    margin-bottom: 8px; }
-  #exhReplay, #exhFailReplay { padding: 8px 18px; font-size: 1rem; font-weight: 700;
+  #exhDemoStage { position: fixed; inset: 0; z-index: 8500; background: #0a0e27;
+    display: none; align-items: center; justify-content: center; padding-top: 70px;
+    box-sizing: border-box; }
+  #exhDemo { max-width: 100%; max-height: 75vh; border-radius: 14px; background: #000; }
+  #exhFailReplay { padding: 8px 18px; font-size: 1rem; font-weight: 700;
     border-radius: 12px; border: 1px solid rgba(255,255,255,.5); background: none;
     color: #fff; margin-top: 6px; }
   #exhRetry { padding: 16px 28px; font-size: 1.3rem; font-weight: 800; border-radius: 14px;
@@ -88,6 +89,7 @@
     clearTimeout(hideTimer);
     hideTimer = setTimeout(function () { el.style.display = 'none'; }, 7000);
   }
+  S.caption = caption;
   if ('speechSynthesis' in window) {
     var synth = window.speechSynthesis;
     var origSpeak = synth.speak.bind(synth);
@@ -135,13 +137,14 @@
 {% block content %}
 {{ block.super }}
 <div id="exhStart">
-  <video id="exhDemo" muted loop playsinline autoplay preload="auto">
+  <button id="exhGo" type="button">{{ exh.start }}</button>
+  <p class="exh-hint" id="exhHint">{{ exh.hint }}</p>
+</div>
+{# Played twice after Start, camera still off. No autoplay, no loop. #}
+<div id="exhDemoStage">
+  <video id="exhDemo" muted playsinline preload="auto">
     <source src="{% static 'strength_app/videos/full_squats.mp4' %}" type="video/mp4">
   </video>
-  <button id="exhReplay" type="button">{{ exh.demo_again }}</button>
-  <button id="exhGo" type="button">{{ exh.start }}</button>
-  <p class="exh-sub">{{ exh.start_sub }}</p>
-  <p class="exh-hint" id="exhHint">{{ exh.hint }}</p>
 </div>
 <div id="exhFail" role="alert">
   <h2>{{ exh.fail_title }}</h2>

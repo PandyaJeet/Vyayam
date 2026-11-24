@@ -30,16 +30,29 @@
     return gs ? [gs.mode, gs.currentPhaseIndex, gs.repCount].join(':') : '';
   }
 
-  // What the Start tap runs. 'demo' = the camera page's own showDemo(): it turns the
-  // camera on, then runs guidance -> "Watch me first" demo -> "Now you try" -> detection.
-  // showDemo() returns without doing anything unless tracking is 'camera', so any other
-  // case falls back to the plain startCamera() path.
-  function startMode(showDemoFn, cvTracking) {
-    return (typeof showDemoFn === 'function' && cvTracking === 'camera') ? 'demo' : 'camera';
+  // Start-tap sequence: demo play 1, demo play 2, then the camera. Each method returns
+  // {do: 'play', n} or {do: 'camera'} (or null when nothing changes). An error or the
+  // timeout goes straight to the camera. Once it returned 'camera' it stays silent.
+  function createSequencer(plays, timeoutMs) {
+    var startedAt = 0, played = 0, done = false;
+    function toCamera() { done = true; return { do: 'camera' }; }
+    return {
+      start: function (now) { startedAt = now; return { do: 'play', n: 1 }; },
+      ended: function () {
+        if (done) return null;
+        played += 1;
+        return played >= plays ? toCamera() : { do: 'play', n: played + 1 };
+      },
+      error: function () { return done ? null : toCamera(); },
+      tick: function (now) {
+        return (!done && (now - startedAt) >= timeoutMs) ? toCamera() : null;
+      },
+      isDone: function () { return done; }
+    };
   }
 
   return { shouldReset: shouldReset, noFrames: noFrames, stateKey: stateKey,
-           startMode: startMode };
+           createSequencer: createSequencer };
 });
 
 // ---- DOM wiring (browser only) ------------------------------------------
@@ -74,12 +87,41 @@
   S.fail = fail;
   if (S.pendingFail) fail(S.pendingFail);
 
-  // Restart a demo clip from the top (the clip loops, muted, no camera needed).
+  // Restart the failure-panel clip from the top.
   function replay(id) {
     var v = $(id);
     if (!v) return;
     try { v.currentTime = 0; var p = v.play(); if (p && p.catch) p.catch(function () {}); } catch (e) {}
     touch();
+  }
+
+  var seq = null;
+
+  function say(text) {
+    try {
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.speak(new SpeechSynthesisUtterance(text));
+        return;
+      }
+    } catch (e) {}
+    if (S.caption) S.caption(text);   // no speech engine: still show the caption
+  }
+
+  function playDemo(n) {
+    var v = $('exhDemo');
+    say(n === 1 ? CFG.demo_line1 : CFG.demo_line2);
+    touch();
+    try {
+      v.currentTime = 0;
+      var p = v.play();
+      if (p && p.catch) p.catch(function () { step(seq.error()); });
+    } catch (e) { step(seq.error()); }
+  }
+
+  function step(act) {
+    if (!act || S.failed) return;
+    if (act.do === 'play') playDemo(act.n);
+    else if (act.do === 'camera') startCameraNow();
   }
 
   function begin() {
@@ -92,6 +134,18 @@
       }
     } catch (e) {}
     $('exhStart').style.display = 'none';
+    touch();
+    var v = $('exhDemo');
+    seq = core.createSequencer(2, CFG.demo_timeout_seconds * 1000);
+    $('exhDemoStage').style.display = 'flex';
+    v.addEventListener('ended', function () { touch(); step(seq.ended()); });
+    v.addEventListener('error', function () { step(seq.error()); });
+    step(seq.start(Date.now()));
+  }
+
+  // After the demo: plain startCamera() (never showDemo(): no third demo).
+  function startCameraNow() {
+    $('exhDemoStage').style.display = 'none';
     try { $('exhDemo').pause(); } catch (e) {}
     touch();
     if (!window.isSecureContext && location.hostname !== 'localhost') {
@@ -105,22 +159,14 @@
     }
     camStartedAt = Date.now();
     try {
-      var tracking = (typeof CV_TRACKING !== 'undefined') ? CV_TRACKING : '';
-      if (core.startMode(window.showDemo, tracking) === 'demo') {
-        // showDemo() starts the camera itself and queues the demo sequence.
-        window.addEventListener('unhandledrejection', function (e) {
-          if (!S.granted) fail('startCamera: ' + (e && e.reason));
-        });
-        window.showDemo();
-      } else {
-        var r = window.startCamera();
-        if (r && r.catch) r.catch(function (e) { fail('startCamera: ' + e); });
-      }
+      var r = window.startCamera();
+      if (r && r.catch) r.catch(function (e) { fail('startCamera: ' + e); });
     } catch (e) { fail('startCamera: ' + e); }
   }
 
   function tick() {
     var now = Date.now();
+    if (seq) step(seq.tick(now));
     if (S.started && !S.failed && camStartedAt && S.granted) {
       if (core.noFrames($('cameraFeed'), S.grantedAt, now, CFG.no_frame_seconds * 1000)) {
         fail('no camera frames');
@@ -136,7 +182,6 @@
   }
 
   $('exhGo').addEventListener('click', begin);
-  $('exhReplay').addEventListener('click', function () { replay('exhDemo'); });
   $('exhFailReplay').addEventListener('click', function () { replay('exhFailVideo'); });
   $('exhRetry').addEventListener('click', function () { location.reload(); });
   ['pointerdown', 'touchstart', 'keydown'].forEach(function (ev) {
