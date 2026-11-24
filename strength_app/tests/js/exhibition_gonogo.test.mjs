@@ -90,3 +90,9 @@ test('schedule: same seed same list, starts with go, no run of 3 opponents, mix 
 });
 
 test('round is 45 s', () => { assert.equal(g.ROUND_MS, 45000); });
+
+test('dropEarlierSessions cuts only the earlier-sessions sentence', () => {
+  const t = 'Demo scenarios. Not a return-to-play test. Compare only with your own earlier sessions at the same level.';
+  assert.equal(g.dropEarlierSessions(t), 'Demo scenarios. Not a return-to-play test.');
+  assert.equal(g.dropEarlierSessions('3 of 6 best passes'), '3 of 6 best passes');
+});

@@ -43,7 +43,8 @@
     b.addEventListener('pointerdown', function (e) { e.preventDefault(); fn(); });
     return b;
   }
-  function backToChoice() { location.reload(); }
+  // Back to the choice screen keeps prevRound; only the idle reset reloads the page.
+  function backToChoice() { $('pwHost').textContent = ''; show('gChoice'); }
 
   // ---- Pass Window ------------------------------------------------------
   function startPassWindow() {
@@ -57,6 +58,8 @@
         row.appendChild(button(T.again, startPassWindow, 'btn'));
         row.appendChild(button(T.back, backToChoice, 'btn ghost'));
         host.appendChild(row);
+        var ps = host.querySelectorAll('p');   // C5: no earlier sessions exist on this page
+        for (var i = 0; i < ps.length; i++) ps[i].textContent = GN.dropEarlierSessions(ps[i].textContent);
       }
     });
     game.start();
@@ -66,6 +69,11 @@
 
   // pass_window.js listens for click. Fire it on pointerdown so the tap is counted at touch
   // time; the click that follows is ignored by the game (its trial is already done).
+  // Only this page's own synthetic click (isTrusted false) may reach the game. The real
+  // click that follows the same tap is stopped, so it cannot answer a scenario by chance.
+  $('pwHost').addEventListener('click', function (e) {
+    if (e.isTrusted) e.stopPropagation();
+  }, true);
   $('pwHost').addEventListener('pointerdown', function (e) {
     var g = e.target.closest && e.target.closest('g[role="button"]');
     if (g) g.dispatchEvent(new MouseEvent('click', { bubbles: true }));
@@ -147,8 +155,6 @@
     if (c.tapped || !c.onset) return;          // first tap on a stimulus only
     c.tapped = true;
     c.rtMs = performance.now() - c.onset;
-    $('gnArea').classList.add('tapped');       // small ring, not a screen change
-    setTimeout(function () { $('gnArea').classList.remove('tapped'); }, 120);
   }
 
   function endGoNoGo(round) {
@@ -202,6 +208,7 @@
   img.onload = function () {
     var q = $('qrBox');
     q.textContent = '';
+    q.hidden = false;
     img.alt = T.qr_alt;
     q.appendChild(img);
   };

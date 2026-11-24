@@ -672,3 +672,14 @@ Needs `EXHIBITION_MODE=True`. iPad, Safari, landscape and portrait, no login. No
 9. Taps register on touch down (no 300 ms wait) and double-tap does not zoom the page. Rotate the iPad: the layout fits (100dvh), the Safari address bar changing size does not cut anything off.
 10. No sound plays anywhere. In the network tab or server log no POST happens during the walk, and `db.sqlite3` row counts do not change.
 
+
+## Part U3 — Games and squat review fixes (2026-11, slice 1)
+
+1. iPad, `/exhibition/games/`, Pass Window: the teammate squares are at least 40 px wide (about 6 percent of a pitch up to 92 vw or 68 dvh wide). A finger hits them without missing.
+2. A line under the pitch reads "Circle: you. Squares: teammates. Triangles: defenders."
+3. Finish a round. Tap "Play again" with a finger placed where a teammate square will appear. The first scenario must not be answered by that tap (no instant "best" or "other" reveal at once).
+4. On the "Done" screen the sentence about "your own earlier sessions" is gone. "Demo scenarios. Not a return-to-play test." stays.
+5. Go / No-Go: no white ring appears on a tap. The shape never changes more than 3 times a second.
+6. Play a Go / No-Go round, tap "Choose a game", then start Go / No-Go again: the table still shows the first round under "Your previous round". Leave the iPad alone for 60 s: the page reloads and the earlier round is gone.
+7. With no QR file in the build, the dashed QR box is not shown. With the file, the image shows.
+8. Phone 375 x 667, squat page: say a long cue so it wraps to 2 lines. The page does not scroll. The partial-rep line does not show.

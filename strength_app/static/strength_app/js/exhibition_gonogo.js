@@ -94,7 +94,14 @@
     };
   }
 
+  // Pass Window's Done screen says "Compare only with your own earlier sessions ...".
+  // Nothing is saved here, so the page cuts that sentence from the text it shows.
+  function dropEarlierSessions(text) {
+    return String(text).replace(/\s*Compare only with your own earlier sessions[^.]*\./, '');
+  }
+
   return {
+    dropEarlierSessions: dropEarlierSessions,
     ROUND_MS: ROUND_MS, START_MS: START_MS, FLOOR_MS: FLOOR_MS, STEP_MS: STEP_MS,
     STREAK_TO_RISE: STREAK_TO_RISE, MIN_RT_MS: MIN_RT_MS,
     MAX_CHANGES_PER_S: MAX_CHANGES_PER_S,

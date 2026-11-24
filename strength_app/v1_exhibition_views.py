@@ -60,7 +60,7 @@ GAMES_TEXT = {
     'own_only': 'Compared only with your own previous round on this page.',
     'demo_note': 'Demo games. Not a test of reaction time, ability or readiness. '
                  'Nothing is saved.',
-    'qr_placeholder': 'QR code goes here',
+    'pw_key': 'Circle: you. Squares: teammates. Triangles: defenders.',
     'qr_label': 'Scan to open this page, or type:',
     'qr_alt': 'QR code for this page',
 }

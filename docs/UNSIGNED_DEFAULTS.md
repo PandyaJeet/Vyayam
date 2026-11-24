@@ -164,6 +164,10 @@ Strings live in `strength_app/v1_exhibition_views.py` (`GAMES_TEXT`), shown by `
 | Go / No-Go, score table | This round · Your previous round · Accuracy · Mean response time · No earlier round yet · No taps counted · - |
 | Go / No-Go, score note | Compared only with your own previous round on this page. |
 | Every games screen | Demo games. Not a test of reaction time, ability or readiness. Nothing is saved. |
-| QR box and caption | QR code goes here · Scan to open this page, or type: · QR code for this page |
+| QR box and caption | Scan to open this page, or type: · QR code for this page (the box stays hidden until the image file loads) |
+| Pass Window, key under the pitch | Circle: you. Squares: teammates. Triangles: defenders. |
+| Page title and heading | VYAYAM demo games · VYAYAM |
+| Units | N s (clock) · N ms (response time) |
+| Pass Window Done screen | The game's own sentence "Compare only with your own earlier sessions at the same level." is cut by the page; the rest of the game's text stays |
 
 Defaults: Go / No-Go round 45 s; stimulus time starts at 1200 ms (ceiling), drops 100 ms after every 3 correct in a row, floor 600 ms (at most 1.67 screen changes a second, limit 3); taps under 150 ms are left out of the mean response time; Pass Window round: no new scenario starts after 50 s (a scenario is at most 8 s plus a 2 s reveal, so the round ends by 60 s); level 2 scenarios repeat. Idle reset 60 s.
