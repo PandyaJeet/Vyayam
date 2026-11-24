@@ -116,6 +116,11 @@ def _weekly_consistency(patient, weeks=4):
 # TODAY
 # ============================================================================
 
+def _rtp_athlete_status(patient):
+    from .rtp import visibility
+    return visibility.athlete_status(patient)
+
+
 def athlete_today(request):
     patient, err = _require_athlete(request)
     if err:
@@ -156,6 +161,7 @@ def athlete_today(request):
         'sessions_planned': planned,
         'load_pct': min(100, round(done_this_week / planned * 100)) if planned else 0,
         'today': date.today(),
+        'rtp_status': _rtp_athlete_status(patient),
     }
     return render(request, 'strength_app/athlete_today.html', context)
 

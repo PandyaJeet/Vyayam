@@ -136,6 +136,40 @@
       </div>
     </div>
 
+    {% if rtp_ask_injury %}
+    <!-- RTP S8: asked only while the athlete has an active injury episode. No JS, no interpolation. -->
+    <div class="bg-surface-container-lowest rounded-lg p-5 shadow-[0_4px_20px_rgba(26,28,28,0.04)]" id="rtpInjuryQuestions">
+      <div class="font-bold text-sm text-on-surface mb-3">A few quick questions about your injury</div>
+      <div class="space-y-3">
+        <fieldset>
+          <legend class="text-xs font-semibold text-on-surface mb-1">Any swelling today?</legend>
+          <label class="me-4"><input type="radio" name="swelling_today" value="yes"> Yes</label>
+          <label><input type="radio" name="swelling_today" value="no"> No</label>
+        </fieldset>
+        <fieldset>
+          <legend class="text-xs font-semibold text-on-surface mb-1">Did it give way?</legend>
+          <label class="me-4"><input type="radio" name="giving_way" value="yes"> Yes</label>
+          <label><input type="radio" name="giving_way" value="no"> No</label>
+        </fieldset>
+        <fieldset>
+          <legend class="text-xs font-semibold text-on-surface mb-1">Any locking or catching?</legend>
+          <label class="me-4"><input type="radio" name="locking_or_catching" value="yes"> Yes</label>
+          <label><input type="radio" name="locking_or_catching" value="no"> No</label>
+        </fieldset>
+        <div>
+          <label class="block text-xs font-semibold text-on-surface mb-1" for="tightness_0_10">Tightness today (0 to 10)</label>
+          <input type="number" name="tightness_0_10" id="tightness_0_10" min="0" max="10"
+                 class="w-24 bg-surface-container border border-outline-variant/40 rounded-lg px-3 py-2 text-sm text-on-surface">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-on-surface mb-1" for="tightness_location">Where is the tightness?</label>
+          <input type="text" name="tightness_location" id="tightness_location" maxlength="100"
+                 class="w-full bg-surface-container border border-outline-variant/40 rounded-lg px-3 py-2 text-sm text-on-surface">
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
     <!-- Session RPE -->
     <div class="bg-surface-container-lowest rounded-lg p-5 shadow-[0_4px_20px_rgba(26,28,28,0.04)]">
       <div class="font-bold text-sm text-on-surface mb-3">How hard was this session overall?</div>

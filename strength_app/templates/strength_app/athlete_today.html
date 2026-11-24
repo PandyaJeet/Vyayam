@@ -2,6 +2,13 @@
 {% block title %}Today's Training — VYAYAM{% endblock %}
 
 {% block content %}
+{% if rtp_status %}
+<section id="rtpAthleteStatus" style="margin-bottom:14px;">
+  {% if rtp_status.held %}<div class="ath-eyebrow">{{ rtp_status.hold_text }}</div>
+  {% else %}<div class="ath-eyebrow">Status: {{ rtp_status.status|capfirst }}</div>{% endif %}
+  {% if rtp_status.restrictions %}<div class="ath-eyebrow">Restrictions: {{ rtp_status.restrictions|join:", " }}</div>{% endif %}
+</section>
+{% endif %}
 <section style="margin-bottom:18px;">
   <div class="ath-eyebrow">{{ today|date:"D, M d" }}</div>
   <h1 style="font-size:1.55rem; font-weight:800; letter-spacing:-0.02em; margin:5px 0 8px;">Today's Training, {{ first_name }}</h1>

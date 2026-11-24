@@ -1,0 +1,57 @@
+COLD_START first_http_response_s=1.1 status=200
+master_pid=12127 worker_pid=12128
+IDLE_RSS_MB after 30s settle: master=44 worker=23
+--- sys.modules after boot ---
+pid=12128 rss_kb=24300
+matching_modules=0 top_level=[]
+
+
+('GET', '/login/', 200, None, '0.08s', 'rss_after=27MB')
+('POST', '/login/', 302, '/athlete/today/', '0.49s', 'rss_after=31MB')
+('GET', '/athlete/today/', 200, None, '11.06s', 'rss_after=512MB')
+('GET', '/football/sport-select/', 200, None, '0.01s', 'rss_after=512MB')
+('GET', '/football/assessment/', 200, None, '0.01s', 'rss_after=512MB')
+('GET', '/football/assessment/0/?side=left', 200, None, '0.01s', 'rss_after=512MB')
+('POST', '/football/save-test-result/', 200, None, '0.01s', 'rss_after=512MB')
+('GET', '/football/assessment/0/?side=right', 200, None, '0.01s', 'rss_after=512MB')
+('POST', '/football/save-test-result/', 200, None, '0.01s', 'rss_after=512MB')
+('GET', '/football/assessment/1/', 200, None, '0.01s', 'rss_after=512MB')
+('POST', '/football/save-test-result/', 200, None, '0.01s', 'rss_after=512MB')
+('GET', '/football/assessment/2/', 200, None, '0.01s', 'rss_after=512MB')
+('POST', '/football/save-test-result/', 200, None, '0.01s', 'rss_after=512MB')
+('GET', '/football/assessment/3/', 200, None, '0.01s', 'rss_after=512MB')
+('POST', '/football/save-test-result/', 200, None, '0.01s', 'rss_after=512MB')
+('GET', '/football/assessment/4/?side=left', 200, None, '0.01s', 'rss_after=512MB')
+('POST', '/football/save-test-result/', 200, None, '0.01s', 'rss_after=512MB')
+('GET', '/football/assessment/4/?side=right', 200, None, '0.01s', 'rss_after=512MB')
+('POST', '/football/save-test-result/', 200, None, '0.01s', 'rss_after=512MB')
+('GET', '/football/assessment/5/?side=left', 200, None, '0.01s', 'rss_after=512MB')
+('POST', '/football/save-test-result/', 200, None, '0.01s', 'rss_after=512MB')
+('GET', '/football/assessment/5/?side=right', 200, None, '0.01s', 'rss_after=512MB')
+('POST', '/football/save-test-result/', 200, None, '0.01s', 'rss_after=512MB')
+('GET', '/football/assessment/6/', 200, None, '0.01s', 'rss_after=512MB')
+('POST', '/football/save-test-result/', 200, None, '0.01s', 'rss_after=512MB')
+('GET', '/football/assessment/7/', 200, None, '0.01s', 'rss_after=512MB')
+('POST', '/football/save-test-result/', 200, None, '0.01s', 'rss_after=512MB')
+('GET', '/football/results/', 200, None, '0.01s', 'rss_after=512MB')
+('GET', '/football/matches/', 200, None, '0.01s', 'rss_after=512MB')
+('GET', '/athlete/progress/', 200, None, '0.02s', 'rss_after=513MB')
+PEAK_RSS_MB worker during walk: 513
+END_RSS_MB worker: 513
+--- sys.modules after walk ---
+pid=12128 rss_kb=524892
+matching_modules=1953 top_level=['cv2', 'mediapipe', 'tensorflow']
+cv2
+
+--- gunicorn stderr tail ---
+[2026-11-17 12:56:36 +0530] [12127] [INFO] Starting gunicorn 25.3.0
+[2026-11-17 12:56:36 +0530] [12127] [INFO] Listening at: http://127.0.0.1:7860 (12127)
+[2026-11-17 12:56:36 +0530] [12127] [INFO] Using worker: gthread
+[2026-11-17 12:56:36 +0530] [12128] [INFO] Booting worker with pid: 12128
+[2026-11-17 12:56:36 +0530] [12127] [INFO] Control socket listening at /Users/pawandangarwala/.gunicorn/gunicorn.ctl
+2026-11-17 12:57:11.653511: I tensorflow/core/platform/cpu_feature_guard.cc:210] This TensorFlow binary is optimized to use available CPU instructions in performance-critical operations.
+To enable the following instructions: AVX2 FMA, in other operations, rebuild TensorFlow with the appropriate compiler flags.
+[2026-11-17 12:57:21 +0530] [12127] [INFO] Handling signal: term
+[2026-11-17 12:57:21 +0530] [12128] [INFO] Worker exiting (pid: 12128)
+[2026-11-17 12:57:22 +0530] [12127] [INFO] Shutting down: Master
+
