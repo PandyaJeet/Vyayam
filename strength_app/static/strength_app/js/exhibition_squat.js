@@ -25,7 +25,12 @@
     return !hasFrame && (now - startedAt) >= timeoutMs;
   }
 
-  return { shouldReset: shouldReset, noFrames: noFrames };
+  // One string that changes whenever the coach moves on (mode, phase or rep).
+  function stateKey(gs) {
+    return gs ? [gs.mode, gs.currentPhaseIndex, gs.repCount].join(':') : '';
+  }
+
+  return { shouldReset: shouldReset, noFrames: noFrames, stateKey: stateKey };
 });
 
 // ---- DOM wiring (browser only) ------------------------------------------
@@ -38,6 +43,7 @@
   var lastActivity = Date.now();
   var camStartedAt = 0;
   var lastReps = '';
+  var lastState = '';
 
   function touch() { lastActivity = Date.now(); }
 
@@ -95,6 +101,8 @@
     }
     var reps = ($('repCountDisplay') || {}).textContent || '';
     if (reps !== lastReps) { lastReps = reps; touch(); }
+    var key = core.stateKey(window.ghostState);
+    if (key !== lastState) { lastState = key; touch(); }
     if (S.started && core.shouldReset(now, Math.max(lastActivity, S.lastCaptionAt), CFG.idle_seconds * 1000)) {
       location.reload();
     }

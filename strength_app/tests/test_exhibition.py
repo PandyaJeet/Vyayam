@@ -89,7 +89,9 @@ class ExhibitionFlagOnTests(TestCase):
                        'squat_demo.mp4', 'videos/full_squats', 'EXH_CFG = JSON.parse("'):
             self.assertIn(needle, html)
         # Wrapper-level guard against any non-GET request.
-        self.assertIn("m !== 'GET'", html)
+        self.assertIn('exhibition_guard.js', html)
+        # The page drops the base template's pb-32 bottom padding.
+        self.assertNotIn('pb-32', re.search(r'<body[^>]*>', html).group(0))
 
     def test_wrapper_adds_no_save_or_feedback_url(self):
         """The inherited camera script still names the save URL in code that is
@@ -103,6 +105,12 @@ class ExhibitionFlagOnTests(TestCase):
                      / 'v1_exhibition_views.py').read_text()
         for bad in ('.save(', '.create(', 'objects.', 'session[', 'v1_save', 'feedback'):
             self.assertNotIn(bad, views_src)
+
+    def test_mind_lab_routes_still_resolve_to_their_views(self):
+        from django.urls import resolve
+        self.assertEqual(resolve('/exhibition/mind-lab/').url_name, 'mind_lab_visitor')
+        self.assertEqual(resolve('/exhibition/mind-lab/pass-window/').url_name,
+                         'pass_window_visitor')
 
     def test_squat_hint_text_present(self):
         self.assertContains(self.client.get('/exhibition/squat/'),

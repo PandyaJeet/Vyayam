@@ -12,8 +12,12 @@
 <header class="exh-header">VYAYAM</header>
 {% endblock %}
 
+{# No bottom padding (the base adds pb-32 = 128 px, which made the phone page scroll). #}
+{% block body_class %}bg-surface text-on-surface min-h-screen{% endblock %}
+
 {% block extra_head %}
 {{ block.super }}
+<script src="{% static 'strength_app/js/exhibition_guard.js' %}"></script>
 <style>
   .exh-header { padding: 8px 12px; text-align: center; font-weight: 800;
     letter-spacing: .1em; color: #6bbf8a; font-size: 1rem; }
@@ -34,16 +38,23 @@
     background: #000; }
   #exhRetry { padding: 16px 28px; font-size: 1.3rem; font-weight: 800; border-radius: 14px;
     border: 2px solid #fff; background: none; color: #fff; }
-  #exhCaption { position: fixed; left: 0; right: 0; bottom: 0; z-index: 9000;
+  #exhCaption { position: fixed; left: 0; right: 0; top: 0; z-index: 9000;
     display: none; padding: 14px 16px; background: #000; color: #fff;
-    border-top: 3px solid #fde047; font-size: 1.7rem; font-weight: 800;
+    border-bottom: 3px solid #fde047; font-size: 1.7rem; font-weight: 800;
     line-height: 1.25; text-align: center; }
   @media (max-width: 860px) {
     .ex-wrap { padding: 4px; }
     .ex-wrap > .top-bar { display: none; }
     .right-panel { order: 0; }
     .right-panel > :not(#ghostStatusCard) { display: none !important; }
-    .video-section { min-height: 0; height: calc(100dvh - 215px); }
+    /* 375x667: header 40 + wrap padding 8 + grid gap 8 + camera + rep card ~135 = 667 - 39 slack. */
+    .main-layout { gap: 8px; }
+    .exh-header { padding: 8px 12px; }
+    .video-section { min-height: 0; height: calc(100dvh - 230px); }
+    #ghostStatusCard { padding: 10px 12px; }
+    #ghostStatusCard .card-label { margin-bottom: 4px; }
+    #repCountDisplay { line-height: 1.1; }
+    #ghostStatusCard > button { display: none !important; } /* Show demo */
     #videoCanvas { height: 100%; max-height: 100%; object-fit: contain; }
   }
 </style>
@@ -54,17 +65,7 @@
     lastCaptionAt: Date.now(), scriptFailed: false, pendingFail: null, fail: null };
   function failNow(why) { if (S.fail) S.fail(why); else S.pendingFail = why; }
 
-  // 1. Nothing is stored: refuse every request that is not a GET.
-  var origFetch = window.fetch;
-  if (origFetch) {
-    window.fetch = function (input, init) {
-      var m = ((init && init.method) || (input && input.method) || 'GET').toUpperCase();
-      if (m !== 'GET' && m !== 'HEAD') {
-        return Promise.resolve(new Response('{}', { status: 204 }));
-      }
-      return origFetch.apply(this, arguments);
-    };
-  }
+  // 1. Nothing is stored: exhibition_guard.js (loaded above) blocks every non-GET fetch.
 
   // 2. Captions: mirror every spoken line. No voice and no caption before the Start tap.
   var hideTimer = null;
@@ -98,7 +99,12 @@
     var origGum = md.getUserMedia.bind(md);
     md.getUserMedia = function (c) {
       return origGum(c).then(function (s) {
-        S.granted = true; S.grantedAt = Date.now(); return s;
+        S.granted = true; S.grantedAt = Date.now();
+        // Camera lost mid-session (cable, OS, another app): show the failure panel.
+        s.getVideoTracks().forEach(function (t) {
+          t.addEventListener('ended', function () { failNow('track ended'); });
+        });
+        return s;
       }, function (e) {
         if (e && (e.name === 'NotAllowedError' || e.name === 'SecurityError')) failNow('permission: ' + e.name);
         throw e;

@@ -646,10 +646,13 @@ Needs `EXHIBITION_MODE=True` and HTTPS (or `localhost`): camera access needs a s
 1. Start the server with `EXHIBITION_MODE=True` (for example `EXHIBITION_MODE=True DJANGO_SECRET_KEY=test-key DJANGO_DEBUG=True python manage.py runserver 0.0.0.0:8000` behind an HTTPS tunnel). Without the flag, `/exhibition/` and `/exhibition/squat/` must give 404.
 2. On the phone open `/exhibition/`. See the line "VYAYAM: a training plan that progresses on its own", a large "Try the squat coach" link and the dashed QR box. Tap the link.
 3. `/exhibition/squat/` opens on the Start screen: a large Start button and the placement hint. No voice and no camera yet.
-4. Tap Start. Allow the camera. You hear "Ready." and see it as a large caption. The camera view and rep counter fit the screen with no scrolling.
-5. Do 3 squats. Every spoken coach line appears as a large black caption bar at the bottom, in step with the voice. Turn the phone volume off: you can still follow every line.
+4. Tap Start. Allow the camera. You hear "Ready." and see it as a large caption. The header, camera box and rep card fit a 375 x 667 screen with no scrolling, and the rep count and position cue are visible. There is no "Show demo" button under 860 px.
+5. Do 3 squats. Every spoken coach line appears as a large black caption bar at the TOP of the screen (it must never cover the rep card), in step with the voice. Turn the phone volume off: you can still follow every line.
 6. On an iPhone in Safari, repeat steps 3 to 5: the voice must be audible after the first tap (known to fail without the tap unlock).
 7. Reload, tap Start, and choose Don't Allow on the camera prompt: a "Camera not available" panel shows with a looped muted demo video (first `squat_demo.mp4`, then `full_squats.mp4` if the first file is absent) and "Try again". "Try again" returns to the Start screen.
 8. Block `cdn.jsdelivr.net` (airplane mode after loading the page, or a content blocker), reload, tap Start: the same failure panel shows.
 9. Back on the Start screen, tap Start and leave the phone untouched, out of frame, for 60 s: the page returns to the Start screen on its own and the camera light goes off. Squat in frame instead: the reset does not fire while reps change.
 10. In the browser network tab (or server log) confirm no POST request happens during the whole walk, and `db.sqlite3` row counts do not change.
+11. Squat fixes (2026-11 review): while the camera runs, unplug or disable it (iPad: revoke camera in Settings, or cover and switch app so the track ends): the "Camera not available" panel shows within a few seconds, not a frozen frame.
+12. Stand in frame but do not squat for 50 s, move to a different phase (go down, then up) at 50 s: the 60 s clock restarts on the phase change, so no reload at 60 s.
+13. Phone layout: on a 375 x 667 phone (or browser device mode) there is no bottom gap and no scroll after the camera starts. Measure: header about 40 px, camera box 100dvh minus 230 px, rep card about 135 px.
