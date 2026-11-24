@@ -144,7 +144,7 @@ Every new athlete-facing string on `/exhibition/` and `/exhibition/squat/`. None
 | Squat, demo line 2 (spoken and captioned on play 2) | One more time. |
 | Squat, demo replay button (failure panel only; the existing camera-page label) | Show demo |
 | Squat, header | VYAYAM |
-| Page titles (<title>) | `VYAYAM` (index) · `Full Squats — VYAYAM` (squat; the camera page's own title) · `VYAYAM demo games` (games) · `VYAYAM: How a plan changes` (progression) |
+| Page titles (<title>) | `VYAYAM` (index) · `Full Squats — VYAYAM` (squat; the camera page's own title) · `Mind Games Prototype` (games; Pawan's own file, served unchanged) · `VYAYAM: How a plan changes` (progression) |
 
 Other defaults: idle reset 60 s (`IDLE_SECONDS`), camera-frame timeout 10 s (`NO_FRAME_SECONDS`). The squat page runs `full_squats` as 1 set of 5 reps with tempo 3-1-2-0 (nothing is saved, so these only set the on-screen targets).
 
@@ -191,6 +191,13 @@ Strings live in `strength_app/v1_exhibition_progression.py` (`TEXT`). None is si
 | title | How a plan changes |
 | persona | Demo athlete, 24, returned to training. Trained, not new to lifting. One leg is weaker (the left), the same leg in both tests. Training state set for this demo: the phase, the week count and the date of the last lighter week are set by hand so the rules do not call a deload. |
 | history_label | Illustrative demo data |
+| hero_head | A training plan that progresses on its own. |
+| hero_sub | Same athlete, 4 weeks apart. New numbers in, new plan out. |
+| hero_balance | Leg balance |
+| hero_extra | Extra sets, weaker leg |
+| hero_level | Lunge level |
+| hero_level_note | next session |
+| hero_cue | How the plan decided |
 | history_h | Last 6 weeks |
 | week_cols | Week · Sessions · Sets · Note |
 | light_note | Lighter week |
