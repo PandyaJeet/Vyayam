@@ -641,7 +641,7 @@ Needs `MIND_LAB_ENABLED=True`. Phone, portrait. Login: `/login/` → `9000000005
 
 ## Part U — Exhibition squat page, phone walk (`/exhibition/squat/`)
 
-Needs `EXHIBITION_MODE=True` and HTTPS (or `localhost`): camera access needs a secure context. Phone, portrait, no login. Nothing on this page is saved. The squat demo clip `strength_app/static/strength_app/exhibition/squat_demo.mp4` is supplied by Pawan; run `collectstatic` after adding it.
+Needs `EXHIBITION_MODE=True` and HTTPS (or `localhost`): camera access needs a secure context. Phone, portrait, no login. Nothing on this page is saved.
 
 1. Start the server with `EXHIBITION_MODE=True` (for example `EXHIBITION_MODE=True DJANGO_SECRET_KEY=test-key DJANGO_DEBUG=True python manage.py runserver 0.0.0.0:8000` behind an HTTPS tunnel). Without the flag, `/exhibition/` and `/exhibition/squat/` must give 404.
 2. On the phone open `/exhibition/`. See the line "VYAYAM: a training plan that progresses on its own", a large "Try the squat coach" link and the dashed QR box. Tap the link.
@@ -649,7 +649,7 @@ Needs `EXHIBITION_MODE=True` and HTTPS (or `localhost`): camera access needs a s
 4. Tap Start. Allow the camera. You hear "Ready." and see it as a large caption. The header, camera box and rep card fit a 375 x 667 screen with no scrolling, and the rep count and position cue are visible. There is no "Show demo" button under 860 px.
 5. Do 3 squats. Every spoken coach line appears as a large black caption bar at the TOP of the screen (it must never cover the rep card), in step with the voice. Turn the phone volume off: you can still follow every line.
 6. On an iPhone in Safari, repeat steps 3 to 5: the voice must be audible after the first tap (known to fail without the tap unlock).
-7. Reload, tap Start, and choose Don't Allow on the camera prompt: a "Camera not available" panel shows with a looped muted demo video (first `squat_demo.mp4`, then `full_squats.mp4` if the first file is absent) and "Try again". "Try again" returns to the Start screen.
+7. Reload, tap Start, and choose Don't Allow on the camera prompt: a "Camera not available" panel shows with a looped muted demo video (`full_squats.mp4`) and "Try again". "Try again" returns to the Start screen.
 8. Block `cdn.jsdelivr.net` (airplane mode after loading the page, or a content blocker), reload, tap Start: the same failure panel shows.
 9. Back on the Start screen, tap Start and leave the phone untouched, out of frame, for 60 s: the page returns to the Start screen on its own and the camera light goes off. Squat in frame instead: the reset does not fire while reps change.
 10. In the browser network tab (or server log) confirm no POST request happens during the whole walk, and `db.sqlite3` row counts do not change.
@@ -705,3 +705,15 @@ Needs `EXHIBITION_MODE=True`. Laptop, any browser, no login.
 4. Phone 375 x 667, `/exhibition/squat/`, camera on: let a cue wrap to 2 lines. Both lines show in full, nothing is cut, the page does not scroll. A third line is not shown.
 5. Page tab titles: index "VYAYAM", squat "Full Squats — VYAYAM", games "VYAYAM demo games", progression "VYAYAM: How a plan changes".
 6. On Render free plan (512 MB), after deploy, open each page once. Compare with the memory table in `audit/EXHIBITION_FIXES2.md`. Order to try: `/exhibition/`, `/exhibition/squat/`, `/exhibition/games/`, `/exhibition/progression/`. Check the Render memory graph does not hit the limit.
+
+## Part U6 — Squat demo first (`/exhibition/squat/`)
+
+Needs `EXHIBITION_MODE=True` and HTTPS. Phone 375 x 667, portrait, no login. The clip is `strength_app/static/strength_app/videos/full_squats.mp4`.
+
+1. Open `/exhibition/squat/`. Before any tap, the squat demo plays (muted, looped) above the Start button. No camera prompt appears. Start, "Show demo" and the hint all show without scrolling.
+2. Tap "Show demo" on the Start screen: the clip restarts from the top.
+3. Tap Start and allow the camera. Tap "Show demo" under the rep count: the coach runs its demo and the small Reference video plays. The page does not scroll, and the rep count is not covered.
+4. Let a long cue wrap. The caption bar shows at most 3 lines and does not cover the rep count.
+5. Reload, tap Start, choose Don't Allow: the "Camera not available" panel shows the message, the playing demo, "Show demo" and "Try again". "Show demo" restarts the clip.
+6. Leave the page alone for 60 s after Start: it reloads to the Start screen.
+7. With the flag off, `/exhibition/squat/` gives 404.

@@ -141,6 +141,7 @@ Every new athlete-facing string on `/exhibition/` and `/exhibition/squat/`. None
 | Squat, camera failure title | Camera not available |
 | Squat, camera failure body | We could not start the camera. Watch the demo below. |
 | Squat, retry button | Try again |
+| Squat, demo replay button (Start screen and failure panel; the existing camera-page label) | Show demo |
 | Squat, header | VYAYAM |
 | Page titles (<title>) | `VYAYAM` (index) · `Full Squats — VYAYAM` (squat; the camera page's own title) · `VYAYAM demo games` (games) · `VYAYAM: How a plan changes` (progression) |
 
