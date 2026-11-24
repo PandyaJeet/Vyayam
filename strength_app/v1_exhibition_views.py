@@ -5,14 +5,15 @@ Structural guarantee: no model import, no session write, no ORM call, no
 write endpoint. tests/test_exhibition.py parses this file for that.
 """
 import json
-from pathlib import Path
 
 from django.conf import settings
-from django.http import Http404, HttpResponse
+from django.http import Http404
 from django.shortcuts import render
 
 from .cv_targets import get_cv_config
 from .exercise_content import EXERCISE_CONTENT
+from .mind_lab import pass_window as pw
+from .mind_lab.pass_window_data import game_config
 
 SQUAT_KEY = 'full_squats'
 
@@ -128,15 +129,23 @@ def exhibition_squat(request):
     })
 
 
-MIND_GAMES_FILE = Path(__file__).resolve().parent / 'exhibition_pages' / 'mind_games.html'
-
-
 def exhibition_games(request):
-    """Pawan's mind-games.html, served byte for byte. Never goes through the
-    template engine. Stores nothing."""
+    """Pass Window (walk-up, 60 s) and Go / No-Go Pass. Own view: it must not
+    use the Mind Lab visitor view, which checks the other flag. Stores nothing."""
     _require_flag()
-    try:
-        body = MIND_GAMES_FILE.read_bytes()
-    except OSError:
-        raise Http404
-    return HttpResponse(body, content_type='text/html; charset=utf-8')
+    cfg = game_config(PW_LEVEL, visitor=True)
+    cfg['visitor'] = True
+    cfg['save_url'] = None
+    cfg['max_s'] = PW_ROUND_START_CUTOFF_S
+    cfg['order'] = pw.trial_order(cfg['scenarios'], PW_LEVEL, PW_ORDER_LEN)
+    games_cfg = {
+        'text': GAMES_TEXT,
+        'pass_window': cfg,
+        'idle_seconds': IDLE_SECONDS,
+        'qr_src': settings.STATIC_URL + GAMES_QR_STATIC,
+    }
+    return render(request, 'strength_app/exhibition_games.html', {
+        'g': GAMES_TEXT,
+        'page_url': request.build_absolute_uri(request.path),
+        'games_cfg_json': json.dumps(games_cfg),
+    })

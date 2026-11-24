@@ -720,29 +720,3 @@ Needs `EXHIBITION_MODE=True` and HTTPS. Phone 375 x 667, portrait, no login. Cli
 8. Reload, tap Start, then turn the phone screen off for 15 s during the clip (or block video): the camera still starts after at most 15 s.
 9. After Start, leave the page alone for 60 s once the camera is on: it reloads to the Start screen. It does not reload during the two plays.
 10. With the flag off, `/exhibition/squat/` gives 404.
-
-## Part U7 — Mind games page, Pawan's own file (`/exhibition/games/`)
-
-Needs `EXHIBITION_MODE=True`. iPad Safari, no login. The page is `strength_app/exhibition_pages/mind_games.html`, served unchanged (sha256 64d15cf5...d5, 21,785 bytes).
-
-1. Open `/exhibition/games/` on the iPad (online). The games menu shows with the Barlow fonts. No login, no wrapper, no back link.
-2. Play each game once. Taps register, the page does not zoom or scroll.
-3. Note the layout: the page is a column at most 480 px wide, centred. On an iPad it is phone-width. This is how the file is written.
-4. Finish a round. Reload the page: your best score is still there (kept in this browser's localStorage key `mg_best`). Open it on another device: no scores.
-5. Put the iPad in airplane mode and reload: the page loads with system fonts (the font link is fonts.googleapis.com).
-6. Leave the page alone for 5 minutes: nothing resets. There is no idle reset. Reset by hand if needed.
-7. In Private Browsing the page still plays. Best scores may not be kept.
-8. With the flag off, `/exhibition/games/` gives 404.
-9. The index link "Play the demo games" (`/exhibition/`) opens this page.
-
-## Part U8 — Progression page hero (`/exhibition/progression/`)
-
-Needs `EXHIBITION_MODE=True`. Laptop at 1366 x 768 and at 1280 x 800, browser zoom 100%, no login.
-
-1. Open the page. The first screen, with no scrolling, shows: the amber "Illustrative demo data" pill, the headline "A training plan that progresses on its own.", the line "Same athlete, 4 weeks apart. New numbers in, new plan out.", three tiles and the cue "How the plan decided".
-2. Tiles read: Leg balance 50% to 64%. Extra sets, weaker leg +2 to +1. Lunge level 2 to 3 with "next session". Each tile fits on one line, nothing is cut.
-3. Stand 2 m from the screen. The headline and the tile numbers read without squinting.
-4. Click "How the plan decided". The page jumps to "Two runs of the same rules on the demo history".
-5. Scroll down from the hero: the title "How a plan changes" and every section below are the same as before.
-6. Compare the hero numbers with the symmetry table (Lunge row) and the "What changed" table (lunge row, Level and Weaker-side sets columns). They match.
-7. No red anywhere in the hero. With the flag off the page gives 404.

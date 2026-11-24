@@ -1,5 +1,4 @@
 """Exhibition pages: flag, anonymous access, nothing stored, full_squats only."""
-import hashlib
 import re
 from pathlib import Path
 
@@ -9,7 +8,6 @@ from django.urls import reverse
 
 from strength_app.models import PatientProfile, StrengthProfile
 
-MIND_GAMES_SHA256 = '64d15cf5e89b8905055bb6fad9b322aba04ae475d21ed9662fb49361b5f5d605'
 CSRF_INPUT = re.compile(r'name="csrfmiddlewaretoken" value="[^"]*"')
 
 
@@ -190,8 +188,8 @@ class ExhibitionFlagOnTests(TestCase):
     def test_every_exhibition_page_title_is_listed_in_unsigned_defaults(self):
         doc = (Path(__file__).resolve().parents[2] / 'docs' / 'UNSIGNED_DEFAULTS.md').read_text()
         row = re.search(r'\| Page titles \(<title>\) \|(.*)\|', doc).group(1)
-        # /exhibition/games/ is Pawan's own file, served unchanged (<title>Mind Games Prototype</title>).
-        for url in ('/exhibition/', '/exhibition/squat/', '/exhibition/progression/'):
+        for url in ('/exhibition/', '/exhibition/squat/', '/exhibition/games/',
+                    '/exhibition/progression/'):
             html = self.client.get(url).content.decode()
             title = re.search(r'<title>(.*?)</title>', html, re.S).group(1).strip()
             self.assertIn('`%s`' % title, row, (url, title))
@@ -212,27 +210,26 @@ class ExhibitionGamesTests(TestCase):
         self.client.get('/exhibition/games/')
         self.assertEqual(before, _row_counts())
 
-    def test_served_bytes_are_pawans_file_exactly(self):
+    def test_page_has_both_games_and_no_save_url(self):
+        import json
         r = self.client.get('/exhibition/games/')
-        self.assertEqual(r.status_code, 200)
-        self.assertEqual(hashlib.sha256(r.content).hexdigest(), MIND_GAMES_SHA256)
-        self.assertEqual(len(r.content), 21785)
-        self.assertEqual(r['Content-Type'], 'text/html; charset=utf-8')
-
-    def test_sha_check_catches_a_one_byte_change(self):
-        from unittest import mock
-        from strength_app import v1_exhibition_views as v
-        data = bytearray(v.MIND_GAMES_FILE.read_bytes())
-        data[100] ^= 1
-        with mock.patch.object(Path, 'read_bytes', return_value=bytes(data)):
-            r = self.client.get('/exhibition/games/')
-        self.assertNotEqual(hashlib.sha256(r.content).hexdigest(), MIND_GAMES_SHA256)
-
-    def test_missing_file_404s_only_that_page(self):
-        from unittest import mock
-        with mock.patch.object(Path, 'read_bytes', side_effect=FileNotFoundError):
-            self.assertEqual(self.client.get('/exhibition/games/').status_code, 404)
-        self.assertEqual(self.client.get('/exhibition/').status_code, 200)
+        html = r.content.decode()
+        for needle in ('id="choosePw"', 'id="chooseGn"', 'Pass Window', 'Go / No-Go Pass',
+                       'Demo scenarios', 'Not a test of reaction time, ability or readiness',
+                       'touch-action: manipulation', '100dvh', 'exhibition_guard.'):
+            self.assertIn(needle, html)
+        self.assertNotIn('{% url', html)
+        for bad in ('save/', 'v1_save', 'feedback', 'sendBeacon', 'XMLHttpRequest', '<form'):
+            self.assertNotIn(bad, html)
+        cfg = r.context['games_cfg_json']
+        pw_cfg = json.loads(cfg)['pass_window']
+        self.assertIsNone(pw_cfg['save_url'])
+        self.assertEqual(pw_cfg['max_s'], 50)
+        self.assertGreater(len(pw_cfg['order']), 8)   # scenarios repeat until time is up
+        # Own view, not the Mind Lab visitor view.
+        names = [t.name for t in r.templates]
+        self.assertIn('strength_app/exhibition_games.html', names)
+        self.assertNotIn('strength_app/mind_lab_pass_window.html', names)
 
     def test_games_view_does_not_import_the_mind_lab_visitor_view(self):
         src = (Path(__file__).resolve().parents[1] / 'v1_exhibition_views.py').read_text()
