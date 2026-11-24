@@ -142,6 +142,7 @@ Every new athlete-facing string on `/exhibition/` and `/exhibition/squat/`. None
 | Squat, camera failure body | We could not start the camera. Watch the demo below. |
 | Squat, retry button | Try again |
 | Squat, header | VYAYAM |
+| Page titles (<title>) | `VYAYAM` (index) · `Full Squats — VYAYAM` (squat; the camera page's own title) · `VYAYAM demo games` (games) · `VYAYAM: How a plan changes` (progression) |
 
 Other defaults: idle reset 60 s (`IDLE_SECONDS`), camera-frame timeout 10 s (`NO_FRAME_SECONDS`). The squat page runs `full_squats` as 1 set of 5 reps with tempo 3-1-2-0 (nothing is saved, so these only set the on-screen targets).
 
@@ -178,7 +179,7 @@ Strings live in `strength_app/v1_exhibition_progression.py` (`TEXT`). None is si
 
 **For the mentor:**
 - The persona is a demo athlete who "returned to training". The page says nothing about why they stopped. Any fracture or injury context for the stall (spoken, not on the page) needs your wording first.
-- The persona text says "Training state set for this demo". It means the phase, week count and date of the last lighter week are set by hand so the rules do not call a deload. The engine would otherwise call one after about 4 weeks of loading.
+- The persona text says "Training state set for this demo". It means the phase, week count and date of the last lighter week are set by hand so the rules do not call a deload (the week count is the latest week in the history table, 6, and 2 for the earlier run). The demo athlete's session length is 90 minutes and training age 18 months, values the onboarding screens can send. The engine would otherwise call one after about 4 weeks of loading.
 - The hop result (shown against the benchmark of 90 percent) is shown only. The plan uses the lunge result. The page says so.
 - The extra-set bands are the engine's own: 85 and above none, 70 to 84 mild, 55 to 69 moderate, under 55 significant. Moderate adds 1 set on the weaker side. Significant adds 2 and blocks progression of that pattern.
 - Pain column: shows the pain events logged (none in the demo data). Nothing is claimed about the cause of any change.
@@ -214,7 +215,7 @@ Strings live in `strength_app/v1_exhibition_progression.py` (`TEXT`). None is si
 | back | Back |
 | why_sym | Symmetry band {rule}: {extra} extra set(s) on the weaker side |
 | why_blocked | Progression blocked while the band is significant |
-| why_adv | Ready to progress: level {level} |
+| why_adv | Ready to progress: level {level} saved for the next session |
 | why_deload | Deload |
 | why_none | No rule changed this row |
 

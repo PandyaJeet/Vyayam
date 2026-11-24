@@ -132,6 +132,15 @@ class ExhibitionFlagOnTests(TestCase):
         # Height sum: 40 + 8 + 8 + 437 + (card 138 - 44 + 8 + two_lines) <= 667.
         self.assertLessEqual(631 + (two_lines - 36.4), 667)
 
+    def test_every_exhibition_page_title_is_listed_in_unsigned_defaults(self):
+        doc = (Path(__file__).resolve().parents[2] / 'docs' / 'UNSIGNED_DEFAULTS.md').read_text()
+        row = re.search(r'\| Page titles \(<title>\) \|(.*)\|', doc).group(1)
+        for url in ('/exhibition/', '/exhibition/squat/', '/exhibition/games/',
+                    '/exhibition/progression/'):
+            html = self.client.get(url).content.decode()
+            title = re.search(r'<title>(.*?)</title>', html, re.S).group(1).strip()
+            self.assertIn('`%s`' % title, row, (url, title))
+
 
 STATIC_JS = Path(__file__).resolve().parents[1] / 'static' / 'strength_app' / 'js'
 
