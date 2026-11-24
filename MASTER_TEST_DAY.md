@@ -734,3 +734,15 @@ Needs `EXHIBITION_MODE=True`. iPad Safari, no login. The page is `strength_app/e
 7. In Private Browsing the page still plays. Best scores may not be kept.
 8. With the flag off, `/exhibition/games/` gives 404.
 9. The index link "Play the demo games" (`/exhibition/`) opens this page.
+
+## Part U8 — Progression page hero (`/exhibition/progression/`)
+
+Needs `EXHIBITION_MODE=True`. Laptop at 1366 x 768 and at 1280 x 800, browser zoom 100%, no login.
+
+1. Open the page. The first screen, with no scrolling, shows: the amber "Illustrative demo data" pill, the headline "A training plan that progresses on its own.", the line "Same athlete, 4 weeks apart. New numbers in, new plan out.", three tiles and the cue "How the plan decided".
+2. Tiles read: Leg balance 50% to 64%. Extra sets, weaker leg +2 to +1. Lunge level 2 to 3 with "next session". Each tile fits on one line, nothing is cut.
+3. Stand 2 m from the screen. The headline and the tile numbers read without squinting.
+4. Click "How the plan decided". The page jumps to "Two runs of the same rules on the demo history".
+5. Scroll down from the hero: the title "How a plan changes" and every section below are the same as before.
+6. Compare the hero numbers with the symmetry table (Lunge row) and the "What changed" table (lunge row, Level and Weaker-side sets columns). They match.
+7. No red anywhere in the hero. With the flag off the page gives 404.

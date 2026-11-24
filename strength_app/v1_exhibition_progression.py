@@ -63,6 +63,13 @@ DAY_NAMES = ('Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun')
 
 TEXT = {
     'title': 'How a plan changes',
+    'hero_head': 'A training plan that progresses on its own.',
+    'hero_sub': 'Same athlete, 4 weeks apart. New numbers in, new plan out.',
+    'hero_balance': 'Leg balance',
+    'hero_extra': 'Extra sets, weaker leg',
+    'hero_level': 'Lunge level',
+    'hero_level_note': 'next session',
+    'hero_cue': 'How the plan decided',
     'persona': 'Demo athlete, 24, returned to training. Trained, not new to lifting. '
                'One leg is weaker (the left), the same leg in both tests. '
                'Training state set for this demo: the phase, the week count and the '
@@ -337,6 +344,34 @@ def build_page():
     return _assemble(run_a, run_b, weeks, days)
 
 
+def _lunge_row(run):
+    rows = [r for r in run['rows'] if r['pattern'] == 'lunge']
+    uni = [r for r in rows if r['unilateral']]
+    return (uni or rows or [None])[0]
+
+
+def _hero(run_a, run_b, sym):
+    """The three before/now numbers, read from this request's results. '-' if missing."""
+    def pct(v):
+        return '%d%%' % round(v) if v is not None else '-'
+
+    def extra(run):
+        r = _lunge_row(run)
+        return '+%d' % r['extra'] if r else '-'
+
+    def level(run, saved):
+        r = _lunge_row(run)
+        v = run['advanced'].get('lunge') if saved else None
+        if v is None and r:
+            v = r['level']
+        return str(v) if v is not None else '-'
+    return {
+        'balance': (pct(sym['lunge'][0]), pct(sym['lunge'][1])),
+        'extra': (extra(run_a), extra(run_b)),
+        'level': (level(run_a, False), level(run_b, True)),
+    }
+
+
 def _assemble(run_a, run_b, weeks, days):
     for run in (run_a, run_b):
         for r in run['rows']:
@@ -357,11 +392,13 @@ def _assemble(run_a, run_b, weeks, days):
             diff.append({'pattern': pattern, 'a': a, 'b': b,
                          'why': why or [TEXT['why_none']]})
     hop_bench = LSI_THRESHOLDS['hop']
+    sym = {'lunge': (_lsi(LUNGE_EARLIER), _lsi(LUNGE_NOW)),
+           'hop': (_lsi(HOP_EARLIER), _lsi(HOP_NOW))}
     return {
+        'hero': _hero(run_a, run_b, sym),
         't': TEXT, 'weeks': weeks, 'days': days, 'run_a': run_a, 'run_b': run_b,
         'diff': diff, 'hop_bench': hop_bench,
-        'sym': {'lunge': (_lsi(LUNGE_EARLIER), _lsi(LUNGE_NOW)),
-                'hop': (_lsi(HOP_EARLIER), _lsi(HOP_NOW))},
+        'sym': sym,
     }
 
 
