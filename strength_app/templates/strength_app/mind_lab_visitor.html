@@ -1,0 +1,30 @@
+{% extends 'strength_app/athlete_base.html' %}
+{% block title %}Mind Lab — VYAYAM{% endblock %}
+{% block bottom_nav %}{% endblock %}
+
+{% block content %}
+<div class="ath-card">
+  <div class="ath-eyebrow" style="margin-bottom:10px;">Mind Lab · try it</div>
+  {% if done %}
+    <div style="font-size:1.3rem; font-weight:800;">{{ label_text }}</div>
+    <p>{{ plan_text }}</p>
+    {% if support_line %}<p style="opacity:.85;">{{ support_line }}</p>{% endif %}
+    <p style="font-size:.78rem; opacity:.7;">Nothing was saved.</p>
+    <a href="" class="ath-btn" style="display:block; text-align:center; padding:12px;">Next visitor</a>
+  {% else %}
+  {% if error %}<div style="color:#f4be4f; margin-bottom:12px;">{{ error }}</div>{% endif %}
+  <form method="post">
+    {% csrf_token %}
+    <fieldset style="border:0; padding:0; margin:0 0 16px;">
+      <legend style="font-weight:700; margin-bottom:8px;">How long did you sleep last night?</legend>
+      <label style="display:block; padding:6px 0;"><input type="radio" name="sleep" value="under_5" required> Under 5 hours</label>
+      <label style="display:block; padding:6px 0;"><input type="radio" name="sleep" value="5_to_6"> 5 to 6 hours</label>
+      <label style="display:block; padding:6px 0;"><input type="radio" name="sleep" value="over_6"> Over 6 hours</label>
+    </fieldset>
+    <label style="display:block; margin-bottom:16px;">Energy today (1 low, 5 high)
+      <input type="range" name="energy" min="1" max="5" value="3" style="width:100%;"></label>
+    <button type="submit" class="ath-btn" style="width:100%; padding:12px;">Done</button>
+  </form>
+  {% endif %}
+</div>
+{% endblock %}

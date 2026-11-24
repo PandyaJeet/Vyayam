@@ -1,0 +1,33 @@
+{% extends 'strength_app/athlete_base.html' %}
+{% load static %}
+{% block title %}Pass Window — VYAYAM{% endblock %}
+{% block bottom_nav %}{% if not visitor %}{{ block.super }}{% endif %}{% endblock %}
+
+{% block content %}
+<div class="ath-card">
+  <div class="ath-eyebrow" style="margin-bottom:10px;">Mind Lab · Pass Window{% if visitor %} · try it{% endif %}</div>
+  {% if blocked %}
+    <p>{{ plan_text }}</p>
+    <p style="font-size:.85rem; opacity:.8;">Pass Window is not available today.</p>
+  {% else %}
+    <div id="mindLabHost"></div>
+    <div id="mindLabStatus" style="font-size:.85rem; margin-top:10px;"></div>
+    <p style="font-size:.78rem; opacity:.7; margin-top:12px;">Demo scenarios. This is a training game, not a return-to-play test. It says nothing about match performance.{% if visitor %} Nothing is saved.{% endif %}</p>
+  {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+{% if not blocked %}
+<script src="{% static 'strength_app/js/mind_lab_runner.js' %}"></script>
+<script src="{% static 'strength_app/js/pass_window.js' %}"></script>
+{# Rule 2: config enters inline JS as a quoted |escapejs string, parsed in JS. #}
+<script>
+  (function () {
+    var cfg = JSON.parse("{{ config_json|escapejs }}");
+    MindLab.run(cfg, document.getElementById('mindLabHost'),
+                document.getElementById('mindLabStatus'));
+  })();
+</script>
+{% endif %}
+{% endblock %}

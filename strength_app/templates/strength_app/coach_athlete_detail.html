@@ -7,9 +7,15 @@
 {% endblock %}
 
 {% block header_actions %}
+{% if rtp_override_locked %}
+<span class="btn-coach btn-sm-c" style="margin-right:8px;opacity:.5;cursor:not-allowed;" title="{{ rtp_override_locked }}">
+  <i class="fas fa-lock"></i> Override locked
+</span>
+{% else %}
 <a href="{% url 'coach_override_prescription' patient.patient_id %}" class="btn-coach btn-primary-c btn-sm-c" style="margin-right:8px;">
   <i class="fas fa-edit"></i> Override Prescription
 </a>
+{% endif %}
 <button class="btn-coach btn-danger-c btn-sm-c" onclick="document.getElementById('flagModal').style.display='flex'">
   <i class="fas fa-flag"></i> Flag for Review
 </button>
@@ -65,6 +71,18 @@
 
 {% block content %}
 
+{% if rtp_coach %}
+<!-- RTP coach view: only the fields SPINE_SPEC allows a coach to see -->
+<div class="info-row" id="rtpCoachView" style="margin-bottom:16px;flex-wrap:wrap;gap:16px;">
+  <span><span class="info-label">Status</span> {{ rtp_coach.status }}</span>
+  {% if rtp_coach.traffic_light %}<span><span class="info-label">Traffic light</span> {{ rtp_coach.traffic_light|title }}</span>{% endif %}
+  {% if rtp_coach.stage_name %}<span><span class="info-label">Stage</span> {{ rtp_coach.stage_name }}</span>{% endif %}
+  {% if rtp_coach.restrictions %}<span><span class="info-label">Restrictions</span> {{ rtp_coach.restrictions|join:", " }}</span>{% endif %}
+  {% if rtp_coach.checkpoint %}<span><span class="info-label">Checkpoint</span> {{ rtp_coach.checkpoint }}</span>{% endif %}
+  <span><span class="info-label">Injury signal</span> {% if rtp_coach.injury_signal %}yes{% else %}no{% endif %}</span>
+</div>
+{% endif %}
+
 <!-- Header stats -->
 <div class="three-col">
   <div class="stat-box">
@@ -118,6 +136,32 @@
       {% endif %}
       {% else %}
       <div class="empty">No assessment data yet.</div>
+      {% endif %}
+    </div>
+
+    <!-- 1b. Manual-entry strength tests (bench / leg press) — display only,
+         never part of football_level (SB-5a deferred) -->
+    <div class="c-card">
+      <div class="c-card-title">Strength Tests — Manual Entry</div>
+      {% if strength_tests %}
+      <table class="c-table">
+        <thead><tr><th>Test</th><th>Entry</th><th>Est. 1RM (Epley)</th><th>Rel. BW</th></tr></thead>
+        <tbody>
+          {% for t in strength_tests %}
+          <tr>
+            <td>{{ t.label }}</td>
+            <td style="font-size:.8rem;color:#3d4f42;">{{ t.weight_kg|floatformat:"-1" }} kg × {{ t.reps }}{% if t.tested_at %} · {{ t.tested_at }}{% endif %}</td>
+            <td><strong>{{ t.e1rm|floatformat:"-1" }} kg</strong></td>
+            <td style="font-size:.8rem;color:#3d4f42;">{% if t.rel_bw %}{{ t.rel_bw }}×{% else %}—{% endif %}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      <div style="font-size:.72rem;color:#3d4f42;opacity:.6;margin-top:8px;">
+        Athlete-entered weight × reps; not used in the football level.
+      </div>
+      {% else %}
+      <div class="empty">No strength-test entries yet.</div>
       {% endif %}
     </div>
 
@@ -321,6 +365,21 @@
       {% endif %}
       {% if patient.competition_date %}
       <div class="info-row"><span class="info-label">Next match</span><span>{{ patient.competition_date }}</span></div>
+      {% endif %}
+    </div>
+
+    <!-- Mind Lab: latest game session -->
+    <div class="c-card">
+      <div class="c-card-title">Mind Lab — Latest Session</div>
+      {% if mind_lab_latest %}
+      <div class="info-row"><span class="info-label">Game</span><span>{{ mind_lab_latest.game_id }}</span></div>
+      <div class="info-row"><span class="info-label">Played</span><span>{{ mind_lab_latest.started_at|date:"j M Y, H:i" }}</span></div>
+      <div class="info-row"><span class="info-label">Level</span><span>{{ mind_lab_latest.level }}</span></div>
+      <div class="info-row"><span class="info-label">Trials</span><span>{{ mind_lab_latest.n_trials }}</span></div>
+      <div class="info-row"><span class="info-label">Accuracy</span><span>{% if mind_lab_latest.accuracy is not None %}{% widthratio mind_lab_latest.accuracy 1 100 %}%{% else %}—{% endif %}</span></div>
+      <div class="info-row"><span class="info-label">Median reaction</span><span>{% if mind_lab_latest.median_rt_ms is not None %}{{ mind_lab_latest.median_rt_ms|floatformat:0 }} ms{% else %}—{% endif %}</span></div>
+      {% else %}
+      <div class="empty">No Mind Lab sessions yet.</div>
       {% endif %}
     </div>
 

@@ -62,6 +62,12 @@ def patient_login(request: HttpRequest):
                 if patient.therapist_managed:
                     return redirect('therapist_session_today')
 
+                # Football-track athletes with an active coach link get the
+                # athlete PWA instead of the generic patient dashboard.
+                from .v1_athlete_views import is_coached_football_athlete
+                if is_coached_football_athlete(patient):
+                    return redirect('athlete_today')
+
                 if patient.gate_test_completed and has_profile:
                     return redirect('v1_dashboard')
 

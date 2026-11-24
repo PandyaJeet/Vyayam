@@ -26,6 +26,14 @@
 {% endblock %}
 
 {% block content %}
+{% if rtp_locked %}
+<div class="c-card" style="border-color:#ba1a1a;color:#ba1a1a;font-weight:600;padding:12px;margin-bottom:12px;">
+  {{ rtp_locked }}
+</div>
+{% else %}
+{% if rtp_reduce_only %}
+<div class="c-card" style="padding:12px;margin-bottom:12px;">Restricted athlete: you can only remove exercises.</div>
+{% endif %}
 <form method="POST">
   {% csrf_token %}
   {% if error %}
@@ -98,6 +106,7 @@
 
   </div>
 </form>
+{% endif %}
 {% endblock %}
 
 {% block extra_js %}

@@ -197,3 +197,62 @@ class FootballProfileAdmin(admin.ModelAdmin):
     list_filter = ['football_level', 'fv_tendency', 'lsi_flag', 'plyometric_cleared', 'hsr_current_phase']
     search_fields = ['patient__name', 'patient__patient_id']
     readonly_fields = ['assessed_at', 'updated_at']
+
+
+# --- RTP Tier 1 ---------------------------------------------------------------
+from .rtp.models import (  # noqa: E402
+    AuditLog, CoachTherapistLink, AvailabilityStatus,
+    RehabPathway, RehabStage, InjuryEpisode,
+)
+
+
+class _ReadOnlyAdmin(admin.ModelAdmin):
+    """Audit trail and availability are written by strength_app/rtp services only."""
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+
+@admin.register(AuditLog)
+class AuditLogAdmin(_ReadOnlyAdmin):
+    list_display = ['created_at', 'actor_role', 'action', 'outcome', 'patient']
+    list_filter = ['outcome', 'action', 'actor_role']
+    search_fields = ['patient__name', 'patient__patient_id']
+
+
+@admin.register(AvailabilityStatus)
+class AvailabilityStatusAdmin(_ReadOnlyAdmin):
+    list_display = ['patient', 'base_status', 'stage_number', 'medical_hold', 'updated_at']
+    list_filter = ['base_status', 'medical_hold']
+    search_fields = ['patient__name', 'patient__patient_id']
+
+
+@admin.register(CoachTherapistLink)
+class CoachTherapistLinkAdmin(admin.ModelAdmin):
+    list_display = ['coach', 'therapist', 'is_active', 'linked_at']
+    list_filter = ['is_active']
+    readonly_fields = ['linked_at']
+
+
+@admin.register(RehabPathway)
+class RehabPathwayAdmin(admin.ModelAdmin):
+    list_display = ['key', 'name']
+
+
+@admin.register(RehabStage)
+class RehabStageAdmin(admin.ModelAdmin):
+    list_display = ['pathway', 'number', 'name']
+    list_filter = ['pathway']
+
+
+@admin.register(InjuryEpisode)
+class InjuryEpisodeAdmin(admin.ModelAdmin):
+    list_display = ['patient', 'pathway', 'opened_by', 'opened_at', 'closed_at']
+    list_filter = ['pathway']
+    search_fields = ['patient__name', 'patient__patient_id']
+    readonly_fields = ['opened_at']

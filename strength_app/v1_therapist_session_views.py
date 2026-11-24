@@ -275,6 +275,16 @@ def therapist_session_exercise(request, idx):
         return _render_v2_ghost(request, patient, enriched, idx, len(items), is_last)
 
     # Otherwise render the simple (no-camera) page.
+    # 2026-07 Part 4C: count-along pacer for the two PERMANENTLY guided
+    # exercises (camera cannot honestly track them — catalog descriptions).
+    # 'interval' = one count every 2 s (ankle pumps); 'squeeze_cycle' =
+    # 5 s squeeze / 3 s relax per rep (prone glute squeeze). Purely visual
+    # pacing — it never logs anything; set tracking stays self-reported.
+    pacer_mode = {
+        'ex_ankle_pumps': 'interval',
+        'ex_prone_glute_squeeze': 'squeeze_cycle',
+    }.get(item.exercise_id, '')
+
     ctx = {
         'patient': patient,
         'item': item,
@@ -282,6 +292,7 @@ def therapist_session_exercise(request, idx):
         'exercise_index': idx,
         'total_exercises': len(items),
         'is_last_exercise': is_last,
+        'pacer_mode': pacer_mode,
         'feedback_url': reverse('therapist_session_feedback', args=[idx]),
         'report_pain_url': reverse('therapist_session_report_pain', args=[idx]),
         'set_log_url': reverse('therapist_session_set_log', args=[idx]),

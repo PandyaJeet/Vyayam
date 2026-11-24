@@ -1,0 +1,118 @@
+{% extends 'strength_app/athlete_base.html' %}
+{% block title %}Today's Training — VYAYAM{% endblock %}
+
+{% block content %}
+{% if rtp_status %}
+<section id="rtpAthleteStatus" style="margin-bottom:14px;">
+  {% if rtp_status.held %}<div class="ath-eyebrow">{{ rtp_status.hold_text }}</div>
+  {% else %}<div class="ath-eyebrow">Status: {{ rtp_status.status|capfirst }}</div>{% endif %}
+  {% if rtp_status.restrictions %}<div class="ath-eyebrow">Restrictions: {{ rtp_status.restrictions|join:", " }}</div>{% endif %}
+</section>
+{% endif %}
+<section style="margin-bottom:18px;">
+  <div class="ath-eyebrow">{{ today|date:"D, M d" }}</div>
+  <h1 style="font-size:1.55rem; font-weight:800; letter-spacing:-0.02em; margin:5px 0 8px;">Today's Training, {{ first_name }}</h1>
+  {% if phase_label %}
+    <span class="ath-pill"><span class="material-symbols-outlined" style="font-size:1rem;">sports_soccer</span> {{ phase_label }}</span>
+  {% endif %}
+</section>
+
+{# ── Next match countdown ─────────────────────────────────────────── #}
+{% if next_match %}
+<div class="ath-card" style="background:linear-gradient(135deg, rgba(12,108,63,.35), rgba(22,29,25,1)); border-color:rgba(131,216,161,.25);">
+  <div style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
+    <div>
+      <div class="ath-eyebrow" style="color:#83d8a1;">Next match</div>
+      <div style="font-weight:800; font-size:1.05rem; margin-top:4px;">{{ next_match.match.match_date|date:"D, M d" }}{% if next_match.match.opponent %} · vs {{ next_match.match.opponent }}{% endif %}</div>
+      {% if next_match.match.notes %}<div style="font-size:.78rem; color:#93a098; margin-top:2px;">{{ next_match.match.notes }}</div>{% endif %}
+    </div>
+    <div style="text-align:center; flex-shrink:0; background:rgba(131,216,161,.12); border:1px solid rgba(131,216,161,.3); border-radius:14px; padding:10px 14px;">
+      <div style="font-size:1.5rem; font-weight:800; color:#83d8a1; line-height:1;">{{ next_match.days_away }}</div>
+      <div style="font-size:.62rem; font-weight:800; letter-spacing:.08em; color:#93a098; margin-top:3px;">DAY{{ next_match.days_away|pluralize }} AWAY</div>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+{# ── Tests due ────────────────────────────────────────────────────── #}
+{% if tests_due %}
+<div class="ath-card-tight" style="border-color:rgba(244,190,79,.35);">
+  <div style="display:flex; gap:12px; align-items:center;">
+    <span class="material-symbols-outlined" style="color:#f4be4f; font-size:1.5rem;">timer</span>
+    <div style="flex:1;">
+      <div style="font-weight:800; font-size:.92rem;">Performance tests due</div>
+      <div style="font-size:.78rem; color:#93a098; margin-top:2px;">It's been 4+ weeks since your last test battery. Re-test to keep your training dialled in.</div>
+    </div>
+    <a href="{% url 'football_assessment' %}" class="ath-btn-ghost" style="padding:8px 14px; font-size:.78rem; flex-shrink:0;">Re-test</a>
+  </div>
+</div>
+{% endif %}
+
+{# ── Today's training session ─────────────────────────────────────── #}
+{% if session_status == 'match_day' %}
+<div class="ath-card" style="text-align:center; padding:30px 18px;">
+  <span class="material-symbols-outlined" style="font-size:2.6rem; color:#83d8a1;">sports_soccer</span>
+  <div style="font-weight:800; font-size:1.1rem; margin-top:8px;">Match day</div>
+  <div style="color:#93a098; font-size:.86rem; margin-top:4px;">No training prescribed — go perform.</div>
+</div>
+{% elif session_status == 'stopped' or session_status == 'reassess' %}
+<div class="ath-card" style="text-align:center; padding:30px 18px;">
+  <span class="material-symbols-outlined" style="font-size:2.4rem; color:#f4be4f;">pause_circle</span>
+  <div style="font-weight:800; margin-top:8px;">Training paused</div>
+  <div style="color:#93a098; font-size:.86rem; margin-top:4px;">{{ session_stop_reason }}</div>
+</div>
+{% elif working_sets %}
+<div class="ath-card">
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+    <div>
+      <div class="ath-eyebrow">Today's session</div>
+      <div style="font-size:1rem; font-weight:800; margin-top:2px;">{{ working_sets|length }} exercise{{ working_sets|length|pluralize }}{% if session_summary.estimated_minutes %} · ~{{ session_summary.estimated_minutes }} min{% endif %}</div>
+    </div>
+    {% if session_status == 'deload' %}
+      <span class="ath-pill ath-pill-amber">Deload</span>
+    {% else %}
+      <span class="ath-pill"><span class="material-symbols-outlined" style="font-size:1rem;">bolt</span> Ready</span>
+    {% endif %}
+  </div>
+
+  <ol style="list-style:none; padding:0; margin:0 0 16px; display:flex; flex-direction:column; gap:8px;">
+    {% for x in working_sets %}
+    <li style="padding:12px 14px; background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.06); border-radius:12px;">
+      <div style="display:flex; gap:12px; align-items:flex-start;">
+        <div style="width:26px; height:26px; border-radius:50%; background:linear-gradient(135deg,#0c6c3f,#2f9e64); color:#fff; font-weight:800; font-size:.76rem; display:flex; align-items:center; justify-content:center; flex-shrink:0; margin-top:2px;">{{ forloop.counter }}</div>
+        <div style="flex:1; min-width:0;">
+          <div style="font-weight:700; font-size:.94rem;">{{ x.exercise_name }}</div>
+          <div style="font-size:.78rem; color:#93a098; margin-top:2px;">
+            {{ x.sets }} × {{ x.reps }}{% if x.tempo and x.tempo != '—' %} · tempo {{ x.tempo }}{% endif %}{% if x.rest_seconds %} · {{ x.rest_seconds }}s rest{% endif %}
+          </div>
+          {% if x.coach_prescribed %}
+            <span class="ath-pill ath-pill-neutral" style="margin-top:6px; font-size:.64rem;">Coach set</span>
+          {% endif %}
+        </div>
+      </div>
+    </li>
+    {% endfor %}
+  </ol>
+
+  <a class="ath-btn" href="{% url 'v1_session_overview' %}">
+    <span class="material-symbols-outlined">play_arrow</span>
+    Start Training
+  </a>
+</div>
+{% else %}
+<div class="ath-card" style="text-align:center; padding:30px 18px;">
+  <span class="material-symbols-outlined" style="font-size:2.4rem; color:#8b968f;">self_improvement</span>
+  <div style="font-weight:800; margin-top:8px;">Nothing on the plan right now</div>
+  <div style="color:#93a098; font-size:.86rem; margin-top:4px;">{% if session_stop_reason %}{{ session_stop_reason }}{% else %}Check back later or talk to your coach.{% endif %}</div>
+</div>
+{% endif %}
+
+{# ── Weekly load indicator ────────────────────────────────────────── #}
+<div class="ath-card-tight">
+  <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:8px;">
+    <div class="ath-eyebrow">This week's training</div>
+    <div style="font-size:.86rem; font-weight:800;">{{ sessions_done }} <span style="color:#93a098; font-weight:600;">/ {{ sessions_planned }} planned</span></div>
+  </div>
+  <div class="ath-bar"><div style="width:{{ load_pct }}%;"></div></div>
+</div>
+{% endblock %}

@@ -1,0 +1,124 @@
+{% extends 'strength_app/athlete_base.html' %}
+{% block title %}Your Performance — VYAYAM{% endblock %}
+
+{% block content %}
+<section style="margin-bottom:18px;">
+  <div class="ath-eyebrow">Performance</div>
+  <h1 style="font-size:1.55rem; font-weight:800; letter-spacing:-0.02em; margin:5px 0;">Your Performance, {{ first_name }}</h1>
+</section>
+
+{% if football %}
+{# ── Football level ───────────────────────────────────────────────── #}
+<div class="ath-card" style="background:linear-gradient(135deg, rgba(12,108,63,.35), rgba(22,29,25,1)); border-color:rgba(131,216,161,.25);">
+  <div style="display:flex; align-items:center; gap:14px;">
+    <div style="width:58px; height:58px; border-radius:16px; background:rgba(131,216,161,.14); border:1px solid rgba(131,216,161,.3); display:flex; flex-direction:column; align-items:center; justify-content:center; flex-shrink:0;">
+      <div style="font-size:1.35rem; font-weight:800; color:#83d8a1; line-height:1;">L{{ football.football_level }}</div>
+    </div>
+    <div>
+      <div style="font-weight:800; font-size:1.05rem;">{{ level_config.label|default:"—" }}</div>
+      {% if level_config %}<div style="font-size:.78rem; color:#93a098; margin-top:2px; line-height:1.45;">{{ level_config.description }}</div>{% endif %}
+    </div>
+  </div>
+</div>
+
+{# ── Test battery ─────────────────────────────────────────────────── #}
+<div class="ath-card">
+  <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:14px;">
+    <div class="ath-eyebrow">Test battery</div>
+    <div style="font-size:.72rem; color:#93a098;">Tested {{ football.assessed_at|date:"M d" }}</div>
+  </div>
+  <div style="display:flex; flex-direction:column; gap:12px;">
+    {% for t in battery %}
+    <div>
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
+        <div style="display:flex; align-items:center; gap:8px; font-size:.86rem; font-weight:700;">
+          <span class="material-symbols-outlined" style="font-size:1.1rem; color:#83d8a1;">{{ t.icon }}</span>
+          {{ t.label }}
+        </div>
+        <div style="font-size:.82rem; font-weight:800; color:{% if t.score >= 4 %}#83d8a1{% elif t.score >= 3 %}#e8ede9{% else %}#f4be4f{% endif %};">{{ t.score }}<span style="color:#93a098; font-weight:600;">/5</span></div>
+      </div>
+      <div class="ath-bar"><div style="width:{{ t.pct }}%;"></div></div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% else %}
+<div class="ath-card" style="text-align:center; padding:30px 18px;">
+  <span class="material-symbols-outlined" style="font-size:2.4rem; color:#8b968f;">quiz</span>
+  <div style="font-weight:800; margin-top:8px;">No test battery yet</div>
+  <div style="color:#93a098; font-size:.86rem; margin-top:4px;">Run your performance tests to unlock your profile.</div>
+  <a href="{% url 'football_assessment' %}" class="ath-btn-ghost" style="margin-top:14px;">Start tests</a>
+</div>
+{% endif %}
+
+{# ── Strength tests (bench / leg press — display only) ────────────── #}
+{% if strength_tests %}
+<div class="ath-card">
+  <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:12px;">
+    <div class="ath-eyebrow">Strength</div>
+    <div style="font-size:.68rem; color:#93a098;">Estimated 1RM (Epley)</div>
+  </div>
+  <div style="display:flex; flex-direction:column; gap:10px;">
+    {% for t in strength_tests %}
+    <div style="display:flex; align-items:center; gap:12px; padding:12px 14px; background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.06); border-radius:12px;">
+      <span class="material-symbols-outlined" style="color:#83d8a1; font-size:1.3rem; flex-shrink:0;">{{ t.icon }}</span>
+      <div style="flex:1; min-width:0;">
+        <div style="font-weight:700; font-size:.92rem;">{{ t.label }}</div>
+        <div style="font-size:.76rem; color:#93a098; margin-top:1px;">{{ t.weight_kg|floatformat:"-1" }} kg × {{ t.reps }} rep{{ t.reps|pluralize }}{% if t.tested_at %} · {{ t.tested_at }}{% endif %}</div>
+      </div>
+      <div style="text-align:right; flex-shrink:0;">
+        <div style="font-size:1.05rem; font-weight:800; color:#83d8a1;">{{ t.e1rm|floatformat:"-1" }} kg</div>
+        {% if t.rel_bw %}<div style="font-size:.66rem; color:#93a098;">{{ t.rel_bw }}× bodyweight</div>{% endif %}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+
+{# ── Training consistency ─────────────────────────────────────────── #}
+<div class="ath-card">
+  <div class="ath-eyebrow" style="margin-bottom:12px;">Training consistency</div>
+  <div style="display:flex; gap:10px; margin-bottom:14px;">
+    <div style="flex:1; background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.07); border-radius:12px; padding:12px; text-align:center;">
+      <div style="font-size:1.4rem; font-weight:800; color:#83d8a1;">{{ sessions_this_week }}<span style="font-size:.85rem; color:#93a098; font-weight:600;">/{{ sessions_planned }}</span></div>
+      <div style="font-size:.66rem; font-weight:700; letter-spacing:.06em; color:#93a098; margin-top:3px;">THIS WEEK</div>
+    </div>
+    <div style="flex:1; background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.07); border-radius:12px; padding:12px; text-align:center;">
+      <div style="font-size:1.4rem; font-weight:800;">{{ four_week_total }}</div>
+      <div style="font-size:.66rem; font-weight:700; letter-spacing:.06em; color:#93a098; margin-top:3px;">LAST 4 WEEKS</div>
+    </div>
+  </div>
+  <div style="display:flex; flex-direction:column; gap:8px;">
+    {% for w in weekly %}
+    <div style="display:flex; align-items:center; gap:10px;">
+      <div style="font-size:.72rem; color:#93a098; width:64px; flex-shrink:0;">Wk of {{ w.week_start|date:"M d" }}</div>
+      <div class="ath-bar" style="flex:1;"><div style="width:{% widthratio w.sessions sessions_planned 100 %}%;"></div></div>
+      <div style="font-size:.76rem; font-weight:800; width:16px; text-align:right;">{{ w.sessions }}</div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+{# ── sRPE trend ───────────────────────────────────────────────────── #}
+<div class="ath-card">
+  <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:12px;">
+    <div class="ath-eyebrow">Session effort (sRPE)</div>
+    <div style="font-size:.72rem; color:#93a098;">Last 14 days</div>
+  </div>
+  {% if srpe_trend %}
+  <div style="display:flex; align-items:flex-end; gap:6px; height:88px; padding-bottom:4px;">
+    {% for p in srpe_trend %}
+    <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:4px; height:100%; justify-content:flex-end;" title="{{ p.date|date:'M d' }} — RPE {{ p.rpe }}">
+      <div style="font-size:.64rem; font-weight:800; color:{% if p.rpe >= 8 %}#f4be4f{% else %}#83d8a1{% endif %};">{{ p.rpe }}</div>
+      <div style="width:100%; max-width:26px; height:{{ p.pct }}%; min-height:6px; background:linear-gradient(180deg, {% if p.rpe >= 8 %}#f4be4f, #b08800{% else %}#83d8a1, #0c6c3f{% endif %}); border-radius:6px 6px 3px 3px;"></div>
+      <div style="font-size:.58rem; color:#93a098;">{{ p.date|date:"d/m" }}</div>
+    </div>
+    {% endfor %}
+  </div>
+  <div style="font-size:.72rem; color:#93a098; margin-top:8px;">How hard each training felt, 1-10. Steady mid-range effort with harder spikes is a healthy in-season pattern.</div>
+  {% else %}
+  <div style="font-size:.84rem; color:#93a098;">No completed trainings in the last 14 days yet.</div>
+  {% endif %}
+</div>
+{% endblock %}

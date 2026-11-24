@@ -157,6 +157,55 @@ FOOTBALL_ASSESSMENT_TESTS = [
             5: '≥105 %',
         },
     },
+    # ── Tests 7 & 8: manual-entry strength (2026-07 Part 3) ────────────────
+    # entry_mode='strength_manual': the athlete is under load / on a machine,
+    # so this is weight×reps manual entry — no camera, no 0-5 band.
+    # Estimated 1RM via Epley (1RM = w × (1 + reps/30)) is computed
+    # SERVER-SIDE in football_save_test_result and persisted on
+    # PatientProfile.raw_test_data_json['strength_tests'].
+    # DELIBERATELY NOT part of football_level: compute_level() reads only the
+    # six 0-5 score fields, and that scoring has known deferred bugs (SB-5a)
+    # — these two are store-and-display only.
+    {
+        'test_id': 'bench_press_test',
+        'name': 'Bench Press',
+        'measure': 'Upper-limb strength — weight × reps, estimated 1RM (Epley)',
+        'input_label': 'Weight (kg) and reps completed',
+        'pattern': 'push',
+        'unit': 'kg_x_reps',
+        'is_bilateral': False,
+        'entry_mode': 'strength_manual',
+        'scoring_thresholds': [],
+        'scoring_thresholds_reverse': False,
+        'instructions': [
+            'Warm up, then load a weight you can press for roughly 5-10 reps.',
+            'Lower the bar to your chest under control and press to lockout.',
+            'Stop the set when your form breaks — do not grind to failure.',
+            'Always use a spotter or safety racks.',
+            'Enter the weight and the number of clean reps completed.',
+        ],
+        'scoring': {},
+    },
+    {
+        'test_id': 'leg_press_test',
+        'name': 'Leg Press',
+        'measure': 'Lower-limb strength — weight × reps, estimated 1RM (Epley)',
+        'input_label': 'Weight (kg) and reps completed',
+        'pattern': 'squat',
+        'unit': 'kg_x_reps',
+        'is_bilateral': False,
+        'entry_mode': 'strength_manual',
+        'scoring_thresholds': [],
+        'scoring_thresholds_reverse': False,
+        'instructions': [
+            'Set the seat so your knees start near 90 degrees.',
+            'Load a weight you can press for roughly 5-10 reps.',
+            'Lower under control to 90 degrees, press without slamming the knees into lockout.',
+            'Stop when depth or control degrades — no half reps.',
+            'Enter the sled weight and the number of clean reps completed.',
+        ],
+        'scoring': {},
+    },
 ]
 
 # ============================================================================

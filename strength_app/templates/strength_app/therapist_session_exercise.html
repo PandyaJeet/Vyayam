@@ -63,6 +63,27 @@
   {% endif %}
 </div>
 
+{% if pacer_mode %}
+{# Part 4C: honest count-along pacer — visual pacing only, logs nothing.
+   These exercises are guided by design (see catalog descriptions). #}
+<div class="ts-card" style="margin-bottom:14px;">
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+    <div style="font-weight:700;">Count-along pacer</div>
+    <span class="ts-pill ts-pill-neutral"><span class="material-symbols-outlined" style="font-size:1rem;">smart_display</span> Guided exercise — follow the video</span>
+  </div>
+  <div id="pacer-display" style="text-align:center; padding:14px 0 6px;">
+    <div id="pacer-phase" style="font-size:.74rem; font-weight:800; letter-spacing:.1em; color:#666;">READY</div>
+    <div id="pacer-count" style="font-size:2.6rem; font-weight:800; color:#0c6c3f; line-height:1.15;">—</div>
+    <div id="pacer-sub" style="font-size:.8rem; color:#666; margin-top:2px;">
+      {% if pacer_mode == 'squeeze_cycle' %}Each rep: squeeze 5s, relax 3s.{% else %}One pump every 2 seconds.{% endif %}
+    </div>
+  </div>
+  <button type="button" id="pacer-toggle" class="ts-btn-ghost" style="width:100%; justify-content:center;">
+    <span class="material-symbols-outlined" style="font-size:1.1rem;">play_arrow</span> Start pacer
+  </button>
+</div>
+{% endif %}
+
 <div class="ts-card" style="margin-bottom:14px;">
   <div style="font-weight:700; margin-bottom:10px;">Track sets</div>
   <div id="sets-row" style="display:flex; gap:8px; flex-wrap:wrap;">
@@ -309,6 +330,67 @@
   });
 
   render();
+
+  // ── Part 4C: count-along pacer (visual only — never logs anything) ───
+  const PACER_MODE = "{{ pacer_mode|default:''|escapejs }}";
+  if (PACER_MODE) {
+    const phaseEl = document.getElementById('pacer-phase');
+    const countEl = document.getElementById('pacer-count');
+    const toggle = document.getElementById('pacer-toggle');
+    const reps = targetReps > 0 ? targetReps : 10;
+    let timer = null;
+    let running = false;
+
+    function stopPacer(label) {
+      if (timer) { clearInterval(timer); timer = null; }
+      running = false;
+      phaseEl.textContent = label || 'READY';
+      toggle.innerText = 'Start pacer';
+    }
+
+    function startInterval() {
+      // Ankle pumps: one count every 2 s up to the prescribed reps.
+      let n = 0;
+      phaseEl.textContent = 'PUMP ALONG';
+      countEl.textContent = '0 / ' + reps;
+      timer = setInterval(() => {
+        n += 1;
+        countEl.textContent = n + ' / ' + reps;
+        if (n >= reps) {
+          stopPacer('SET DONE — MARK THE SET BELOW');
+        }
+      }, 2000);
+    }
+
+    function startSqueeze() {
+      // Prone glute squeeze: 5 s squeeze / 3 s relax per rep.
+      let rep = 1;
+      let phase = 'squeeze';
+      let left = 5;
+      function paint() {
+        phaseEl.textContent = (phase === 'squeeze' ? 'SQUEEZE' : 'RELAX') + ' · REP ' + rep + ' / ' + reps;
+        countEl.textContent = left + 's';
+      }
+      paint();
+      timer = setInterval(() => {
+        left -= 1;
+        if (left > 0) { paint(); return; }
+        if (phase === 'squeeze') {
+          phase = 'relax'; left = 3; paint(); return;
+        }
+        rep += 1;
+        if (rep > reps) { stopPacer('SET DONE — MARK THE SET BELOW'); countEl.textContent = '✓'; return; }
+        phase = 'squeeze'; left = 5; paint();
+      }, 1000);
+    }
+
+    toggle.addEventListener('click', () => {
+      if (running) { stopPacer('READY'); countEl.textContent = '—'; return; }
+      running = true;
+      toggle.innerText = 'Stop pacer';
+      if (PACER_MODE === 'squeeze_cycle') { startSqueeze(); } else { startInterval(); }
+    });
+  }
 })();
 </script>
 {% endblock %}

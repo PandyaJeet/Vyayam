@@ -1,0 +1,23 @@
+{% extends 'strength_app/athlete_base.html' %}
+{% load static %}
+{% block title %}Mind Lab — VYAYAM{% endblock %}
+
+{% block content %}
+<div class="ath-card">
+  <div class="ath-eyebrow" style="margin-bottom:10px;">Mind Lab</div>
+  <div id="mindLabHost"></div>
+  <div id="mindLabStatus" style="font-size:.85rem; margin-top:10px;"></div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{% static 'strength_app/js/mind_lab_runner.js' %}"></script>
+{# Rule 2: config enters inline JS as a quoted |escapejs string, parsed in JS. #}
+<script>
+  (function () {
+    var cfg = JSON.parse("{{ config_json|escapejs }}");
+    MindLab.run(cfg, document.getElementById('mindLabHost'),
+                document.getElementById('mindLabStatus'));
+  })();
+</script>
+{% endblock %}

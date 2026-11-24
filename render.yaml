@@ -1,0 +1,55 @@
+# VYAYAM judges' demo on Render's free tier: no credit card, no paid plan.
+# One-click deploy (sign in to Render, then press "Deploy Blueprint"):
+#   from the fork branch:   https://render.com/deploy?repo=https://github.com/PandyaJeet/Vyayam/tree/render-demo
+#   once merged upstream:   https://render.com/deploy?repo=https://github.com/Pawan-PT/Vyayam
+#
+# DEMO ONLY. build_demo.sh plants public demo logins. Never point this
+# Blueprint at a database that holds real patient data; real production
+# follows DEPLOY_CHECKLIST.md (build.sh on a paid instance).
+#
+# Demo logins (after the first deploy finishes):
+#   /therapist/login/  dr_shah / simple
+#   /login/            9000000001 / patient   (therapist-managed patient)
+#   /login/            0987654321 / demo1234  (self-serve patient)
+#   /login/            9000000005 / athlete   (football athlete)
+#   /coach/login/      coach_arjun / simple
+#
+# Free-tier limits (Render docs, 2026): the web service sleeps after 15 idle
+# minutes and takes about a minute to wake; the free Postgres expires 30 days
+# after it is created; 5 GB of bandwidth per month.
+services:
+  - type: web
+    name: vyayam
+    runtime: python
+    plan: free
+    region: singapore
+    autoDeployTrigger: "off"
+    buildCommand: bash build_demo.sh
+    # The free instance has 0.1 CPU / 512 MB: one worker, and a 120 s timeout
+    # for the first CV-registry import and PDF reports on that CPU.
+    startCommand: gunicorn vyayam_project.wsgi:application --workers 1 --threads 4 --timeout 120 --access-logfile -
+    healthCheckPath: /healthz/
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.3
+      - key: DJANGO_SECRET_KEY
+        generateValue: true
+      - key: DJANGO_DEBUG
+        value: "False"
+      - key: DJANGO_TRUSTED_PROXY
+        value: "1"
+      - key: VYAYAM_SEED_DEMO
+        value: "1"
+      - key: DATABASE_URL
+        fromDatabase:
+          name: vyayam-db
+          property: connectionString
+
+databases:
+  - name: vyayam-db
+    plan: free
+    region: singapore
+    postgresMajorVersion: "16"
+    databaseName: vyayam
+    user: vyayam
+    ipAllowList: []  # no public access; the web service connects privately

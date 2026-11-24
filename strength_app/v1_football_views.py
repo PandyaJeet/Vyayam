@@ -1,9 +1,11 @@
 """
 VYAYAM Football Module — Views
-Sport selection, 6-test assessment battery, results & level assignment.
+Sport selection, 8-test assessment battery (6 scored + 2 manual-entry
+strength tests), results & level assignment.
 """
 
 import json
+from datetime import date
 
 from django.http import JsonResponse
 from .rate_limiter import rate_limit
@@ -119,6 +121,17 @@ def football_assessment_execute(request, test_index):
         for k, v in sorted(test.get('scoring', {}).items())
     ]
 
+    # Strength tests are equipment-dependent — offer a no-write skip so an
+    # athlete without a bench/leg press can still finish the battery.
+    skip_url = ''
+    if test.get('entry_mode') == 'strength_manual':
+        next_index = test_index + 1
+        skip_url = (
+            reverse('football_assessment_results')
+            if next_index >= len(FOOTBALL_ASSESSMENT_TESTS)
+            else reverse('football_assessment_execute', args=[next_index])
+        )
+
     return render(request, 'strength_app/football_assessment_execute.html', {
         'test': test,
         'test_index': test_index,
@@ -127,6 +140,7 @@ def football_assessment_execute(request, test_index):
         'is_bilateral': is_bilateral,
         'progress_pct': progress_pct,
         'scoring_items': scoring_items,
+        'skip_url': skip_url,
         'patient': patient,
     })
 
@@ -171,6 +185,27 @@ def football_save_test_result(request):
     results = dict(request.session['football_test_results'])
     test = FOOTBALL_ASSESSMENT_TESTS[test_index] if test_index < len(FOOTBALL_ASSESSMENT_TESTS) else {}
     key = test.get('test_id', f'test_{test_index}')
+
+    # Tests 7 & 8 (bench/leg press): weight×reps manual entry. Epley e1RM is
+    # computed HERE (server-side, authoritative) — the client preview is
+    # display-only. No 0-5 score: these never enter football_level (SB-5a).
+    if test.get('entry_mode') == 'strength_manual':
+        from .validation import safe_float
+        weight_kg = safe_float(data.get('weight_kg', 0), 0, 0, 500)
+        reps = safe_int(data.get('reps', 0), 0, 0, 30)
+        if weight_kg <= 0 or reps <= 0:
+            return JsonResponse({'error': 'Weight and reps are required'}, status=400)
+        e1rm = round(weight_kg * (1 + reps / 30.0), 1)
+        results[key] = {'weight_kg': weight_kg, 'reps': reps, 'e1rm': e1rm}
+        request.session['football_test_results'] = results
+        request.session.modified = True
+        next_index = test_index + 1
+        next_url = (
+            reverse('football_assessment_results')
+            if next_index >= len(FOOTBALL_ASSESSMENT_TESTS)
+            else reverse('football_assessment_execute', args=[next_index])
+        )
+        return JsonResponse({'status': 'saved', 'next_url': next_url, 'e1rm': e1rm})
 
     if side in ('left', 'right'):
         sub = results.get(key, {})
@@ -319,9 +354,35 @@ def football_assessment_results(request):
     fp.season_phase = request.session.pop('football_season_phase', 'in_season')
     fp.save()
 
+    # Tests 7 & 8 (bench/leg press, 2026-07 Part 3): persist to
+    # raw_test_data_json — store-and-display ONLY. Deliberately kept out of
+    # football_level / compute_level(): that scoring has known deferred bugs
+    # (SB-5a) and must not gain new inputs this cycle.
+    strength_tests = {}
+    for sid, label in (('bench_press_test', 'bench_press'),
+                       ('leg_press_test', 'leg_press')):
+        entry = results.get(sid)
+        if isinstance(entry, dict) and entry.get('e1rm'):
+            rec = {
+                'weight_kg': entry.get('weight_kg'),
+                'reps': entry.get('reps'),
+                'e1rm': entry.get('e1rm'),
+                'tested_at': str(date.today()),
+            }
+            # Optional relative strength — only when bodyweight is on file.
+            if patient.weight_kg:
+                rec['rel_bw'] = round(entry['e1rm'] / patient.weight_kg, 2)
+            strength_tests[label] = rec
+    if strength_tests:
+        raw = patient.raw_test_data_json if isinstance(patient.raw_test_data_json, dict) else {}
+        merged = dict(raw.get('strength_tests') or {})
+        merged.update(strength_tests)
+        raw['strength_tests'] = merged
+        patient.raw_test_data_json = raw
+
     # Mark patient as athlete tier active
     patient.athlete_tier_active = True
-    patient.save(update_fields=['athlete_tier_active'])
+    patient.save(update_fields=['athlete_tier_active', 'raw_test_data_json'])
 
     level_config = FOOTBALL_LEVELS.get(fp.football_level, FOOTBALL_LEVELS[1])
     fv_config = FV_TENDENCY_CONFIG.get(fp.fv_tendency, FV_TENDENCY_CONFIG['balanced'])
