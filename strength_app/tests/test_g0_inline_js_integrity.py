@@ -505,3 +505,15 @@ class TestG0RtpTier2PagesJS(InlineJSAuditMixin, TestCase):
         self.assertContains(page, 'rtpAthleteStatus')
         self.audit_page(reverse('athlete_today'), 'athlete today with status line')
         self.assert_all_js_clean(min_scripts=2)
+
+
+@unittest.skipUnless(NODE, 'node is required for inline-JS syntax checking')
+@override_settings(EXHIBITION_MODE=True)
+class TestG0ExhibitionJS(InlineJSAuditMixin, TestCase):
+    """Exhibition pages (anonymous): the squat wrapper's config enters inline JS
+    as a quoted |escapejs string parsed in JS; the index carries no inline JS."""
+
+    def test_g0_exhibition_pages_inline_js_parse(self):
+        self.audit_page(reverse('exhibition_index'), 'exhibition index')
+        self.audit_page(reverse('exhibition_squat'), 'exhibition squat')
+        self.assert_all_js_clean(min_scripts=4)

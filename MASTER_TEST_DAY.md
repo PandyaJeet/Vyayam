@@ -638,3 +638,18 @@ Needs `MIND_LAB_ENABLED=True`. Phone, portrait. Login: `/login/` → `9000000005
 3. Tap a teammate square: the screen freezes about 2 s and a dashed amber line and a one-line reason ending "(Demo scenario)" show. Let one trial time out: "Time ran out" shows.
 4. Finish the session: the end card shows "N of M best passes at 0.3x Time Assist" and the status line reads "Saved."
 5. New check-in with Sleep under 5 h, then reopen `/athlete/mind-lab/pass_window/`: it shows "Recovery only today." and no game.
+
+## Part U — Exhibition squat page, phone walk (`/exhibition/squat/`)
+
+Needs `EXHIBITION_MODE=True` and HTTPS (or `localhost`): camera access needs a secure context. Phone, portrait, no login. Nothing on this page is saved. The squat demo clip `strength_app/static/strength_app/exhibition/squat_demo.mp4` is supplied by Pawan; run `collectstatic` after adding it.
+
+1. Start the server with `EXHIBITION_MODE=True` (for example `EXHIBITION_MODE=True DJANGO_SECRET_KEY=test-key DJANGO_DEBUG=True python manage.py runserver 0.0.0.0:8000` behind an HTTPS tunnel). Without the flag, `/exhibition/` and `/exhibition/squat/` must give 404.
+2. On the phone open `/exhibition/`. See the line "VYAYAM: a training plan that progresses on its own", a large "Try the squat coach" link and the dashed QR box. Tap the link.
+3. `/exhibition/squat/` opens on the Start screen: a large Start button and the placement hint. No voice and no camera yet.
+4. Tap Start. Allow the camera. You hear "Ready." and see it as a large caption. The camera view and rep counter fit the screen with no scrolling.
+5. Do 3 squats. Every spoken coach line appears as a large black caption bar at the bottom, in step with the voice. Turn the phone volume off: you can still follow every line.
+6. On an iPhone in Safari, repeat steps 3 to 5: the voice must be audible after the first tap (known to fail without the tap unlock).
+7. Reload, tap Start, and choose Don't Allow on the camera prompt: a "Camera not available" panel shows with a looped muted demo video (first `squat_demo.mp4`, then `full_squats.mp4` if the first file is absent) and "Try again". "Try again" returns to the Start screen.
+8. Block `cdn.jsdelivr.net` (airplane mode after loading the page, or a content blocker), reload, tap Start: the same failure panel shows.
+9. Back on the Start screen, tap Start and leave the phone untouched, out of frame, for 60 s: the page returns to the Start screen on its own and the camera light goes off. Squat in frame instead: the reset does not fire while reps change.
+10. In the browser network tab (or server log) confirm no POST request happens during the whole walk, and `db.sqlite3` row counts do not change.

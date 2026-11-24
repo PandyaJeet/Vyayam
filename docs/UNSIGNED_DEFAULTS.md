@@ -124,3 +124,23 @@ All unsigned. Hold and notify only: nothing here changes load or a stage number.
 - **S14:** coach squad line (`rtp-squad-line`), Inbox button, and athlete Today status line (`rtpAthleteStatus`). The athlete line shows the hold text when held, else "Status: X" and "Restrictions: ..." as the therapist stored them.
 - **Wording to review (mentor):** the hold notices above; squad line "Medical hold · Injury signal: yes · Checkpoint due"; inbox headings "Notices", "Checkpoints due", "Waiting for your decision", "On hold", "N result(s) to confirm"; athlete "Status: ..." / "Restrictions: ...".
 - **Holds are no longer silent** once `RTP_ENABLED` is on: S10 and S11 are built.
+
+## Exhibition pages (`EXHIBITION_MODE`) — wording for Pawan's mentor
+
+Every new athlete-facing string on `/exhibition/` and `/exhibition/squat/`. None is signed off. The strings live in `strength_app/v1_exhibition_views.py` (`SQUAT_TEXT`) and `strength_app/templates/strength_app/exhibition_index.html`. Captions show the existing camera coach lines word for word; they add no new text.
+
+| Where | String |
+|---|---|
+| Index, tagline | VYAYAM: a training plan that progresses on its own |
+| Index, link | Try the squat coach |
+| Index, QR box | Lead form QR goes here |
+| Squat, Start button | Start |
+| Squat, under Start | Tap to turn on the camera and the voice. |
+| Squat, placement hint (follows the SQUAT `cameraPosition` text in `v1_exercise_execute.html`) | Prop your phone at waist height, facing you. Step back so your whole body is on screen. |
+| Squat, spoken unlock line (also shown as a caption) | Ready. |
+| Squat, camera failure title | Camera not available |
+| Squat, camera failure body | We could not start the camera. Watch the demo below. |
+| Squat, retry button | Try again |
+| Squat, header | VYAYAM |
+
+Other defaults: idle reset 60 s (`IDLE_SECONDS`), camera-frame timeout 10 s (`NO_FRAME_SECONDS`). The squat page runs `full_squats` as 1 set of 5 reps with tempo 3-1-2-0 (nothing is saved, so these only set the on-screen targets).
