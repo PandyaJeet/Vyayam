@@ -144,7 +144,7 @@ Every new athlete-facing string on `/exhibition/` and `/exhibition/squat/`. None
 | Squat, demo line 2 (spoken and captioned on play 2) | One more time. |
 | Squat, demo replay button (failure panel only; the existing camera-page label) | Show demo |
 | Squat, header | VYAYAM |
-| Page titles (<title>) | `VYAYAM` (index) · `Full Squats — VYAYAM` (squat; the camera page's own title) · `VYAYAM demo games` (games) · `VYAYAM: How a plan changes` (progression) |
+| Page titles (<title>) | `VYAYAM` (index) · `Full Squats — VYAYAM` (squat; the camera page's own title) · `Mind Games Prototype` (games; Pawan's own file, served unchanged) · `VYAYAM: How a plan changes` (progression) |
 
 Other defaults: idle reset 60 s (`IDLE_SECONDS`), camera-frame timeout 10 s (`NO_FRAME_SECONDS`). The squat page runs `full_squats` as 1 set of 5 reps with tempo 3-1-2-0 (nothing is saved, so these only set the on-screen targets).
 
