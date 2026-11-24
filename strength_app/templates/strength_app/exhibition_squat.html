@@ -1,0 +1,167 @@
+{% extends 'strength_app/v1_exercise_execute.html' %}
+{% load static %}
+{% comment %}
+  Stall wrapper around the real camera page. Overrides only header / extra_head /
+  content / extra_scripts and calls {{ block.super }} in each, so the camera
+  template and the camera JS are not edited. Nothing is saved: the view passes
+  library_mode, and the early script below also blocks every non-GET fetch.
+{% endcomment %}
+
+{# No link out (the parent header links to the patient dashboard). #}
+{% block header %}
+<header class="exh-header">VYAYAM</header>
+{% endblock %}
+
+{# No bottom padding (the base adds pb-32 = 128 px, which made the phone page scroll). #}
+{% block body_class %}bg-surface text-on-surface min-h-screen{% endblock %}
+
+{% block extra_head %}
+{{ block.super }}
+<script src="{% static 'strength_app/js/exhibition_guard.js' %}"></script>
+<style>
+  .exh-header { padding: 8px 12px; text-align: center; font-weight: 800;
+    letter-spacing: .1em; color: #6bbf8a; font-size: 1rem; }
+  #exhStart, #exhFail { position: fixed; inset: 0; z-index: 9999; background: #0a0e27;
+    flex-direction: column; align-items: center; justify-content: center;
+    padding: 20px; text-align: center; box-sizing: border-box; }
+  #exhStart { display: flex; }
+  #exhFail { display: none; gap: 12px; overflow: auto; }
+  #exhGo { width: 100%; max-width: 420px; padding: 22px 12px; font-size: 2.4rem;
+    font-weight: 800; border: 0; border-radius: 22px; color: #fff; cursor: pointer;
+    background: linear-gradient(135deg,#0c6c3f,#6bbf8a); }
+  .exh-hint { font-size: 1.2rem; font-weight: 700; color: #fde68a; max-width: 420px;
+    margin: 14px 0 0; line-height: 1.35; }
+  #exhFail h2 { font-size: 1.6rem; margin: 0; }
+  #exhFail p { font-size: 1.1rem; margin: 0; }
+  #exhFailVideo { width: 100%; max-width: 420px; max-height: 32vh; border-radius: 14px;
+    background: #000; }
+  #exhDemoStage { position: fixed; inset: 0; z-index: 8500; background: #0a0e27;
+    display: none; align-items: center; justify-content: center; padding-top: 70px;
+    box-sizing: border-box; }
+  #exhDemo { max-width: 100%; max-height: 75vh; border-radius: 14px; background: #000; }
+  #exhFailReplay { padding: 8px 18px; font-size: 1rem; font-weight: 700;
+    border-radius: 12px; border: 1px solid rgba(255,255,255,.5); background: none;
+    color: #fff; margin-top: 6px; }
+  #exhRetry { padding: 16px 28px; font-size: 1.3rem; font-weight: 800; border-radius: 14px;
+    border: 2px solid #fff; background: none; color: #fff; }
+  #exhCaption { position: fixed; left: 0; right: 0; top: 0; z-index: 9000;
+    display: none; padding: 14px 16px; background: #000; color: #fff;
+    border-bottom: 3px solid #fde047; font-size: 1.7rem; font-weight: 800;
+    line-height: 1.25; text-align: center; }
+  @media (max-width: 860px) { #exhCaption { font-size: 1.3rem; padding: 8px 12px;
+    max-height: 4.2em; overflow: hidden; } }
+  @media (max-width: 860px) {
+    .ex-wrap { padding: 4px; }
+    .ex-wrap > .top-bar { display: none; }
+    .right-panel { order: 0; }
+    .right-panel > :not(#ghostStatusCard) { display: none !important; }
+    /* 375x667: header 40 + wrap padding 8 + grid gap 8 + camera + rep card ~135 = 667 - 39 slack. */
+    .main-layout { gap: 8px; }
+    .exh-header { padding: 8px 12px; }
+    /* 40px less video than before: the camera page's own Show demo button is visible again. */
+    .video-section { min-height: 0; height: calc(100dvh - 270px); }
+    #ghostStatusCard { padding: 10px 12px; }
+    #ghostStatusCard .card-label { margin-bottom: 4px; }
+    #repCountDisplay { line-height: 1.1; }
+    /* B7: cue wraps (2 lines) plus the partial-count line must not push past 667 px. */
+    #partialCount { display: none !important; }
+    #alignmentCue { max-height: 4.3em; overflow: hidden; } /* 2 lines (2 x 20.4) + 16 padding = 56.8 px; 4.3em = 58.5 px at .85rem */
+    #videoCanvas { height: 100%; max-height: 100%; object-fit: contain; }
+  }
+</style>
+<script>
+/* Early wrapper hooks. They must exist before the camera scripts run. */
+(function () {
+  var S = window.__exh = { started: false, failed: false, granted: false, grantedAt: 0,
+    lastCaptionAt: Date.now(), scriptFailed: false, pendingFail: null, fail: null };
+  function failNow(why) { if (S.fail) S.fail(why); else S.pendingFail = why; }
+
+  // 1. Nothing is stored: exhibition_guard.js (loaded above) blocks every non-GET fetch.
+
+  // 2. Captions: mirror every spoken line. No voice and no caption before the Start tap.
+  var hideTimer = null;
+  function caption(text) {
+    var el = document.getElementById('exhCaption');
+    if (!el) return;
+    el.textContent = text;
+    el.style.display = 'block';
+    S.lastCaptionAt = Date.now();
+    clearTimeout(hideTimer);
+    hideTimer = setTimeout(function () { el.style.display = 'none'; }, 7000);
+  }
+  S.caption = caption;
+  if ('speechSynthesis' in window) {
+    var synth = window.speechSynthesis;
+    var origSpeak = synth.speak.bind(synth);
+    synth.speak = function (utt) {
+      if (!S.started) {
+        // Pretend it finished so the voice code does not wait on it.
+        setTimeout(function () { if (utt && utt.onend) utt.onend(); }, 0);
+        return;
+      }
+      var t = utt && utt.text;
+      if (t && String(t).trim()) caption(String(t));
+      return origSpeak(utt);
+    };
+  }
+
+  // 3. Camera failures: permission refused, MediaPipe script missing, no frames.
+  var md = navigator.mediaDevices;
+  if (md && md.getUserMedia) {
+    var origGum = md.getUserMedia.bind(md);
+    md.getUserMedia = function (c) {
+      return origGum(c).then(function (s) {
+        S.granted = true; S.grantedAt = Date.now();
+        // Camera lost mid-session (cable, OS, another app): show the failure panel.
+        s.getVideoTracks().forEach(function (t) {
+          t.addEventListener('ended', function () { failNow('track ended'); });
+        });
+        return s;
+      }, function (e) {
+        if (e && (e.name === 'NotAllowedError' || e.name === 'SecurityError')) failNow('permission: ' + e.name);
+        throw e;
+      });
+    };
+  }
+  window.addEventListener('error', function (e) {
+    var t = e.target;
+    if (t && t.tagName === 'SCRIPT' && /mediapipe/i.test(t.src || '')) {
+      S.scriptFailed = true;
+      if (S.started) failNow('script: ' + t.src);
+    }
+  }, true);
+})();
+</script>
+{% endblock %}
+
+{% block content %}
+{{ block.super }}
+<div id="exhStart">
+  <button id="exhGo" type="button">{{ exh.start }}</button>
+  <p class="exh-hint" id="exhHint">{{ exh.hint }}</p>
+</div>
+{# Played twice after Start, camera still off. No autoplay, no loop. #}
+<div id="exhDemoStage">
+  <video id="exhDemo" muted playsinline preload="auto">
+    <source src="{% static 'strength_app/videos/full_squats.mp4' %}" type="video/mp4">
+  </video>
+</div>
+<div id="exhFail" role="alert">
+  <h2>{{ exh.fail_title }}</h2>
+  <p>{{ exh.fail_body }}</p>
+  <video id="exhFailVideo" muted loop playsinline autoplay preload="none">
+    <source src="{% static 'strength_app/videos/full_squats.mp4' %}" type="video/mp4">
+  </video>
+  <button id="exhFailReplay" type="button">{{ exh.demo_again }}</button>
+  <button id="exhRetry" type="button">{{ exh.retry }}</button>
+</div>
+<div id="exhCaption" aria-live="polite"></div>
+{% endblock %}
+
+{% block extra_scripts %}
+{{ block.super }}
+<script>
+  window.EXH_CFG = JSON.parse("{{ exh_cfg_json|escapejs }}");
+</script>
+<script src="{% static 'strength_app/js/exhibition_squat.js' %}"></script>
+{% endblock %}
