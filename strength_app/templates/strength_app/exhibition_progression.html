@@ -30,14 +30,14 @@
     padding: 8px 0 20px; border-bottom: 1px solid #334; margin-bottom: 16px; }
   .hero h2 { font-size: 56px; line-height: 1.1; margin: 10px 0 8px; max-width: 1100px; }
   .hero .sub { font-size: 26px; margin: 0 0 22px; opacity: .9; max-width: 1100px; }
-  .tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
-  .tile { border: 2px solid #334; border-radius: 14px; padding: 14px 18px; background: #11163a; }
+  .tiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+  .tile { border: 2px solid #334; border-radius: 14px; padding: 12px 14px; background: #11163a; }
   .tile .lab { font-size: 22px; font-weight: 700; color: #fbbf24; }
-  .tile .nums { font-size: 64px; font-weight: 800; line-height: 1.15; white-space: nowrap; }
+  .tile .nums { font-size: min(46px, 3.5vw); font-weight: 800; line-height: 1.15; white-space: nowrap; }
   .tile .was { opacity: .55; }
-  .tile .arrow { color: #fbbf24; padding: 0 8px; }
+  .tile .arrow { color: #fbbf24; padding: 0 4px; }
   .tile .now { color: #6bbf8a; }
-  .tile .small { font-size: 20px; opacity: .85; }
+  .tile .small { font-size: 18px; opacity: .85; }
   a.cue { display: inline-block; margin-top: 18px; font-size: 22px; color: #fde68a; text-decoration: none; }
 </style>
 </head>
