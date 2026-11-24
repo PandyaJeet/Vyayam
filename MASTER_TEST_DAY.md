@@ -683,3 +683,16 @@ Needs `EXHIBITION_MODE=True`. iPad, Safari, landscape and portrait, no login. No
 6. Play a Go / No-Go round, tap "Choose a game", then start Go / No-Go again: the table still shows the first round under "Your previous round". Leave the iPad alone for 60 s: the page reloads and the earlier round is gone.
 7. With no QR file in the build, the dashed QR box is not shown. With the file, the image shows.
 8. Phone 375 x 667, squat page: say a long cue so it wraps to 2 lines. The page does not scroll. The partial-rep line does not show.
+
+## Part U4 — Progression page, laptop walk (`/exhibition/progression/`)
+
+Needs `EXHIBITION_MODE=True`. Laptop, any browser, no login.
+
+1. With the flag off, `/exhibition/progression/` gives 404. With it on, `/exhibition/` shows a link "See how a plan changes". Click it.
+2. The page loads. The very first load after a server start can take about 10 seconds while the engine loads. Later loads take well under a second. The persona text says "returned to training" and "Training state set for this demo".
+3. "Last 6 weeks" table: 6 rows, 3 sessions each, Week 4 (the lighter week) has fewer sets. Tagged "Illustrative demo data". "Last 7 days": 3 rows, the last one yesterday, pain column "No pain logged".
+4. Symmetry table: lunge 50.0% then 63.6%, hop about 78% then 87.4% against 90%. The note says the hop result is not used by the plan.
+5. Two plans side by side, tagged as computed live. Lunge rows: weaker-side sets are sets + 2 in "4 weeks ago" and sets + 1 in "Now". In "What changed" the Why column says "Symmetry band significant" and "Progression blocked" for the first run, and "Symmetry band moderate" and "Ready to progress" for the second.
+6. No word like fracture, cleared, healing or diagnosis appears anywhere. The page has no script and no form.
+7. Reload 5 times: the numbers stay the same (the non-lunge rows can change with the day of the week). In the Django admin the counts of patients, sessions and strength profiles do not change. No patient named EXHDEMO_ exists.
+8. Open the page in two browser tabs at the same moment: both load, neither shows an error.

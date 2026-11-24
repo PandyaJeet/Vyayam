@@ -517,4 +517,5 @@ class TestG0ExhibitionJS(InlineJSAuditMixin, TestCase):
         self.audit_page(reverse('exhibition_index'), 'exhibition index')
         self.audit_page(reverse('exhibition_squat'), 'exhibition squat')
         self.audit_page(reverse('exhibition_games'), 'exhibition games')
+        self.audit_page(reverse('exhibition_progression'), 'exhibition progression')
         self.assert_all_js_clean(min_scripts=5)

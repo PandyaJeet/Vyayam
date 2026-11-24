@@ -171,3 +171,51 @@ Strings live in `strength_app/v1_exhibition_views.py` (`GAMES_TEXT`), shown by `
 | Pass Window Done screen | The game's own sentence "Compare only with your own earlier sessions at the same level." is cut by the page; the rest of the game's text stays |
 
 Defaults: Go / No-Go round 45 s; stimulus time starts at 1200 ms (ceiling), drops 100 ms after every 3 correct in a row, floor 600 ms (at most 1.67 screen changes a second, limit 3); taps under 150 ms are left out of the mean response time; Pass Window round: no new scenario starts after 50 s (a scenario is at most 8 s plus a 2 s reveal, so the round ends by 60 s); level 2 scenarios repeat. Idle reset 60 s.
+
+### `/exhibition/progression/` (laptop)
+
+Strings live in `strength_app/v1_exhibition_progression.py` (`TEXT`). None is signed off. The page runs the real engine twice per request on a demo history, inside a database transaction that is rolled back, so nothing is stored. The history is labelled "Illustrative demo data" and the two plans are labelled as computed live by the engine. The page shows nothing from the visitor.
+
+**For the mentor:**
+- The persona is a demo athlete who "returned to training". The page says nothing about why they stopped. Any fracture or injury context for the stall (spoken, not on the page) needs your wording first.
+- The persona text says "Training state set for this demo". It means the phase, week count and date of the last lighter week are set by hand so the rules do not call a deload. The engine would otherwise call one after about 4 weeks of loading.
+- The hop result (shown against the benchmark of 90 percent) is shown only. The plan uses the lunge result. The page says so.
+- The extra-set bands are the engine's own: 85 and above none, 70 to 84 mild, 55 to 69 moderate, under 55 significant. Moderate adds 1 set on the weaker side. Significant adds 2 and blocks progression of that pattern.
+- Pain column: shows the pain events logged (none in the demo data). Nothing is claimed about the cause of any change.
+
+| Key in `TEXT` | String |
+|---|---|
+| title | How a plan changes |
+| persona | Demo athlete, 24, returned to training. Trained, not new to lifting. One leg is weaker (the left), the same leg in both tests. Training state set for this demo: the phase, the week count and the date of the last lighter week are set by hand so the rules do not call a deload. |
+| history_label | Illustrative demo data |
+| history_h | Last 6 weeks |
+| week_cols | Week · Sessions · Sets · Note |
+| light_note | Lighter week |
+| days_h | Last 7 days |
+| day_cols | Day · Exercises · Rest · Pain |
+| pain_none | No pain logged |
+| pain_some | Pain logged |
+| sym_h | Symmetry tests (weaker side as % of stronger side) |
+| sym_cols | Test · 4 weeks ago · Now · Benchmark |
+| lunge | Lunge (used by the engine) |
+| hop | Hop distance (shown here only) |
+| hop_note | The hop result is not used by the plan. The lunge result is. |
+| bands | Bands used by the plan: 85 and above none, 70 to 84 mild, 55 to 69 moderate, under 55 significant. |
+| proto_h | Two runs of the same rules on the demo history |
+| proto_label | Computed live by the engine on this request. Not a replay of the earlier plan. |
+| run_a | 4 weeks ago |
+| run_b | Now |
+| diff_h | What changed |
+| diff_cols | Exercise · Sets · Reps · Level · Weaker-side sets · Why |
+| no_ex | Not in this run |
+| same_side | same |
+| status_other | The engine returned this status instead of a plan: |
+| footer | Demo data and demo plans. Nothing is saved. The plans follow the same rules for every user. |
+| back | Back |
+| why_sym | Symmetry band {rule}: {extra} extra set(s) on the weaker side |
+| why_blocked | Progression blocked while the band is significant |
+| why_adv | Ready to progress: level {level} |
+| why_deload | Deload |
+| why_none | No rule changed this row |
+
+Link text on `/exhibition/`: See how a plan changes. Page title: VYAYAM: How a plan changes. Week labels: "Week N", "Week 6 (latest)". Generated labels: "4 weeks ago: ..." and "Now: ..." prefixes in the Why column. Exercise names are the engine's own names.

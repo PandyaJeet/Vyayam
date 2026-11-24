@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VYAYAM: {{ t.title }}</title>
+<style>
+  html, body { margin: 0; background: #0a0e27; color: #fff;
+    font-family: system-ui, -apple-system, sans-serif; }
+  main { max-width: 1180px; margin: 0 auto; padding: 24px 28px 48px; }
+  h1 { font-size: 1.1rem; letter-spacing: .12em; color: #6bbf8a; margin: 0 0 6px; }
+  h2 { font-size: 1.7rem; margin: 0 0 10px; }
+  h3 { font-size: 1.15rem; margin: 22px 0 8px; }
+  p { font-size: 1.05rem; line-height: 1.4; margin: 6px 0; max-width: 900px; }
+  .tag { display: inline-block; font-size: .85rem; font-weight: 700; padding: 3px 10px;
+    border-radius: 999px; border: 1px solid #fbbf24; color: #fbbf24; margin: 4px 0; }
+  .tag.live { border-color: #6bbf8a; color: #6bbf8a; }
+  .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+  table { border-collapse: collapse; width: 100%; font-size: 1rem; margin: 6px 0 4px; }
+  th, td { text-align: left; padding: 7px 10px; border-bottom: 1px solid #334; vertical-align: top; }
+  th { opacity: .85; font-weight: 600; }
+  .dot { display: inline-block; width: 12px; height: 12px; border-radius: 50%;
+    background: #22c55e; margin-right: 6px; vertical-align: middle; }
+  .dot.some { background: #f59e0b; }
+  .note { opacity: .8; font-size: .95rem; }
+  .why { margin: 0; padding-left: 16px; }
+  a.back { color: #fde68a; font-size: 1.1rem; }
+  .status { border: 2px solid #f59e0b; border-radius: 10px; padding: 8px 12px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>VYAYAM</h1>
+  <h2>{{ t.title }}</h2>
+  <p>{{ t.persona }}</p>
+
+  <h3>{{ t.history_h }}</h3>
+  <span class="tag">{{ t.history_label }}</span>
+  <table>
+    <tr>{% for c in t.week_cols %}<th>{{ c }}</th>{% endfor %}</tr>
+    {% for w in weeks %}
+    <tr><td>{{ w.label }}</td><td>{{ w.sessions }}</td><td>{{ w.sets }}</td><td>{{ w.note }}</td></tr>
+    {% endfor %}
+  </table>
+
+  <h3>{{ t.days_h }}</h3>
+  <span class="tag">{{ t.history_label }}</span>
+  <table>
+    <tr>{% for c in t.day_cols %}<th>{{ c }}</th>{% endfor %}</tr>
+    {% for d in days %}
+    <tr>
+      <td>{{ d.day }}</td>
+      <td>{% for e in d.exercises %}{{ e }}{% if not forloop.last %}; {% endif %}{% endfor %}</td>
+      <td>{{ d.rest }} s</td>
+      <td><span class="dot{% if d.pain_n %} some{% endif %}"></span>{{ d.pain }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+
+  <h3>{{ t.sym_h }}</h3>
+  <span class="tag">{{ t.history_label }}</span>
+  <table>
+    <tr>{% for c in t.sym_cols %}<th>{{ c }}</th>{% endfor %}</tr>
+    <tr><td>{{ t.lunge }}</td><td>{{ sym.lunge.0 }}%</td><td>{{ sym.lunge.1 }}%</td><td></td></tr>
+    <tr><td>{{ t.hop }}</td><td>{{ sym.hop.0 }}%</td><td>{{ sym.hop.1 }}%</td><td>{{ hop_bench }}%</td></tr>
+  </table>
+  <p class="note">{{ t.hop_note }} {{ t.bands }}</p>
+
+  <h3>{{ t.proto_h }}</h3>
+  <span class="tag live">{{ t.proto_label }}</span>
+  <div class="cols">
+    <div>
+      <h3>{{ t.run_a }}</h3>
+      {% if run_a.status != 'ready' %}<p class="status">{{ t.status_other }} {{ run_a.status }}{% if run_a.stop_reason %}: {{ run_a.stop_reason }}{% endif %}</p>{% endif %}
+      <table>
+        <tr><th>{{ t.diff_cols.0 }}</th><th>{{ t.diff_cols.1 }}</th><th>{{ t.diff_cols.2 }}</th><th>{{ t.diff_cols.3 }}</th><th>{{ t.diff_cols.4 }}</th></tr>
+        {% for r in run_a.rows %}
+        <tr><td>{{ r.name }}</td><td>{{ r.sets }}</td><td>{% if r.hold %}{{ r.hold }} s hold{% else %}{{ r.reps }}{% endif %}</td><td>{{ r.level }}</td><td>{% if r.sets_weak %}{{ r.sets_weak }}{% else %}{{ t.same_side }}{% endif %}</td></tr>
+        {% endfor %}
+      </table>
+    </div>
+    <div>
+      <h3>{{ t.run_b }}</h3>
+      {% if run_b.status != 'ready' %}<p class="status">{{ t.status_other }} {{ run_b.status }}{% if run_b.stop_reason %}: {{ run_b.stop_reason }}{% endif %}</p>{% endif %}
+      <table>
+        <tr><th>{{ t.diff_cols.0 }}</th><th>{{ t.diff_cols.1 }}</th><th>{{ t.diff_cols.2 }}</th><th>{{ t.diff_cols.3 }}</th><th>{{ t.diff_cols.4 }}</th></tr>
+        {% for r in run_b.rows %}
+        <tr><td>{{ r.name }}</td><td>{{ r.sets }}</td><td>{% if r.hold %}{{ r.hold }} s hold{% else %}{{ r.reps }}{% endif %}</td><td>{{ r.level }}</td><td>{% if r.sets_weak %}{{ r.sets_weak }}{% else %}{{ t.same_side }}{% endif %}</td></tr>
+        {% endfor %}
+      </table>
+    </div>
+  </div>
+
+  <h3>{{ t.diff_h }}</h3>
+  <table>
+    <tr>{% for c in t.diff_cols %}<th>{{ c }}</th>{% endfor %}</tr>
+    {% for d in diff %}
+    <tr>
+      <td>{% if d.a %}{{ d.a.name }}{% else %}{{ t.no_ex }}{% endif %} &rarr; {% if d.b %}{{ d.b.name }}{% else %}{{ t.no_ex }}{% endif %}</td>
+      <td>{{ d.a.sets|default:"-" }} &rarr; {{ d.b.sets|default:"-" }}</td>
+      <td>{{ d.a.reps|default:"-" }} &rarr; {{ d.b.reps|default:"-" }}</td>
+      <td>{{ d.a.level|default:"-" }} &rarr; {{ d.b.level|default:"-" }}</td>
+      <td>{% if d.a.sets_weak %}{{ d.a.sets_weak }}{% else %}{{ t.same_side }}{% endif %} &rarr; {% if d.b.sets_weak %}{{ d.b.sets_weak }}{% else %}{{ t.same_side }}{% endif %}</td>
+      <td><ul class="why">{% for w in d.why %}<li>{{ w }}</li>{% endfor %}</ul></td>
+    </tr>
+    {% endfor %}
+  </table>
+
+  <p class="note">{{ t.footer }}</p>
+  <p><a class="back" href="{% url 'exhibition_index' %}">{{ t.back }}</a></p>
+</main>
+</body>
+</html>
