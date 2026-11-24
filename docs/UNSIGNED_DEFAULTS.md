@@ -144,3 +144,26 @@ Every new athlete-facing string on `/exhibition/` and `/exhibition/squat/`. None
 | Squat, header | VYAYAM |
 
 Other defaults: idle reset 60 s (`IDLE_SECONDS`), camera-frame timeout 10 s (`NO_FRAME_SECONDS`). The squat page runs `full_squats` as 1 set of 5 reps with tempo 3-1-2-0 (nothing is saved, so these only set the on-screen targets).
+
+### `/exhibition/games/` (iPad)
+
+Strings live in `strength_app/v1_exhibition_views.py` (`GAMES_TEXT`), shown by `exhibition_games.html` and `exhibition_games.js`. None is signed off. Pass Window keeps its own existing in-game text ("Demo scenario", "Demo scenarios", "Best pass.", and so on, unchanged in `pass_window.js`). The games are described as demo games, not a test of reaction time, ability or readiness.
+
+| Where | String |
+|---|---|
+| Index, link | Play the demo games |
+| Games, title | Demo games |
+| Games, subtitle | Tap a game to start. |
+| Pass Window, choice | Pass Window / Pick the best pass. About 60 seconds. |
+| Pass Window, header | Pass Window · Demo scenarios |
+| Go / No-Go, choice | Go / No-Go Pass / Tap teammates. Leave opponents. 45 seconds. |
+| Go / No-Go, rules | Tap the blue circles. They are teammates. Do not tap the orange triangles. They are opponents. It gets a little faster when you get 3 right in a row. |
+| Go / No-Go, legend | Teammate: tap · Opponent: do not tap |
+| Go / No-Go, play bar | Blue circle: tap. Orange triangle: do not tap. |
+| Go / No-Go, buttons and states | Start · Get ready · Round over · Play again · Choose a game |
+| Go / No-Go, score table | This round · Your previous round · Accuracy · Mean response time · No earlier round yet · No taps counted · - |
+| Go / No-Go, score note | Compared only with your own previous round on this page. |
+| Every games screen | Demo games. Not a test of reaction time, ability or readiness. Nothing is saved. |
+| QR box and caption | QR code goes here · Scan to open this page, or type: · QR code for this page |
+
+Defaults: Go / No-Go round 45 s; stimulus time starts at 1200 ms (ceiling), drops 100 ms after every 3 correct in a row, floor 600 ms (at most 1.67 screen changes a second, limit 3); taps under 150 ms are left out of the mean response time; Pass Window round: no new scenario starts after 50 s (a scenario is at most 8 s plus a 2 s reveal, so the round ends by 60 s); level 2 scenarios repeat. Idle reset 60 s.

@@ -12,6 +12,8 @@ from django.shortcuts import render
 
 from .cv_targets import get_cv_config
 from .exercise_content import EXERCISE_CONTENT
+from .mind_lab import pass_window as pw
+from .mind_lab.pass_window_data import game_config
 
 SQUAT_KEY = 'full_squats'
 
@@ -28,6 +30,47 @@ SQUAT_TEXT = {
     'fail_body': 'We could not start the camera. Watch the demo below.',
     'retry': 'Try again',
 }
+# Games page wording. Also unsigned: see docs/UNSIGNED_DEFAULTS.md.
+GAMES_TEXT = {
+    'title': 'Demo games',
+    'sub': 'Tap a game to start.',
+    'pw_title': 'Pass Window',
+    'pw_sub': 'Pick the best pass. About 60 seconds.',
+    'pw_demo': 'Demo scenarios',
+    'gn_title': 'Go / No-Go Pass',
+    'gn_sub': 'Tap teammates. Leave opponents. 45 seconds.',
+    'gn_rules': 'Tap the blue circles. They are teammates. '
+                'Do not tap the orange triangles. They are opponents. '
+                'It gets a little faster when you get 3 right in a row.',
+    'gn_go': 'Teammate: tap',
+    'gn_nogo': 'Opponent: do not tap',
+    'gn_legend': 'Blue circle: tap. Orange triangle: do not tap.',
+    'gn_done': 'Round over',
+    'get_ready': 'Get ready',
+    'start': 'Start',
+    'again': 'Play again',
+    'back': 'Choose a game',
+    'this_round': 'This round',
+    'prev_round': 'Your previous round',
+    'accuracy': 'Accuracy',
+    'mean_rt': 'Mean response time',
+    'no_prev': 'No earlier round yet',
+    'none': '-',
+    'no_rt': 'No taps counted',
+    'own_only': 'Compared only with your own previous round on this page.',
+    'demo_note': 'Demo games. Not a test of reaction time, ability or readiness. '
+                 'Nothing is saved.',
+    'qr_placeholder': 'QR code goes here',
+    'qr_label': 'Scan to open this page, or type:',
+    'qr_alt': 'QR code for this page',
+}
+GAMES_QR_STATIC = 'strength_app/exhibition/games_qr.png'
+# Pass Window walk-up: the round is cut at the first scenario that starts after
+# PW_ROUND_START_CUTOFF_S. A scenario takes at most 8 s (4000 ms / 0.5x at level 2)
+# plus the 2 s reveal, so the whole round never runs past 60 s.
+PW_ROUND_START_CUTOFF_S = 50
+PW_LEVEL = 2
+PW_ORDER_LEN = 40
 IDLE_SECONDS = 60
 NO_FRAME_SECONDS = 10
 
@@ -78,4 +121,26 @@ def exhibition_squat(request):
         'library_return_url': '/exhibition/',
         'exh': SQUAT_TEXT,
         'exh_cfg_json': json.dumps(wrapper_cfg),
+    })
+
+
+def exhibition_games(request):
+    """Pass Window (walk-up, 60 s) and Go / No-Go Pass. Own view: it must not
+    use the Mind Lab visitor view, which checks the other flag. Stores nothing."""
+    _require_flag()
+    cfg = game_config(PW_LEVEL, visitor=True)
+    cfg['visitor'] = True
+    cfg['save_url'] = None
+    cfg['max_s'] = PW_ROUND_START_CUTOFF_S
+    cfg['order'] = pw.trial_order(cfg['scenarios'], PW_LEVEL, PW_ORDER_LEN)
+    games_cfg = {
+        'text': GAMES_TEXT,
+        'pass_window': cfg,
+        'idle_seconds': IDLE_SECONDS,
+        'qr_src': settings.STATIC_URL + GAMES_QR_STATIC,
+    }
+    return render(request, 'strength_app/exhibition_games.html', {
+        'g': GAMES_TEXT,
+        'page_url': request.build_absolute_uri(request.path),
+        'games_cfg_json': json.dumps(games_cfg),
     })

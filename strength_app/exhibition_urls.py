@@ -9,5 +9,6 @@ from . import v1_exhibition_views as views
 
 urlpatterns = [
     path('', views.exhibition_index, name='exhibition_index'),
+    path('games/', views.exhibition_games, name='exhibition_games'),
     path('squat/', views.exhibition_squat, name='exhibition_squat'),
 ]

@@ -516,4 +516,5 @@ class TestG0ExhibitionJS(InlineJSAuditMixin, TestCase):
     def test_g0_exhibition_pages_inline_js_parse(self):
         self.audit_page(reverse('exhibition_index'), 'exhibition index')
         self.audit_page(reverse('exhibition_squat'), 'exhibition squat')
-        self.assert_all_js_clean(min_scripts=4)
+        self.audit_page(reverse('exhibition_games'), 'exhibition games')
+        self.assert_all_js_clean(min_scripts=5)

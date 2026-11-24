@@ -21,6 +21,11 @@ class ExhibitionFlagOffTests(TestCase):
     def test_urls_404(self):
         self.assertEqual(self.client.get('/exhibition/').status_code, 404)
         self.assertEqual(self.client.get('/exhibition/squat/').status_code, 404)
+        self.assertEqual(self.client.get('/exhibition/games/').status_code, 404)
+
+    @override_settings(MIND_LAB_ENABLED=True)
+    def test_games_404_even_when_mind_lab_flag_is_on(self):
+        self.assertEqual(self.client.get('/exhibition/games/').status_code, 404)
 
     def test_default_is_off(self):
         from django.conf import settings
@@ -115,3 +120,60 @@ class ExhibitionFlagOnTests(TestCase):
     def test_squat_hint_text_present(self):
         self.assertContains(self.client.get('/exhibition/squat/'),
                             'Prop your phone at waist height')
+
+
+STATIC_JS = Path(__file__).resolve().parents[1] / 'static' / 'strength_app' / 'js'
+
+
+@override_settings(EXHIBITION_MODE=True, MIND_LAB_ENABLED=False)
+class ExhibitionGamesTests(TestCase):
+    def test_anonymous_200_without_the_mind_lab_flag(self):
+        r = self.client.get('/exhibition/games/')
+        self.assertEqual(r.status_code, 200)
+        self.assertNotIn('login', (r.get('Location') or '').lower())
+
+    def test_visit_stores_nothing(self):
+        before = _row_counts()
+        self.client.get('/exhibition/games/')
+        self.assertEqual(before, _row_counts())
+
+    def test_page_has_both_games_and_no_save_url(self):
+        import json
+        r = self.client.get('/exhibition/games/')
+        html = r.content.decode()
+        for needle in ('id="choosePw"', 'id="chooseGn"', 'Pass Window', 'Go / No-Go Pass',
+                       'Demo scenarios', 'Not a test of reaction time, ability or readiness',
+                       'touch-action: manipulation', '100dvh', 'exhibition_guard.'):
+            self.assertIn(needle, html)
+        self.assertNotIn('{% url', html)
+        for bad in ('save/', 'v1_save', 'feedback', 'sendBeacon', 'XMLHttpRequest', '<form'):
+            self.assertNotIn(bad, html)
+        cfg = r.context['games_cfg_json']
+        pw_cfg = json.loads(cfg)['pass_window']
+        self.assertIsNone(pw_cfg['save_url'])
+        self.assertEqual(pw_cfg['max_s'], 50)
+        self.assertGreater(len(pw_cfg['order']), 8)   # scenarios repeat until time is up
+        # Own view, not the Mind Lab visitor view.
+        names = [t.name for t in r.templates]
+        self.assertIn('strength_app/exhibition_games.html', names)
+        self.assertNotIn('strength_app/mind_lab_pass_window.html', names)
+
+    def test_games_view_does_not_import_the_mind_lab_visitor_view(self):
+        src = (Path(__file__).resolve().parents[1] / 'v1_exhibition_views.py').read_text()
+        self.assertNotIn('visitor_views', src)
+        self.assertNotIn('MIND_LAB_ENABLED', src)
+
+    def test_index_links_to_games(self):
+        self.assertContains(self.client.get('/exhibition/'), reverse('exhibition_games'))
+
+    def test_new_js_has_no_network_sound_or_fullscreen(self):
+        for name in ('exhibition_games.js', 'exhibition_gonogo.js'):
+            src = (STATIC_JS / name).read_text()
+            for bad in ('XMLHttpRequest', 'sendBeacon', 'AudioContext', 'new Audio',
+                        'speechSynthesis', 'requestFullscreen', 'localStorage',
+                        'sessionStorage', 'document.cookie'):
+                self.assertNotIn(bad, src, name)
+        games = (STATIC_JS / 'exhibition_games.js').read_text()
+        self.assertNotIn('fetch(', games)
+        self.assertIn('pointerdown', games)
+        self.assertIn('performance.now()', games)

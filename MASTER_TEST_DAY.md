@@ -656,3 +656,19 @@ Needs `EXHIBITION_MODE=True` and HTTPS (or `localhost`): camera access needs a s
 11. Squat fixes (2026-11 review): while the camera runs, unplug or disable it (iPad: revoke camera in Settings, or cover and switch app so the track ends): the "Camera not available" panel shows within a few seconds, not a frozen frame.
 12. Stand in frame but do not squat for 50 s, move to a different phase (go down, then up) at 50 s: the 60 s clock restarts on the phase change, so no reload at 60 s.
 13. Phone layout: on a 375 x 667 phone (or browser device mode) there is no bottom gap and no scroll after the camera starts. Measure: header about 40 px, camera box 100dvh minus 230 px, rep card about 135 px.
+
+## Part U2 — Exhibition games page, iPad walk (`/exhibition/games/`)
+
+Needs `EXHIBITION_MODE=True`. iPad, Safari, landscape and portrait, no login. Nothing is saved. Optional: put a QR image at `strength_app/static/strength_app/exhibition/games_qr.png` and run `collectstatic`.
+
+1. With the flag off, `/exhibition/games/` gives 404. With it on, `/exhibition/` shows a large "Play the demo games" link. Tap it.
+2. The choice screen fills the iPad screen with no scrolling and no bounce: two large buttons (Pass Window, Go / No-Go Pass), the demo note, a QR box (dashed "QR code goes here" until the image exists, the image after) and the page URL in large text.
+3. Tap Pass Window once. The round starts at once (no rules screen). Tap teammate squares. Each scenario shows the labels "Demo scenario". Scenarios repeat. Let the round run to its end: it must end by 60 s at most.
+4. The "Done" text shows, with "Play again" and "Choose a game". Tap Play again: a new round starts. Tap Choose a game: back to the choice screen.
+5. Tap Go / No-Go Pass. See the legend (blue circle = tap, orange triangle = do not tap) and Start. Tap Start. After a short "Get ready" the shapes appear one after another in the middle. Tap blue circles; do not tap orange triangles. The whole screen never flashes and the shape never changes more than about twice a second.
+6. After 3 right in a row the shapes stay up a little less time. Make an error: the speed stays the same. Keep going: it never gets faster than 0.6 s per shape.
+7. At 45 s the score screen shows accuracy and mean response time. Tap Play again, Start, play a second round: the table now shows the first round beside the second. Tap fast on every blue circle (under 0.15 s is hard): the mean must not count those. Tap an orange triangle: it must not count in the mean.
+8. Tap Choose a game, then play Pass Window, then return: the Go / No-Go comparison is still there. Leave the iPad untouched for 60 s on any screen: the page reloads to the choice screen and the earlier round is gone (next visitor starts fresh).
+9. Taps register on touch down (no 300 ms wait) and double-tap does not zoom the page. Rotate the iPad: the layout fits (100dvh), the Safari address bar changing size does not cut anything off.
+10. No sound plays anywhere. In the network tab or server log no POST happens during the walk, and `db.sqlite3` row counts do not change.
+
