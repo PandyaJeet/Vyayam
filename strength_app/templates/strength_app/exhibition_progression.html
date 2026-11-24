@@ -26,10 +26,37 @@
   .why { margin: 0; padding-left: 16px; }
   a.back { color: #fde68a; font-size: 1.1rem; }
   .status { border: 2px solid #f59e0b; border-radius: 10px; padding: 8px 12px; }
+  .hero { min-height: 520px; display: flex; flex-direction: column; justify-content: center;
+    padding: 8px 0 20px; border-bottom: 1px solid #334; margin-bottom: 16px; }
+  .hero h2 { font-size: 56px; line-height: 1.1; margin: 10px 0 8px; max-width: 1100px; }
+  .hero .sub { font-size: 26px; margin: 0 0 22px; opacity: .9; max-width: 1100px; }
+  .tiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+  .tile { border: 2px solid #334; border-radius: 14px; padding: 12px 14px; background: #11163a; }
+  .tile .lab { font-size: 22px; font-weight: 700; color: #fbbf24; }
+  .tile .nums { font-size: min(46px, 3.5vw); font-weight: 800; line-height: 1.15; white-space: nowrap; }
+  .tile .was { opacity: .55; }
+  .tile .arrow { color: #fbbf24; padding: 0 4px; }
+  .tile .now { color: #6bbf8a; }
+  .tile .small { font-size: 18px; opacity: .85; }
+  a.cue { display: inline-block; margin-top: 18px; font-size: 22px; color: #fde68a; text-decoration: none; }
 </style>
 </head>
 <body>
 <main>
+  <section class="hero">
+    <div><span class="tag">{{ t.history_label }}</span></div>
+    <h2>{{ t.hero_head }}</h2>
+    <p class="sub">{{ t.hero_sub }}</p>
+    <div class="tiles">
+      <div class="tile"><div class="lab">{{ t.hero_balance }}</div>
+        <div class="nums"><span class="was">{{ hero.balance.0 }}</span><span class="arrow">&rarr;</span><span class="now">{{ hero.balance.1 }}</span></div></div>
+      <div class="tile"><div class="lab">{{ t.hero_extra }}</div>
+        <div class="nums"><span class="was">{{ hero.extra.0 }}</span><span class="arrow">&rarr;</span><span class="now">{{ hero.extra.1 }}</span></div></div>
+      <div class="tile"><div class="lab">{{ t.hero_level }}</div>
+        <div class="nums"><span class="was">{{ hero.level.0 }}</span><span class="arrow">&rarr;</span><span class="now">{{ hero.level.1 }}</span> <span class="small">{{ t.hero_level_note }}</span></div></div>
+    </div>
+    <div><a class="cue" href="#protocol">{{ t.hero_cue }} &darr;</a></div>
+  </section>
   <h1>VYAYAM</h1>
   <h2>{{ t.title }}</h2>
   <p>{{ t.persona }}</p>
@@ -66,7 +93,7 @@
   </table>
   <p class="note">{{ t.hop_note }} {{ t.bands }}</p>
 
-  <h3>{{ t.proto_h }}</h3>
+  <h3 id="protocol">{{ t.proto_h }}</h3>
   <span class="tag live">{{ t.proto_label }}</span>
   <div class="cols">
     <div>
