@@ -91,7 +91,7 @@ class ExhibitionFlagOnTests(TestCase):
         self.assertIn('const REPORT_PAIN_URL = ""', html)
         # Wrapper parts.
         for needle in ('id="exhGo"', 'id="exhCaption"', 'id="exhFail"',
-                       'squat_demo.mp4', 'videos/full_squats', 'EXH_CFG = JSON.parse("'):
+                       'videos/full_squats', 'EXH_CFG = JSON.parse("'):
             self.assertIn(needle, html)
         # Wrapper-level guard against any non-GET request.
         self.assertIn('exhibition_guard.js', html)
@@ -116,6 +116,37 @@ class ExhibitionFlagOnTests(TestCase):
         self.assertEqual(resolve('/exhibition/mind-lab/').url_name, 'mind_lab_visitor')
         self.assertEqual(resolve('/exhibition/mind-lab/pass-window/').url_name,
                          'pass_window_visitor')
+
+    def test_demo_video_is_before_start_and_outside_failure_panel(self):
+        html = self.client.get('/exhibition/squat/').content.decode()
+        start = html[html.index('id="exhStart"'):html.index('id="exhFail"')]
+        self.assertIn('id="exhDemo"', start)
+        self.assertIn('videos/full_squats', start)
+        self.assertRegex(start, r'<video id="exhDemo" muted loop playsinline autoplay')
+        self.assertNotIn('exhFailVideo', start)
+        fail = html[html.index('id="exhFail"'):html.index('id="exhCaption"')]
+        self.assertNotIn('id="exhDemo"', fail)
+        self.assertIn('id="exhFailVideo"', fail)   # still there on camera failure
+        self.assertIn('id="exhRetry"', fail)
+
+    def test_replay_controls_present_and_not_hidden_by_wrapper_css(self):
+        html = self.client.get('/exhibition/squat/').content.decode()
+        for bid in ('exhReplay', 'exhFailReplay'):
+            self.assertRegex(html, r'<button id="%s"[^>]*>Show demo</button>' % bid)
+        # The camera page's own Show demo buttons stay, and no wrapper rule hides them.
+        self.assertIn('show-demo-label', html)
+        css = html[html.index('<style>'):html.index('</style>')]
+        self.assertNotIn('ghostStatusCard > button', css)
+        self.assertNotRegex(css, r'show-demo[^{]*\{[^}]*display\s*:\s*none')
+        self.assertNotRegex(css, r'#exh(Fail)?Replay[^{]*\{[^}]*display\s*:\s*none')
+
+    def test_squat_page_runs_video_mode_and_uses_only_full_squats_clip(self):
+        from strength_app.cv_targets import get_video_mode_exercises
+        self.assertIn('full_squats', get_video_mode_exercises())
+        html = self.client.get('/exhibition/squat/').content.decode()
+        self.assertNotIn('squat_demo', html)
+        self.assertIn('video_mode_exercises', (Path(__file__).resolve().parents[1]
+                      / 'templates' / 'strength_app' / 'v1_exercise_execute.html').read_text())
 
     def test_squat_hint_text_present(self):
         self.assertContains(self.client.get('/exhibition/squat/'),

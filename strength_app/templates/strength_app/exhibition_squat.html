@@ -26,7 +26,7 @@
     padding: 20px; text-align: center; box-sizing: border-box; }
   #exhStart { display: flex; }
   #exhFail { display: none; gap: 12px; overflow: auto; }
-  #exhGo { width: 100%; max-width: 420px; padding: 34px 12px; font-size: 2.4rem;
+  #exhGo { width: 100%; max-width: 420px; padding: 22px 12px; font-size: 2.4rem;
     font-weight: 800; border: 0; border-radius: 22px; color: #fff; cursor: pointer;
     background: linear-gradient(135deg,#0c6c3f,#6bbf8a); }
   .exh-sub { font-size: 1.1rem; margin: 16px 0 6px; }
@@ -34,14 +34,21 @@
     margin: 14px 0 0; line-height: 1.35; }
   #exhFail h2 { font-size: 1.6rem; margin: 0; }
   #exhFail p { font-size: 1.1rem; margin: 0; }
-  #exhFailVideo { width: 100%; max-width: 420px; max-height: 45vh; border-radius: 14px;
+  #exhFailVideo { width: 100%; max-width: 420px; max-height: 32vh; border-radius: 14px;
     background: #000; }
+  #exhDemo { max-width: 100%; max-height: 30vh; border-radius: 14px; background: #000;
+    margin-bottom: 8px; }
+  #exhReplay, #exhFailReplay { padding: 8px 18px; font-size: 1rem; font-weight: 700;
+    border-radius: 12px; border: 1px solid rgba(255,255,255,.5); background: none;
+    color: #fff; margin-top: 6px; }
   #exhRetry { padding: 16px 28px; font-size: 1.3rem; font-weight: 800; border-radius: 14px;
     border: 2px solid #fff; background: none; color: #fff; }
   #exhCaption { position: fixed; left: 0; right: 0; top: 0; z-index: 9000;
     display: none; padding: 14px 16px; background: #000; color: #fff;
     border-bottom: 3px solid #fde047; font-size: 1.7rem; font-weight: 800;
     line-height: 1.25; text-align: center; }
+  @media (max-width: 860px) { #exhCaption { font-size: 1.3rem; padding: 8px 12px;
+    max-height: 4.2em; overflow: hidden; } }
   @media (max-width: 860px) {
     .ex-wrap { padding: 4px; }
     .ex-wrap > .top-bar { display: none; }
@@ -50,11 +57,11 @@
     /* 375x667: header 40 + wrap padding 8 + grid gap 8 + camera + rep card ~135 = 667 - 39 slack. */
     .main-layout { gap: 8px; }
     .exh-header { padding: 8px 12px; }
-    .video-section { min-height: 0; height: calc(100dvh - 230px); }
+    /* 40px less video than before: the camera page's own Show demo button is visible again. */
+    .video-section { min-height: 0; height: calc(100dvh - 270px); }
     #ghostStatusCard { padding: 10px 12px; }
     #ghostStatusCard .card-label { margin-bottom: 4px; }
     #repCountDisplay { line-height: 1.1; }
-    #ghostStatusCard > button { display: none !important; } /* Show demo */
     /* B7: cue wraps (2 lines) plus the partial-count line must not push past 667 px. */
     #partialCount { display: none !important; }
     #alignmentCue { max-height: 4.3em; overflow: hidden; } /* 2 lines (2 x 20.4) + 16 padding = 56.8 px; 4.3em = 58.5 px at .85rem */
@@ -128,6 +135,10 @@
 {% block content %}
 {{ block.super }}
 <div id="exhStart">
+  <video id="exhDemo" muted loop playsinline autoplay preload="auto">
+    <source src="{% static 'strength_app/videos/full_squats.mp4' %}" type="video/mp4">
+  </video>
+  <button id="exhReplay" type="button">{{ exh.demo_again }}</button>
   <button id="exhGo" type="button">{{ exh.start }}</button>
   <p class="exh-sub">{{ exh.start_sub }}</p>
   <p class="exh-hint" id="exhHint">{{ exh.hint }}</p>
@@ -136,9 +147,9 @@
   <h2>{{ exh.fail_title }}</h2>
   <p>{{ exh.fail_body }}</p>
   <video id="exhFailVideo" muted loop playsinline autoplay preload="none">
-    <source src="{% get_static_prefix %}strength_app/exhibition/squat_demo.mp4" type="video/mp4">
     <source src="{% static 'strength_app/videos/full_squats.mp4' %}" type="video/mp4">
   </video>
+  <button id="exhFailReplay" type="button">{{ exh.demo_again }}</button>
   <button id="exhRetry" type="button">{{ exh.retry }}</button>
 </div>
 <div id="exhCaption" aria-live="polite"></div>

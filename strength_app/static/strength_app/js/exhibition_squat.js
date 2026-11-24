@@ -65,6 +65,14 @@
   S.fail = fail;
   if (S.pendingFail) fail(S.pendingFail);
 
+  // Restart a demo clip from the top (the clip loops, muted, no camera needed).
+  function replay(id) {
+    var v = $(id);
+    if (!v) return;
+    try { v.currentTime = 0; var p = v.play(); if (p && p.catch) p.catch(function () {}); } catch (e) {}
+    touch();
+  }
+
   function begin() {
     if (S.started) return;
     S.started = true;
@@ -75,6 +83,7 @@
       }
     } catch (e) {}
     $('exhStart').style.display = 'none';
+    try { $('exhDemo').pause(); } catch (e) {}
     touch();
     if (!window.isSecureContext && location.hostname !== 'localhost') {
       return fail('insecure context');
@@ -109,6 +118,8 @@
   }
 
   $('exhGo').addEventListener('click', begin);
+  $('exhReplay').addEventListener('click', function () { replay('exhDemo'); });
+  $('exhFailReplay').addEventListener('click', function () { replay('exhFailVideo'); });
   $('exhRetry').addEventListener('click', function () { location.reload(); });
   ['pointerdown', 'touchstart', 'keydown'].forEach(function (ev) {
     document.addEventListener(ev, touch, true);

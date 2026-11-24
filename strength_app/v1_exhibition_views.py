@@ -29,6 +29,7 @@ SQUAT_TEXT = {
     'fail_title': 'Camera not available',
     'fail_body': 'We could not start the camera. Watch the demo below.',
     'retry': 'Try again',
+    'demo_again': 'Show demo',  # same label as the camera page's own button
 }
 # Games page wording. Also unsigned: see docs/UNSIGNED_DEFAULTS.md.
 GAMES_TEXT = {
