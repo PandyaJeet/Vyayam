@@ -3,7 +3,7 @@
  * Pure parts (shouldReset, noFrames) are node-tested in exhibition_squat.test.mjs.
  * The DOM part runs only when window.EXH_CFG is set by exhibition_squat.html.
  *
- * Page flow: Start screen -> tap -> unlock speech, startCamera() -> coaching.
+ * Page flow: Start screen -> tap -> unlock speech, demo clip twice, startCamera() -> coaching.
  * A reload is the reset: it releases the camera (pagehide handler in the
  * camera template) and returns to the Start screen.
  */
@@ -143,7 +143,7 @@
     step(seq.start(Date.now()));
   }
 
-  // After the demo: plain startCamera() (never showDemo(): no third demo).
+  // After the demo: plain startCamera() (the in-camera demo is not run a third time).
   function startCameraNow() {
     $('exhDemoStage').style.display = 'none';
     try { $('exhDemo').pause(); } catch (e) {}
