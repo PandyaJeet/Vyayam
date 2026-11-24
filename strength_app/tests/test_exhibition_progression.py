@@ -131,6 +131,19 @@ class ProgressionPageTests(TestCase):
         for key in ('run_a', 'run_b'):
             self.assertTrue([r for r in page[key]['rows'] if r['pattern'] == 'lunge'], key)
 
+    def test_training_age_is_what_onboarding_maps_intermediate_to(self):
+        src = open('strength_app/v1_onboarding_views.py').read()
+        self.assertIn("'intermediate': 18", src)
+        ages = set()
+        real = engine.generate_v1_session
+
+        def spy(patient):
+            ages.add((patient.training_history, patient.training_age_months))
+            return real(patient)
+        with mock.patch.object(vp, 'generate_v1_session', spy):
+            vp.build_page()
+        self.assertEqual(ages, {('intermediate', 18)})
+
     def test_rtp_flag_is_unset(self):
         from django.conf import settings
         self.assertFalse(getattr(settings, 'RTP_ENABLED', False))

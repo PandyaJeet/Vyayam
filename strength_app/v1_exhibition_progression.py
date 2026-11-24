@@ -121,7 +121,7 @@ def _make_patient(frag, suffix):
     return PatientProfile.objects.create(
         patient_id=pid, name='Demo athlete', phone='%s%s' % (frag, suffix),
         age=24, biological_sex='male', goals='Demo', goal_type='athletic',
-        training_history='intermediate', training_age_months=30,
+        training_history='intermediate', training_age_months=18,    # onboarding maps 'intermediate' to 18
         sessions_per_week=3, session_duration_minutes=90,    # top of the onboarding slider (20-90)
         sleep_quality='good', stress_level='moderate',
         absolute_stop=False,
