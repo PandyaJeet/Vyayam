@@ -222,6 +222,43 @@ class ProgressionPageTests(TestCase):
         self.assertTrue(b['ready']['lunge'])
         self.assertIn('lunge', b['advanced'])
 
+    def test_advanced_level_is_saved_and_is_saved_for_the_next_session(self):
+        # Proves the page wording: this plan keeps level 2, the saved level becomes 3,
+        # and the next plan from the same patient uses level 3.
+        from django.db import transaction
+        now = vp.timezone.now()
+        with transaction.atomic():
+            try:
+                p, _ = vp._persona_now('exhtest1', now, date.today())
+                first = vp._protocol(engine.generate_v1_session(p), p)
+                saved = StrengthProfile.objects.filter(patient=p).order_by('-assessment_number').first()
+                saved_now = saved.lunge_score
+                self.assertIn('lunge', first['advanced'])
+                self.assertEqual(first['advanced']['lunge'], 3)
+                self.assertEqual({r['level'] for r in first['rows'] if r['pattern'] == 'lunge'}, {2})
+                self.assertEqual(saved_now, 3)
+                # The next plan reads the saved level: every pattern it shows has the
+                # level that is saved for it (lunge may be absent: it is only added
+                # while it is the weakest pattern).
+                latest = lambda: p.strength_profiles.order_by('-assessed_at').first()
+                saved = {k: getattr(latest(), k + '_score') for k in
+                         ('squat', 'hinge', 'push', 'pull', 'rotate', 'lunge')}
+                nxt = vp._protocol(engine.generate_v1_session(p), p)
+                self.assertTrue(nxt['rows'])
+                for r in nxt['rows']:
+                    if r['pattern'] in saved:
+                        self.assertEqual(r['level'], saved[r['pattern']], r['pattern'])
+                self.assertEqual(saved['lunge'], 3)
+            finally:
+                transaction.set_rollback(True)
+
+    def test_level_wording_says_next_session(self):
+        self.assertIn('saved for the next session', vp.TEXT['why_adv'])
+        row = next(d for d in self.page['diff'] if d['pattern'] == 'lunge' and d['b'])
+        self.assertTrue(any('level 3 saved for the next session' in w for w in row['why']))
+        lv = {r['level'] for r in self.page['run_b']['rows'] if r['pattern'] == 'lunge'}
+        self.assertEqual(lv, {2})
+
     def test_no_deload_in_now_and_both_runs_are_plans(self):
         for key in ('run_a', 'run_b'):
             self.assertEqual(self.page[key]['status'], 'ready')

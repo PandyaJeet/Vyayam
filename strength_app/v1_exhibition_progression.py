@@ -98,7 +98,7 @@ TEXT = {
     'back': 'Back',
     'why_sym': 'Symmetry band {rule}: {extra} extra set(s) on the weaker side',
     'why_blocked': 'Progression blocked while the band is significant',
-    'why_adv': 'Ready to progress: level {level}',
+    'why_adv': 'Ready to progress: level {level} saved for the next session',
     'why_deload': 'Deload',
     'why_none': 'No rule changed this row',
 }
