@@ -198,7 +198,7 @@ def _persona_early(frag, now, today):
     p = _make_patient(frag, 'a')
     _profile(p, SCORES_EARLIER, LUNGE_EARLIER, 1, 7 * (WEEKS) + 1 - SHIFT_DAYS, now)
     sessions = _history(p, range(WEEKS - EARLY_WEEKS, WEEKS), SHIFT_DAYS, SCORES_EARLIER, now)
-    _state(p, phase='hypertrophy', week=3, since_deload=2,
+    _state(p, phase='hypertrophy', week=EARLY_WEEKS, since_deload=2,
            deload_days_ago=14, total=len(sessions), today=today)
     # Squat and lunge have 2 comfortable sessions in a row: lunge is still blocked by its band.
     _capabilities(p, {'squat': 2, 'lunge': 2, 'hinge': 1, 'push': 1, 'pull': 1, 'rotate': 1})
@@ -210,7 +210,7 @@ def _persona_now(frag, now, today):
     _profile(p, SCORES_EARLIER, LUNGE_EARLIER, 1, 7 * WEEKS + 1, now)
     _profile(p, SCORES_NOW, LUNGE_NOW, 2, 3, now)
     sessions = _history(p, range(WEEKS), 0, SCORES_NOW, now)
-    _state(p, phase='hypertrophy', week=5, since_deload=2,
+    _state(p, phase='hypertrophy', week=WEEKS, since_deload=2,   # week = latest history week
            deload_days_ago=7 * LIGHT_WEEK + 4, total=len(sessions), today=today)
     _capabilities(p, {'squat': 2, 'lunge': 2, 'hinge': 1, 'push': 1, 'pull': 1, 'rotate': 1})
     return p, sessions

@@ -252,6 +252,19 @@ class ProgressionPageTests(TestCase):
             finally:
                 transaction.set_rollback(True)
 
+    def test_hand_set_week_equals_the_latest_week_shown_in_the_history(self):
+        now = vp.timezone.now()
+        from django.db import transaction
+        with transaction.atomic():
+            try:
+                for build in (vp._persona_early, vp._persona_now):
+                    p, sess = build('exhtest2', now, date.today())
+                    shown = vp.WEEKS - min(s['week_k'] for s in sess)
+                    self.assertEqual(p.periodisation.current_week, shown)
+            finally:
+                transaction.set_rollback(True)
+        self.assertEqual(self.page['weeks'][-1]['label'], 'Week %d (latest)' % vp.WEEKS)
+
     def test_level_wording_says_next_session(self):
         self.assertIn('saved for the next session', vp.TEXT['why_adv'])
         row = next(d for d in self.page['diff'] if d['pattern'] == 'lunge' and d['b'])
