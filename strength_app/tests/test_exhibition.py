@@ -121,6 +121,17 @@ class ExhibitionFlagOnTests(TestCase):
         self.assertContains(self.client.get('/exhibition/squat/'),
                             'Prop your phone at waist height')
 
+    def test_squat_cue_box_fits_two_full_lines_at_375x667(self):
+        # Cue: font .85rem (13.6 px), line-height 1.5 (20.4 px), padding 8+8, border-box.
+        css = (Path(__file__).resolve().parents[1] / 'templates' / 'strength_app'
+               / 'exhibition_squat.html').read_text()
+        em = float(re.search(r'#alignmentCue \{ max-height: ([\d.]+)em', css).group(1))
+        two_lines = 2 * 13.6 * 1.5 + 16
+        self.assertGreaterEqual(em * 13.6, two_lines)        # nothing clipped
+        self.assertLess(em * 13.6, two_lines + 20.4)         # a third line stays hidden
+        # Height sum: 40 + 8 + 8 + 437 + (card 138 - 44 + 8 + two_lines) <= 667.
+        self.assertLessEqual(631 + (two_lines - 36.4), 667)
+
 
 STATIC_JS = Path(__file__).resolve().parents[1] / 'static' / 'strength_app' / 'js'
 
