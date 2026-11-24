@@ -115,6 +115,22 @@ class ProgressionPageTests(TestCase):
             self.assertEqual(c['episodes'], 0)
             self.assertEqual(c['pain'], 0)
 
+    def test_session_budget_is_a_value_the_onboarding_slider_can_send(self):
+        # onboarding_equipment.html: min=20 max=90 step=5. Lunge rows must survive it.
+        html = open('strength_app/templates/strength_app/onboarding_equipment.html').read()
+        self.assertRegex(html, r'min="20"[^>]*max="90"|max="90"[^>]*min="20"')
+        minutes = set()
+        real = engine.generate_v1_session
+
+        def spy(patient):
+            minutes.add(patient.session_duration_minutes)
+            return real(patient)
+        with mock.patch.object(vp, 'generate_v1_session', spy):
+            page = vp.build_page()
+        self.assertEqual(minutes, {90})
+        for key in ('run_a', 'run_b'):
+            self.assertTrue([r for r in page[key]['rows'] if r['pattern'] == 'lunge'], key)
+
     def test_rtp_flag_is_unset(self):
         from django.conf import settings
         self.assertFalse(getattr(settings, 'RTP_ENABLED', False))
