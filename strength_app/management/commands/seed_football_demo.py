@@ -1,5 +1,14 @@
 """
 Seeds the football coach + athlete DEMO fixtures (lived-in account).
+Everything seeded is fictional and labelled "DEMO" wherever the athlete shows.
+
+Story (all derived by the app's own logic, asserted at seed time):
+    - hop LSI 87.4 % < 90 → FootballProfile.lsi_flag (compute_lsi)
+    - lunge home test 11 v 7 → LSI 63.6 → 'moderate' → +1 set weaker side
+    - next match in 3 days → MD-3 'power_speed' microcycle
+    - lunge_family capability 3→4 via _update_capability_after_session
+    - 4 loading weeks → check_deload_needed() mandatory deload today
+Re-run on stall day: matches and history are relative to today.
 
 Creates:
     COACH    /coach/login/   user: coach_arjun     pass: simple
@@ -70,16 +79,18 @@ COACH_CLUB = 'Vadodara United FC'
 ATHLETE_PATIENT_ID = 'FBDEMO_KABIR'
 ATHLETE_PHONE = '9000000005'
 ATHLETE_PASSWORD = 'athlete'
-ATHLETE_NAME = 'Kabir Singh'
+ATHLETE_NAME = 'Kabir Singh (DEMO)'   # "(DEMO)" shows everywhere the name does; first name stays 'Kabir'
 
 # ── Assessment battery (~4 weeks ago) — mid-tier raw values ────────────────
 # Hand-picked against FOOTBALL_ASSESSMENT_TESTS scoring_thresholds so the
 # per-test scores are 3s and 4s and compute_level() rounds to 3
-# (Consolidation): (4+3+3+3+3+4)/6 = 3.33 → 3. All bilateral pairs sit
-# above their LSI_THRESHOLDS bands, so lsi_flag stays False.
+# (Consolidation): (4+3+3+3+3+4)/6 = 3.33 → 3. The hop pair is deliberately
+# asymmetric: 152/174 → LSI 87.4 % < LSI_THRESHOLDS['hop'] (90), so
+# compute_lsi() itself raises lsi_flag (asserted in _seed_football_profile).
+# 87.4 stays above the low-load plyometric gate (lsi_min_pct 80).
 ASSESSMENT_DAYS_AGO = 29   # > 4 weeks → the athlete "Tests due" card shows
 ASSESSMENT = {
-    'hop_left_cm': 162.0, 'hop_right_cm': 174.0, 'hop_score': 4,      # best 174 → band 150-179
+    'hop_left_cm': 152.0, 'hop_right_cm': 174.0, 'hop_score': 4,      # best 174 → band 150-179
     'nordic_seconds': 5.0, 'nordic_score': 3,                         # band 4-6 s
     'sprint_seconds': 3.52, 'sprint_score': 3,                        # band 3.41-3.70 s
     'pogo_clean_reps': 17, 'pogo_score': 3,                           # band 15-19
@@ -96,7 +107,7 @@ SESSION_PLAN = [
     (20, 48, 4, 3, 'just_right'),
     (18, 65, 6, 4, 'hard'),
     (16, 58, 5, 3, 'just_right'),
-    (14, 72, 7, 4, 'hard'),
+    (14, 72, 6, 3, 'just_right'),
     (12, 50, 4, 3, 'just_right'),
     (10, 60, 5, 3, 'just_right'),
     (8, 66, 6, 4, 'hard'),
@@ -135,17 +146,19 @@ SESSION_EXERCISES = [
 ]
 
 COACH_NOTES = (
+    "DEMO DATA — fictional athlete for exhibition use.\n"
     "2026-07-02: Solid engine — COD times keep improving in small-sided games. "
     "Keep the Nordic volume up, hamstring endurance is the weak link.\n"
     "2026-07-14: Talked through in-season loading — 3 quality gym sessions on "
     "non-match weeks, 2 when we have a midweek fixture."
 )
 
-# Upcoming matches: days from today (all inside the next 3 weeks).
+# Upcoming matches: days from today. First is 3 days out so _get_microcycle_day
+# returns (3, 'power_speed') on the demo day — re-run the seed on stall day.
 MATCH_PLAN = [
-    (5, 'Rajkot Rovers', 'League — home'),
-    (12, 'Surat City FC', 'League — away'),
-    (19, 'Ahmedabad Kings', 'Cup quarter-final'),
+    (3, 'Rajkot Rovers', 'DEMO · League — home'),     # MD-3 today → 'power_speed' day
+    (10, 'Surat City FC', 'DEMO · League — away'),
+    (17, 'Ahmedabad Kings', 'DEMO · Cup quarter-final'),
 ]
 
 
@@ -178,6 +191,7 @@ class Command(BaseCommand):
                 self._seed_periodisation(patient)
                 self._seed_sessions(patient)
                 self._seed_matches(patient)
+                self._verify_story(patient)
         except CommandAbort as exc:
             self.stderr.write(self.style.ERROR(f'\n  ABORT: {exc}\n'))
             return
@@ -261,7 +275,7 @@ class Command(BaseCommand):
                 'biological_sex': 'male',
                 'height_cm': 176.0,
                 'weight_kg': 70.0,
-                'goals': 'Hold a starting spot this season; sharper first 10 m and stronger duels.',
+                'goals': 'DEMO DATA — fictional athlete. Hold a starting spot this season; sharper first 10 m and stronger duels.',
                 'goal_type': 'athletic',
                 'sport_type': 'football',
                 'training_history': 'intermediate',
@@ -304,10 +318,35 @@ class Command(BaseCommand):
             defaults={
                 'squat_score': 4, 'hinge_score': 4, 'push_score': 3,
                 'pull_score': 3, 'core_score': 4, 'rotate_score': 3,
-                'lunge_score': 4,
+                'lunge_score': 3,
             },
         )
+        self._seed_lunge_asymmetry(patient)
         return patient
+
+    def _seed_lunge_asymmetry(self, patient):
+        """Home single-leg test: raw L/R reps run through the app's own banding
+        (_compute_asymmetry_raw: ≥85 none · 70-84 mild · 55-69 moderate). 11 vs 7
+        reps → LSI 63.6 → 'moderate', which the engine answers with +1 set on
+        the weaker side (_get_exercise_asymmetry)."""
+        from strength_app.v1_onboarding_views import (
+            _compute_asymmetry_raw, _weaker_side,
+        )
+        left_raw, right_raw = 11, 7
+        cls, lsi = _compute_asymmetry_raw(left_raw, right_raw)
+        if cls != 'moderate':
+            raise CommandAbort(f'lunge LSI {lsi} banded {cls!r}, expected moderate')
+        sp = StrengthProfile.objects.get(patient=patient, assessment_number=1)
+        sp.lunge_left, sp.lunge_right = 4, 3
+        sp.lunge_asymmetry = cls
+        sp.weaker_side_lunge = _weaker_side(sp.lunge_left, sp.lunge_right)
+        sp.raw_test_data_json = {
+            'lunge_test': {'left_raw': left_raw, 'right_raw': right_raw,
+                           'lsi_pct': lsi, 'method': 'raw'},
+            'demo': True,
+        }
+        sp.save()
+        self.lunge_lsi = lsi
 
     def _seed_link(self, coach, patient):
         CoachPatientLink.objects.update_or_create(
@@ -333,6 +372,10 @@ class Command(BaseCommand):
         fp.compute_lsi()
         fp.compute_fv_tendency()
         fp.check_plyometric_gate()
+        if not fp.lsi_flag:
+            raise CommandAbort(
+                f'hop LSI {fp.hop_lsi_pct} did not trip lsi_flag — seed values drifted'
+            )
         fp.season_phase = 'in_season'
         fp.hsr_current_phase = 'hsr_phase_2'
         fp.hsr_weeks_completed = 2
@@ -352,9 +395,13 @@ class Command(BaseCommand):
                 'current_phase': 'strength',
                 'current_week': 4,
                 'macrocycle_number': 1,
-                'phase_start_date': today - timedelta(days=27),
-                'last_deload_date': today - timedelta(days=14),
-                'weeks_since_deload': 2,
+                # Four loading weeks since the last deload → the app's own
+                # check_deload_needed() mandatory gate (limit 4) fires today.
+                # Asserted in handle(); the engine then prescribes a deload
+                # session (generate_v1_session overrides the phase).
+                'phase_start_date': today - timedelta(days=28),
+                'last_deload_date': today - timedelta(days=28),
+                'weeks_since_deload': 4,
                 'total_sessions_this_cycle': len(SESSION_PLAN),
             },
         )
@@ -365,6 +412,20 @@ class Command(BaseCommand):
         # Wipe-and-recreate our own rows so reruns never duplicate.
         # WorkoutSession delete cascades to ExerciseExecution + SessionFeedback.
         WorkoutSession.objects.filter(patient=patient).delete()
+
+        # Progression: one family capability row at the baseline; each seeded
+        # session then runs through the app's own _update_capability_after_session
+        # (3 consecutive comfortable sessions → capability 3→4). Nothing about
+        # the advance is hand-written.
+        from strength_app.models import PatientFamilyCapability
+        from strength_app.views import _update_capability_after_session
+        PatientFamilyCapability.objects.filter(patient=patient).delete()
+        pfc = PatientFamilyCapability.objects.create(
+            patient=patient, family_id='lunge_family', family_name='Lunge Pattern',
+            current_level_index=0, current_exercise_id='step_ups',
+            current_exercise_name='Step Ups', capability_numeric=3,
+            capability_string='manageable', prescribed_sets=3, prescribed_reps=8,
+        )
 
         now = timezone.now()
         for i, (days_ago, duration, srpe, diff_rating, perceived) in enumerate(SESSION_PLAN):
@@ -381,6 +442,7 @@ class Command(BaseCommand):
                 total_exercises_completed=len(exercises),
                 patient_comfortable=True,
                 difficulty_rating=diff_rating,
+                patient_notes='DEMO DATA — seeded session. Self-counted guided work: no rep-level or form data.',
                 prescription_mode='ai_auto',
             )
             for ex_id, ex_name, category, sets, reps in exercises:
@@ -407,10 +469,48 @@ class Command(BaseCommand):
                 session_rpe=srpe,
             )
             # Both timestamps are auto_now_add — backdate via queryset update.
+            _update_capability_after_session(
+                patient, True, diff_rating, [{'exercise_id': e[0]} for e in exercises]
+            )
             WorkoutSession.objects.filter(pk=session.pk).update(session_date=when)
             SessionFeedback.objects.filter(pk=feedback.pk).update(
                 created_at=when + timedelta(minutes=duration)
             )
+        self._backdate_advance(patient)
+
+    def _backdate_advance(self, patient):
+        """The advance fired inside the loop stamped 'now'; move only its
+        timestamps to the session that triggered it (the 3rd comfortable one)."""
+        from strength_app.models import PatientFamilyCapability
+        pfc = PatientFamilyCapability.objects.get(patient=patient, family_id='lunge_family')
+        hist = pfc.progression_history_json or []
+        if len(hist) != 1 or pfc.capability_numeric != 4:
+            raise CommandAbort(
+                f'expected exactly one capability advance 3→4, got history={hist!r} '
+                f'cap={pfc.capability_numeric}'
+            )
+        # Session index 6 (14 days ago) is the 3rd consecutive comfortable lunge-family session.
+        when = timezone.now() - timedelta(days=SESSION_PLAN[6][0])
+        hist[0]['date'] = when.isoformat()
+        PatientFamilyCapability.objects.filter(pk=pfc.pk).update(
+            progression_history_json=hist, last_advancement_date=when,
+        )
+
+    def _verify_story(self, patient):
+        """Fail the seed if the app's own logic does not produce the story."""
+        from strength_app.v1_prescription_engine import _get_microcycle_day
+        from strength_app.v1_safety_logic import check_deload_needed, get_asymmetry_rules
+        patient = PatientProfile.objects.get(pk=patient.pk)
+        needed, reason = check_deload_needed(patient)
+        if not needed:
+            raise CommandAbort('check_deload_needed() did not fire — deload story broken')
+        sp = patient.strength_profiles.first()
+        if get_asymmetry_rules(sp)['lunge']['asymmetry'] != 'moderate':
+            raise CommandAbort('lunge asymmetry rule is not moderate')
+        days_to, mtype = _get_microcycle_day(patient)
+        if (days_to, mtype) != (3, 'power_speed'):
+            raise CommandAbort(f'microcycle is {(days_to, mtype)}, expected (3, power_speed)')
+        self.deload_reason = reason
 
     # --------------------------------------------------------------- matches
 
@@ -439,7 +539,13 @@ class Command(BaseCommand):
         self.stdout.write(
             f'    Kabir Singh: football level L{fp.football_level}, '
             f'{fp.get_season_phase_display()}, plyo {fp.plyometric_cleared}, '
-            f'{sessions} sessions seeded, {matches} upcoming matches.\n'
+            f'{sessions} sessions seeded, {matches} upcoming matches.'
+        )
+        self.stdout.write(
+            f'    DEMO DATA. hop LSI {fp.hop_lsi_pct}% (flag {fp.lsi_flag}) · '
+            f'lunge LSI {self.lunge_lsi}% (moderate, +1 set weaker side) · '
+            f'next match in 3 days (MD-3 power_speed) · lunge_family capability 3→4 · '
+            f'deload: {self.deload_reason}\n'
         )
 
 

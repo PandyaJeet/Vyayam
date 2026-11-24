@@ -1,0 +1,1145 @@
+2026-11-20 14:33:57.658014: I tensorflow/core/platform/cpu_feature_guard.cc:210] This TensorFlow binary is optimized to use available CPU instructions in performance-critical operations.
+To enable the following instructions: AVX2 FMA, in other operations, rebuild TensorFlow with the appropriate compiler flags.
+Creating test database for alias 'default' ('file:memorydb_default?mode=memory&cache=shared')...
+Found 427 test(s).
+Operations to perform:
+  Synchronize unmigrated apps: messages, staticfiles
+  Apply all migrations: admin, auth, contenttypes, sessions, strength_app, therapist_app
+Synchronizing apps without migrations:
+  Creating tables...
+    Running deferred SQL...
+Running migrations:
+  Applying contenttypes.0001_initial... OK
+  Applying auth.0001_initial... OK
+  Applying admin.0001_initial... OK
+  Applying admin.0002_logentry_remove_auto_add... OK
+  Applying admin.0003_logentry_add_action_flag_choices... OK
+  Applying contenttypes.0002_remove_content_type_name... OK
+  Applying auth.0002_alter_permission_name_max_length... OK
+  Applying auth.0003_alter_user_email_max_length... OK
+  Applying auth.0004_alter_user_username_opts... OK
+  Applying auth.0005_alter_user_last_login_null... OK
+  Applying auth.0006_require_contenttypes_0002... OK
+  Applying auth.0007_alter_validators_add_error_messages... OK
+  Applying auth.0008_alter_user_username_max_length... OK
+  Applying auth.0009_alter_user_last_name_max_length... OK
+  Applying auth.0010_alter_group_name_max_length... OK
+  Applying auth.0011_update_proxy_permissions... OK
+  Applying auth.0012_alter_user_first_name_max_length... OK
+  Applying sessions.0001_initial... OK
+  Applying therapist_app.0001_initial... OK
+  Applying therapist_app.0002_sessionlog_therapistpatienthealthprofile_and_more... OK
+  Applying therapist_app.0003_add_phone_to_link... OK
+  Applying therapist_app.0004_visitnote_alert_alert_therapist_a_link_id_abd7de_idx... OK
+  Applying strength_app.0001_initial... OK
+  Applying strength_app.0002_fooditem_nutritionprofile_messentry_dailyfoodlog... OK
+  Applying strength_app.0003_alter_dailyfoodlog_meal_type_and_more... OK
+  Applying strength_app.0004_alter_patientprofile_age... OK
+  Applying strength_app.0005_patientprofile_athlete_sport_and_more... OK
+  Applying strength_app.0006_footballprofile_hsr_weeks_completed_and_more... OK
+  Applying strength_app.0007_patientprofile_raw_test_data_json... OK
+  Applying strength_app.0008_football_season_match_rpe... OK
+  Applying strength_app.0009_add_xp_earned_to_workout_session... OK
+  Applying strength_app.0010_patientprofile_therapist_managed... OK
+  Applying strength_app.0011_footballprofile_hsr_phase_start_week... OK
+  Applying strength_app.0012_session_rpe_help_text_acwr_removed... OK
+  Applying strength_app.0013_redflagevent... OK
+  Applying strength_app.0014_exerciseexecution_rep_quality_source... OK
+  Applying strength_app.0015_hsr_phase_start_week_nullable... OK
+  Applying strength_app.0016_age_validator_18_plus... OK
+  Applying strength_app.0017_exerciseexecution_category_choices... OK
+  Applying strength_app.0018_validators_and_indexes... OK
+  Applying strength_app.0019_exerciseexecution_pain_fields... OK
+  Applying strength_app.0020_alter_exerciseexecution_overall_form_score_and_more... OK
+  Applying strength_app.0021_patientprofile_must_change_password_and_more... OK
+  Applying strength_app.0022_restevent_painevent... OK
+  Applying therapist_app.0005_prescriptionitem_pain_stop_threshold_and_more... OK
+  Applying therapist_app.0006_sessionlogitem_started_at_exercisesetlog... OK
+  Applying strength_app.0023_restevent_session_log_restevent_set_number_and_more... OK
+  Applying strength_app.0024_painevent_strength_ap_patient_6a440b_idx... OK
+  Applying strength_app.0025_mind_lab_gamesession... OK
+  Applying therapist_app.0007_sessionreport... OK
+  Applying therapist_app.0008_alter_sessionlog_prescription_and_more... OK
+  Applying therapist_app.0009_exercisesetlog_uniq_setlog_session_exercise_set... OK
+System check identified no issues (0 silenced).
+test_anonymous_athlete_urls_redirect_to_login (strength_app.tests.test_athlete_frontend.TestAthleteRouting.test_anonymous_athlete_urls_redirect_to_login) ... ok
+test_athlete_login_routes_to_athlete_today (strength_app.tests.test_athlete_frontend.TestAthleteRouting.test_athlete_login_routes_to_athlete_today) ... ok
+test_athlete_tabs_render (strength_app.tests.test_athlete_frontend.TestAthleteRouting.test_athlete_tabs_render) ... ok
+test_rehab_patient_cannot_enter_athlete_pwa (strength_app.tests.test_athlete_frontend.TestNoRehabRegression.test_rehab_patient_cannot_enter_athlete_pwa) ... ok
+test_therapist_managed_patient_still_routes_to_rehab (strength_app.tests.test_athlete_frontend.TestNoRehabRegression.test_therapist_managed_patient_still_routes_to_rehab) ... ok
+test_seed_is_idempotent (strength_app.tests.test_athlete_frontend.TestSeedFootballDemo.test_seed_is_idempotent) ... ok
+test_seeded_level_is_mid_tier (strength_app.tests.test_athlete_frontend.TestSeedFootballDemo.test_seeded_level_is_mid_tier) ... ok
+test_eight_tests_strength_last (strength_app.tests.test_athlete_strength_tests.TestBatteryShape.test_eight_tests_strength_last) ... ok
+test_athlete_progress_shows_strength_card (strength_app.tests.test_athlete_strength_tests.TestStrengthDisplaySurfaces.test_athlete_progress_shows_strength_card) ... ok
+test_coach_detail_shows_strength_table (strength_app.tests.test_athlete_strength_tests.TestStrengthDisplaySurfaces.test_coach_detail_shows_strength_table) ... ok
+test_kabir_seeded_with_strength_tests (strength_app.tests.test_athlete_strength_tests.TestStrengthDisplaySurfaces.test_kabir_seeded_with_strength_tests) ... ok
+test_results_persists_and_level_untouched (strength_app.tests.test_athlete_strength_tests.TestStrengthManualEntry.test_results_persists_and_level_untouched) ... ok
+test_save_computes_epley_e1rm_server_side (strength_app.tests.test_athlete_strength_tests.TestStrengthManualEntry.test_save_computes_epley_e1rm_server_side) ... ok
+test_save_rejects_missing_values (strength_app.tests.test_athlete_strength_tests.TestStrengthManualEntry.test_save_rejects_missing_values) ... Bad Request: /football/save-test-result/
+ok
+test_strength_page_renders_weight_reps_inputs (strength_app.tests.test_athlete_strength_tests.TestStrengthManualEntry.test_strength_page_renders_weight_reps_inputs) ... ok
+test_builder_page_contains_notes_input (strength_app.tests.test_c_therapist_note.TestPhaseCBuilderNoteInput.test_builder_page_contains_notes_input) ... ok
+test_blank_note_renders_no_strip_on_camera_screen (strength_app.tests.test_c_therapist_note.TestPhaseCTherapistNoteVisibility.test_blank_note_renders_no_strip_on_camera_screen) ... ok
+test_note_on_camera_screen_escaped (strength_app.tests.test_c_therapist_note.TestPhaseCTherapistNoteVisibility.test_note_on_camera_screen_escaped) ... ok
+test_note_on_guided_screen_escaped (strength_app.tests.test_c_therapist_note.TestPhaseCTherapistNoteVisibility.test_note_on_guided_screen_escaped) ... ok
+test_note_on_today_list_escaped (strength_app.tests.test_c_therapist_note.TestPhaseCTherapistNoteVisibility.test_note_on_today_list_escaped) ... ok
+test_manifest_rows (strength_app.tests.test_camera_dark.TestDarkCoachIntegrity.test_manifest_rows) ... ok
+test_no_patient_route_reaches_dark_keys (strength_app.tests.test_camera_dark.TestDarkCoachIntegrity.test_no_patient_route_reaches_dark_keys)
+The dark invariant's other half: no progression chain or warmup ... ok
+test_anonymous_and_patient_blocked (strength_app.tests.test_camera_dark.TestQaDarkCoachesPage.test_anonymous_and_patient_blocked) ... Forbidden: /therapist/qa/dark-coaches/
+ok
+test_list_shows_every_dark_coach (strength_app.tests.test_camera_dark.TestQaDarkCoachesPage.test_list_shows_every_dark_coach) ... ok
+test_qa_banner_never_renders_for_patients (strength_app.tests.test_camera_dark.TestQaDarkCoachesPage.test_qa_banner_never_renders_for_patients)
+No patient route passes qa_mode — the managed camera page must ... ok
+test_run_page_is_qa_mode_with_no_capture_endpoints (strength_app.tests.test_camera_dark.TestQaDarkCoachesPage.test_run_page_is_qa_mode_with_no_capture_endpoints) ... Not Found: /therapist/qa/dark-coaches/nope_rx/run/
+ok
+test_camera_screen_has_opt_in_demo_no_forced_entry (strength_app.tests.test_d_show_demo.TestPhaseDShowDemoButton.test_camera_screen_has_opt_in_demo_no_forced_entry) ... ok
+test_da_c10_dashboard_shows_setup_state (strength_app.tests.test_deep_audit.TestDAC10NutritionSetupState.test_da_c10_dashboard_shows_setup_state) ... ok
+test_da_c10_no_profile_returns_setup_not_red (strength_app.tests.test_deep_audit.TestDAC10NutritionSetupState.test_da_c10_no_profile_returns_setup_not_red) ... ok
+test_da_c10_with_profile_lights_work (strength_app.tests.test_deep_audit.TestDAC10NutritionSetupState.test_da_c10_with_profile_lights_work) ... ok
+test_da_c12_model_default_is_derived (strength_app.tests.test_deep_audit.TestDAC12RepQualityHonesty.test_da_c12_model_default_is_derived) ... ok
+test_da_c12_self_serve_flow_marks_derived (strength_app.tests.test_deep_audit.TestDAC12RepQualityHonesty.test_da_c12_self_serve_flow_marks_derived) ... ok
+test_da_c13_coach_set_competition_bad_date_redirects (strength_app.tests.test_deep_audit.TestDAC13InputValidation.test_da_c13_coach_set_competition_bad_date_redirects) ... ok
+test_da_c13_feedback_junk_rpe_and_severity (strength_app.tests.test_deep_audit.TestDAC13InputValidation.test_da_c13_feedback_junk_rpe_and_severity) ... ok
+test_da_c13_save_result_junk_values_clamped (strength_app.tests.test_deep_audit.TestDAC13InputValidation.test_da_c13_save_result_junk_values_clamped) ... ok
+test_da_c13_save_result_malformed_array_body_400 (strength_app.tests.test_deep_audit.TestDAC13InputValidation.test_da_c13_save_result_malformed_array_body_400) ... Bad Request: /v1/session/save-exercise/
+ok
+test_red_flag_map_integrity (strength_app.tests.test_deep_audit.TestDAC14RedFlagMapIntegrity.test_red_flag_map_integrity)
+Every replace_with target must (a) not be excluded by the same ... ok
+test_da_c15_engine_resolver_delegates (strength_app.tests.test_deep_audit.TestDAC15HormonalModifierConvention.test_da_c15_engine_resolver_delegates) ... ok
+test_da_c15_identical_shape_for_all_phases (strength_app.tests.test_deep_audit.TestDAC15HormonalModifierConvention.test_da_c15_identical_shape_for_all_phases) ... ok
+test_da_c15_known_phase_values (strength_app.tests.test_deep_audit.TestDAC15HormonalModifierConvention.test_da_c15_known_phase_values) ... ok
+test_da_c15_severe_menstruation_mobility_only (strength_app.tests.test_deep_audit.TestDAC15HormonalModifierConvention.test_da_c15_severe_menstruation_mobility_only) ... ok
+test_da_c1_all_unsafe_exercises_earn_zero_xp (strength_app.tests.test_deep_audit.TestDAC1XpFormGate.test_da_c1_all_unsafe_exercises_earn_zero_xp) ... ok
+test_da_c1_empty_results_keep_legacy_fallback (strength_app.tests.test_deep_audit.TestDAC1XpFormGate.test_da_c1_empty_results_keep_legacy_fallback) ... ok
+test_da_c1_mixed_results_earn_only_passing_xp_no_floor (strength_app.tests.test_deep_audit.TestDAC1XpFormGate.test_da_c1_mixed_results_earn_only_passing_xp_no_floor) ... ok
+test_da_c1_quality_bonus_above_80 (strength_app.tests.test_deep_audit.TestDAC1XpFormGate.test_da_c1_quality_bonus_above_80) ... ok
+test_da_c1_xp_ceiling (strength_app.tests.test_deep_audit.TestDAC1XpFormGate.test_da_c1_xp_ceiling) ... ok
+test_da_c11_counter_wins_when_ahead_of_calendar (strength_app.tests.test_deep_audit.TestDAC2DeloadFallback.test_da_c11_counter_wins_when_ahead_of_calendar) ... ok
+test_da_c11_new_state_anchors_calendar_gate (strength_app.tests.test_deep_audit.TestDAC2DeloadFallback.test_da_c11_new_state_anchors_calendar_gate) ... ok
+test_da_c2_fallback_resolves_periodisation_related_name (strength_app.tests.test_deep_audit.TestDAC2DeloadFallback.test_da_c2_fallback_resolves_periodisation_related_name) ... ok
+test_da_c2_new_patient_no_state_no_crash (strength_app.tests.test_deep_audit.TestDAC2DeloadFallback.test_da_c2_new_patient_no_state_no_crash) ... ok
+test_da_c2_passed_state_calendar_check (strength_app.tests.test_deep_audit.TestDAC2DeloadFallback.test_da_c2_passed_state_calendar_check) ... ok
+test_da_c3_perfect_deep_squat_scores_green (strength_app.tests.test_deep_audit.TestDAC3SquatFormScoring.test_da_c3_perfect_deep_squat_scores_green)
+C3 — a synthetically perfect deep squat must average ≥85. ... ok
+test_da_c4_athlete_session_generates_without_acwr_meta (strength_app.tests.test_deep_audit.TestDAC4AcwrRemoved.test_da_c4_athlete_session_generates_without_acwr_meta) ... ok
+test_da_c4_engine_has_no_acwr (strength_app.tests.test_deep_audit.TestDAC4AcwrRemoved.test_da_c4_engine_has_no_acwr) ... ok
+test_da_c5_clear_with_confirmation_audited_and_noted (strength_app.tests.test_deep_audit.TestDAC5RedFlagAuditTrail.test_da_c5_clear_with_confirmation_audited_and_noted) ... ok
+test_da_c5_clear_without_confirmation_blocked (strength_app.tests.test_deep_audit.TestDAC5RedFlagAuditTrail.test_da_c5_clear_without_confirmation_blocked) ... ok
+test_da_c5_flag_update_creates_event (strength_app.tests.test_deep_audit.TestDAC5RedFlagAuditTrail.test_da_c5_flag_update_creates_event) ... ok
+test_da_c5_setting_stop_creates_event (strength_app.tests.test_deep_audit.TestDAC5RedFlagAuditTrail.test_da_c5_setting_stop_creates_event) ... ok
+test_da_c6_classic_stop_keeps_generic_copy (strength_app.tests.test_deep_audit.TestDAC6EmergencyScreening.test_da_c6_classic_stop_keeps_generic_copy) ... ok
+test_da_c6_each_new_option_stops_with_urgent_copy (strength_app.tests.test_deep_audit.TestDAC6EmergencyScreening.test_da_c6_each_new_option_stops_with_urgent_copy) ... ok
+test_da_c7_report_matches_db_aggregates (strength_app.tests.test_deep_audit.TestDAC7RealReportNumbers.test_da_c7_report_matches_db_aggregates) ... ok
+test_da_c7_view_uses_real_generator (strength_app.tests.test_deep_audit.TestDAC7RealReportNumbers.test_da_c7_view_uses_real_generator) ... ok
+test_da_c7_zero_sessions_insufficient_data_not_75pct (strength_app.tests.test_deep_audit.TestDAC7RealReportNumbers.test_da_c7_zero_sessions_insufficient_data_not_75pct) ... ok
+test_da_f1_pain_persisted_to_execution (strength_app.tests.test_deep_audit.TestDAF1PerExercisePain.test_da_f1_pain_persisted_to_execution) ... ok
+test_da_f1_sharp_per_exercise_pain_overrides_mild_checkin (strength_app.tests.test_deep_audit.TestDAF1PerExercisePain.test_da_f1_sharp_per_exercise_pain_overrides_mild_checkin) ... ok
+test_da_f2_mild_pain_does_not_skip (strength_app.tests.test_deep_audit.TestDAF2ServerSidePainResponse.test_da_f2_mild_pain_does_not_skip) ... ok
+test_da_f2_severe_stop_routes_to_pain_stop (strength_app.tests.test_deep_audit.TestDAF2ServerSidePainResponse.test_da_f2_severe_stop_routes_to_pain_stop) ... ok
+test_da_f2_sharp_pain_notes_linked_coach (strength_app.tests.test_deep_audit.TestDAF2ServerSidePainResponse.test_da_f2_sharp_pain_notes_linked_coach) ... ok
+test_da_f2_sharp_pain_skips_same_pattern (strength_app.tests.test_deep_audit.TestDAF2ServerSidePainResponse.test_da_f2_sharp_pain_skips_same_pattern) ... ok
+test_da_f3_pain_free_session_resets (strength_app.tests.test_deep_audit.TestDAF3PainFollowThrough.test_da_f3_pain_free_session_resets) ... ok
+test_da_f3_three_consecutive_pause (strength_app.tests.test_deep_audit.TestDAF3PainFollowThrough.test_da_f3_three_consecutive_pause) ... ok
+test_da_f3_two_consecutive_regress (strength_app.tests.test_deep_audit.TestDAF3PainFollowThrough.test_da_f3_two_consecutive_regress) ... ok
+test_da_h1_monotone_in_error (strength_app.tests.test_deep_audit.TestDAH1FormCalculatorToleranceCurve.test_da_h1_monotone_in_error) ... ok
+test_da_h1_no_zero_division_and_degenerate_tolerances (strength_app.tests.test_deep_audit.TestDAH1FormCalculatorToleranceCurve.test_da_h1_no_zero_division_and_degenerate_tolerances) ... ok
+test_da_h1_tighter_tolerance_is_stricter (strength_app.tests.test_deep_audit.TestDAH1FormCalculatorToleranceCurve.test_da_h1_tighter_tolerance_is_stricter) ... ok
+test_da_h1_within_tolerance_at_least_70 (strength_app.tests.test_deep_audit.TestDAH1FormCalculatorToleranceCurve.test_da_h1_within_tolerance_at_least_70) ... ok
+test_da_h2_ideal_trajectory_all_modules (strength_app.tests.test_deep_audit.TestDAH2IdealTrajectoryInvariant.test_da_h2_ideal_trajectory_all_modules) ... ⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+ok
+test_da_h3_every_id_instantiates (strength_app.tests.test_deep_audit.TestDAH3RegistryIntegrity.test_da_h3_every_id_instantiates) ... ok
+test_da_h3_no_case_duplicates (strength_app.tests.test_deep_audit.TestDAH3RegistryIntegrity.test_da_h3_no_case_duplicates) ... ok
+test_da_p3_every_chain_id_has_content (strength_app.tests.test_deep_audit.TestDAP3DataIntegrity.test_da_p3_every_chain_id_has_content) ... ok
+test_da_p3_every_chain_id_has_equipment_mapping (strength_app.tests.test_deep_audit.TestDAP3DataIntegrity.test_da_p3_every_chain_id_has_equipment_mapping) ... ok
+test_da_p3_hold_exercises_dosed_as_holds (strength_app.tests.test_deep_audit.TestDAP3DataIntegrity.test_da_p3_hold_exercises_dosed_as_holds) ... ok
+test_da_p3_legacy_gate_chain_ids_have_content (strength_app.tests.test_deep_audit.TestDAP3DataIntegrity.test_da_p3_legacy_gate_chain_ids_have_content) ... ok
+test_da_p3_warmup_respects_red_flags (strength_app.tests.test_deep_audit.TestDAP3DataIntegrity.test_da_p3_warmup_respects_red_flags) ... ok
+test_da_p4_patient_routes_never_500 (strength_app.tests.test_deep_audit.TestDAP4RouteSmoke.test_da_p4_patient_routes_never_500) ... ok
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+test_demo_labelled_and_idempotent (strength_app.tests.test_demo_story.DemoStoryTests.test_demo_labelled_and_idempotent) ... ok
+test_guided_sessions_have_no_rep_level_data (strength_app.tests.test_demo_story.DemoStoryTests.test_guided_sessions_have_no_rep_level_data) ... ok
+test_lsi_flag_from_model_logic (strength_app.tests.test_demo_story.DemoStoryTests.test_lsi_flag_from_model_logic) ... ok
+test_lunge_asymmetry_is_moderate_with_extra_set (strength_app.tests.test_demo_story.DemoStoryTests.test_lunge_asymmetry_is_moderate_with_extra_set) ... ok
+test_one_progression_one_deload (strength_app.tests.test_demo_story.DemoStoryTests.test_one_progression_one_deload) ... ok
+test_content_files_carry_no_banned_terms (strength_app.tests.test_exam_2026_07.TestA1A2NoBannedTerms.test_content_files_carry_no_banned_terms) ... ok
+test_templates_carry_no_banned_terms (strength_app.tests.test_exam_2026_07.TestA1A2NoBannedTerms.test_templates_carry_no_banned_terms) ... ok
+test_legacy_template_never_renders (strength_app.tests.test_exam_2026_07.TestA4LegacyCameraFlowRetired.test_legacy_template_never_renders) ... ok
+test_pre_v1_patient_routes_to_onboarding (strength_app.tests.test_exam_2026_07.TestA4LegacyCameraFlowRetired.test_pre_v1_patient_routes_to_onboarding) ... ok
+test_v1_patient_routes_to_v1_flow (strength_app.tests.test_exam_2026_07.TestA4LegacyCameraFlowRetired.test_v1_patient_routes_to_v1_flow) ... ok
+test_plyo_camera_set_mode_label (strength_app.tests.test_exam_2026_07.TestA5PlyoLandingCheckLabel.test_plyo_camera_set_mode_label) ... ok
+test_dashboard_and_list_query_counts_do_not_scale_with_patients (strength_app.tests.test_exam_2026_07.TestBN1DashboardQueriesFlat.test_dashboard_and_list_query_counts_do_not_scale_with_patients) ... ok
+test_bt1_self_serve_completion_rolls_back (strength_app.tests.test_exam_2026_07.TestBT1BT2AtomicWrites.test_bt1_self_serve_completion_rolls_back) ... Internal Server Error: /v1/session/feedback/
+Traceback (most recent call last):
+  File "/Users/pawandangarwala/Library/Python/3.12/lib/python/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/pawandangarwala/Library/Python/3.12/lib/python/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/contextlib.py", line 81, in inner
+    return func(*args, **kwds)
+           ^^^^^^^^^^^^^^^^^^^
+  File "/Users/pawandangarwala/Documents/vyayam/worktrees/int/strength_app/v1_session_views.py", line 1050, in v1_post_session_feedback
+    feedback = SessionFeedback.objects.create(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/mock.py", line 1134, in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/mock.py", line 1138, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/mock.py", line 1193, in _execute_mock_call
+    raise effect
+RuntimeError: boom
+ok
+test_bt2_managed_session_start_rolls_back (strength_app.tests.test_exam_2026_07.TestBT1BT2AtomicWrites.test_bt2_managed_session_start_rolls_back) ... Internal Server Error: /therapist-session/start/
+Traceback (most recent call last):
+  File "/Users/pawandangarwala/Library/Python/3.12/lib/python/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/pawandangarwala/Library/Python/3.12/lib/python/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/pawandangarwala/Library/Python/3.12/lib/python/site-packages/django/views/decorators/http.py", line 43, in inner
+    return func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/contextlib.py", line 81, in inner
+    return func(*args, **kwds)
+           ^^^^^^^^^^^^^^^^^^^
+  File "/Users/pawandangarwala/Documents/vyayam/worktrees/int/strength_app/v1_therapist_session_views.py", line 219, in therapist_session_start
+    log_items.append(SessionLogItem.objects.create(
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/mock.py", line 1134, in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/mock.py", line 1138, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/mock.py", line 1193, in _execute_mock_call
+    raise effect
+RuntimeError: boom
+ok
+test_managed_patient_delete_is_blocked (strength_app.tests.test_exam_2026_07.TestBX1DeleteAccountManagedBlock.test_managed_patient_delete_is_blocked) ... ok
+test_self_serve_patient_can_still_delete (strength_app.tests.test_exam_2026_07.TestBX1DeleteAccountManagedBlock.test_self_serve_patient_can_still_delete) ... ok
+test_report_itself_remains_deletable_by_explicit_intent (strength_app.tests.test_exam_2026_07.TestBX2ReportChainProtected.test_report_itself_remains_deletable_by_explicit_intent) ... ok
+test_upstream_deletes_are_blocked (strength_app.tests.test_exam_2026_07.TestBX2ReportChainProtected.test_upstream_deletes_are_blocked) ... ok
+test_chat_renders_in_messages_tab_not_as_flash (strength_app.tests.test_exam_2026_07.TestBX3FlashNotShadowedByChat.test_chat_renders_in_messages_tab_not_as_flash) ... ok
+test_reset_password_flash_is_visible (strength_app.tests.test_exam_2026_07.TestBX3FlashNotShadowedByChat.test_reset_password_flash_is_visible) ... ok
+test_500_handler_renders_branded_template (strength_app.tests.test_exam_2026_07.TestBurnP2BrandedErrorPages.test_500_handler_renders_branded_template) ... ok
+test_unknown_url_uses_branded_404 (strength_app.tests.test_exam_2026_07.TestBurnP2BrandedErrorPages.test_unknown_url_uses_branded_404) ... Not Found: /this-page-does-not-exist/
+ok
+test_assessment_fetches_send_csrf (strength_app.tests.test_exam_2026_07.TestC1C2C3CameraTemplateFetchSafety.test_assessment_fetches_send_csrf) ... ok
+test_pain_fetch_chains_fail_visibly (strength_app.tests.test_exam_2026_07.TestC1C2C3CameraTemplateFetchSafety.test_pain_fetch_chains_fail_visibly) ... ok
+test_hostile_side_is_dropped (strength_app.tests.test_exam_2026_07.TestC6GetParamsWhitelisted.test_hostile_side_is_dropped) ... ok
+test_legit_side_passes (strength_app.tests.test_exam_2026_07.TestC6GetParamsWhitelisted.test_legit_side_passes) ... ok
+test_get_login_form_unaffected (strength_app.tests.test_exam_2026_07.TestD1AdminLoginRateLimited.test_get_login_form_unaffected) ... ok
+test_sixth_post_is_throttled (strength_app.tests.test_exam_2026_07.TestD1AdminLoginRateLimited.test_sixth_post_is_throttled) ... Too Many Requests: /admin/login/
+ok
+test_catalog_keys_resolve (strength_app.tests.test_exam_2026_07.TestE11CatalogRegistryIntegrity.test_catalog_keys_resolve) ... ok
+test_static_pages_render (strength_app.tests.test_exam_2026_07.TestE15StaticRoutesSmoke.test_static_pages_render) ... ok
+test_foreign_patient_cannot_view_or_download (strength_app.tests.test_exam_2026_07.TestE9ReportDownloadOwnership.test_foreign_patient_cannot_view_or_download) ... Not Found: /view-report/1/
+Not Found: /download-report/1/
+ok
+test_foreign_therapist_cannot_download (strength_app.tests.test_exam_2026_07.TestE9ReportDownloadOwnership.test_foreign_therapist_cannot_download) ... Not Found: /therapist/reports/1/download/
+ok
+test_camera_page_consumes_the_server_list (strength_app.tests.test_exam_2026_07.TestPhase4VideoModeAutoDetect.test_camera_page_consumes_the_server_list) ... ok
+test_scan_returns_exactly_the_filmed_keys (strength_app.tests.test_exam_2026_07.TestPhase4VideoModeAutoDetect.test_scan_returns_exactly_the_filmed_keys) ... ok
+test_higher_is_better_bands (strength_app.tests.test_exam_2026_07_gaps.TestE1FootballScoreBands.test_higher_is_better_bands) ... ok
+test_junk_input_scores_1 (strength_app.tests.test_exam_2026_07_gaps.TestE1FootballScoreBands.test_junk_input_scores_1) ... ok
+test_lower_is_better_bands (strength_app.tests.test_exam_2026_07_gaps.TestE1FootballScoreBands.test_lower_is_better_bands) ... ok
+test_alternative_is_not_itself_excluded (strength_app.tests.test_exam_2026_07_gaps.TestE2RedFlagWorkingSets.test_alternative_is_not_itself_excluded) ... ok
+test_filter_removes_excluded_exercises (strength_app.tests.test_exam_2026_07_gaps.TestE2RedFlagWorkingSets.test_filter_removes_excluded_exercises) ... ok
+test_generated_session_contains_no_excluded_exercise (strength_app.tests.test_exam_2026_07_gaps.TestE2RedFlagWorkingSets.test_generated_session_contains_no_excluded_exercise) ... ok
+test_cleared_gate_keeps_plyo (strength_app.tests.test_exam_2026_07_gaps.TestE3P22PlyoGating.test_cleared_gate_keeps_plyo) ... ok
+test_uncleared_gate_blocks_high_load_plyo (strength_app.tests.test_exam_2026_07_gaps.TestE3P22PlyoGating.test_uncleared_gate_blocks_high_load_plyo) ... ok
+test_female_gets_acl_notes (strength_app.tests.test_exam_2026_07_gaps.TestE4FemaleAclPrevention.test_female_gets_acl_notes) ... ok
+test_non_female_gets_no_notes (strength_app.tests.test_exam_2026_07_gaps.TestE4FemaleAclPrevention.test_non_female_gets_no_notes) ... ok
+test_cannot_do_boundaries (strength_app.tests.test_exam_2026_07_gaps.TestE5GateClassification.test_cannot_do_boundaries) ... ok
+test_manageable_and_easy (strength_app.tests.test_exam_2026_07_gaps.TestE5GateClassification.test_manageable_and_easy) ... ok
+test_non_squat_type_ignores_depth (strength_app.tests.test_exam_2026_07_gaps.TestE5GateClassification.test_non_squat_type_ignores_depth) ... ok
+test_prescriptions (strength_app.tests.test_exam_2026_07_gaps.TestE5GateClassification.test_prescriptions) ... ok
+test_struggling_boundaries (strength_app.tests.test_exam_2026_07_gaps.TestE5GateClassification.test_struggling_boundaries) ... ok
+test_age_caps_boundaries (strength_app.tests.test_exam_2026_07_gaps.TestE6DosingModifiers.test_age_caps_boundaries) ... ok
+test_plateau_boundary (strength_app.tests.test_exam_2026_07_gaps.TestE6DosingModifiers.test_plateau_boundary) ... ok
+test_progression_two_for_two_rule (strength_app.tests.test_exam_2026_07_gaps.TestE6DosingModifiers.test_progression_two_for_two_rule) ... ok
+test_return_after_break_day_boundaries (strength_app.tests.test_exam_2026_07_gaps.TestE6DosingModifiers.test_return_after_break_day_boundaries) ... ok
+test_camera_screen_uses_voice_core (strength_app.tests.test_f_voice.TestPhaseFVoiceWiring.test_camera_screen_uses_voice_core) ... ok
+test_voice_core_module_and_clip_scaffold_exist (strength_app.tests.test_f_voice.TestPhaseFVoiceWiring.test_voice_core_module_and_clip_scaffold_exist) ... ok
+test_g0_extended_pages_inline_js_parses (strength_app.tests.test_g0_inline_js_integrity.TestG0AssessmentFootballConditioningJS.test_g0_extended_pages_inline_js_parses) ... ok
+test_g0_coach_pages_inline_js_parses (strength_app.tests.test_g0_inline_js_integrity.TestG0CoachPagesJS.test_g0_coach_pages_inline_js_parses) ... ok
+test_g0_full_session_walk_inline_js_parses (strength_app.tests.test_g0_inline_js_integrity.TestG0ManagedPatientSessionJS.test_g0_full_session_walk_inline_js_parses) ... ok
+test_g0_mind_lab_runner_inline_js_parses (strength_app.tests.test_g0_inline_js_integrity.TestG0MindLabJS.test_g0_mind_lab_runner_inline_js_parses) ... ok
+test_g0_self_serve_main_pages_inline_js_parses (strength_app.tests.test_g0_inline_js_integrity.TestG0SelfServePatientJS.test_g0_self_serve_main_pages_inline_js_parses) ... ok
+test_loader_absent_when_dsn_unset (strength_app.tests.test_g0_inline_js_integrity.TestG0SentryLoaderJS.test_loader_absent_when_dsn_unset) ... ok
+test_loader_present_and_escaped_on_both_consoles (strength_app.tests.test_g0_inline_js_integrity.TestG0SentryLoaderJS.test_loader_present_and_escaped_on_both_consoles) ... ok
+test_severity_1_skips_when_threshold_is_zero (strength_app.tests.test_g1_pain_pipeline.TestD2ThresholdZeroIsHonored.test_severity_1_skips_when_threshold_is_zero) ... ok
+test_repeat_severity_8_same_exercise_dedupes_alert_only (strength_app.tests.test_g1_pain_pipeline.TestF1PainRateLimitAndAlertDedupe.test_repeat_severity_8_same_exercise_dedupes_alert_only) ... ok
+test_severity_8_on_different_exercise_alerts_again (strength_app.tests.test_g1_pain_pipeline.TestF1PainRateLimitAndAlertDedupe.test_severity_8_on_different_exercise_alerts_again) ... ok
+test_sixteenth_post_in_a_minute_is_429 (strength_app.tests.test_g1_pain_pipeline.TestF1PainRateLimitAndAlertDedupe.test_sixteenth_post_in_a_minute_is_429) ... Too Many Requests: /therapist-session/report-pain/0/
+ok
+test_aching_10_with_lenient_client_action_still_stops (strength_app.tests.test_g1_pain_pipeline.TestG1aAthleteSeverityStopsServerSide.test_aching_10_with_lenient_client_action_still_stops) ... ok
+test_aching_8_stops_even_with_action_continue (strength_app.tests.test_g1_pain_pipeline.TestG1aAthleteSeverityStopsServerSide.test_aching_8_stops_even_with_action_continue) ... ok
+test_severity_7_does_not_stop_session (strength_app.tests.test_g1_pain_pipeline.TestG1aAthleteSeverityStopsServerSide.test_severity_7_does_not_stop_session) ... ok
+test_severity_4_is_silent_report_only (strength_app.tests.test_g1_pain_pipeline.TestG1cManagedPainTiers.test_severity_4_is_silent_report_only) ... ok
+test_severity_6_skips_and_messages_no_alert (strength_app.tests.test_g1_pain_pipeline.TestG1cManagedPainTiers.test_severity_6_skips_and_messages_no_alert) ... ok
+test_severity_8_aching_pauses_messages_and_alerts_in_inbox (strength_app.tests.test_g1_pain_pipeline.TestG1cManagedPainTiers.test_severity_8_aching_pauses_messages_and_alerts_in_inbox) ... ok
+test_log_session_data_records_entry_when_consented (strength_app.tests.test_group3.DataCollectorTests.test_log_session_data_records_entry_when_consented) ... ok
+test_log_session_data_skips_without_consent (strength_app.tests.test_group3.DataCollectorTests.test_log_session_data_skips_without_consent) ... ok
+test_execute_workout_session_handles_meta (strength_app.tests.test_group3.PrescriptionAndSessionTests.test_execute_workout_session_handles_meta) ... ok
+test_execute_workout_session_without_meta (strength_app.tests.test_group3.PrescriptionAndSessionTests.test_execute_workout_session_without_meta) ... ok
+test_generate_prescription_uses_family_capability (strength_app.tests.test_group3.PrescriptionAndSessionTests.test_generate_prescription_uses_family_capability) ... ok
+test_coach_add_athlete_creates_link (strength_app.tests.test_group4.CoachViewTests.test_coach_add_athlete_creates_link) ... ok
+test_coach_flag_review_appends_note (strength_app.tests.test_group4.CoachViewTests.test_coach_flag_review_appends_note) ... ok
+test_coach_override_prescription_creates_rx (strength_app.tests.test_group4.CoachViewTests.test_coach_override_prescription_creates_rx) ... ok
+test_coach_required_redirects_anonymous (strength_app.tests.test_group4.CoachViewTests.test_coach_required_redirects_anonymous) ... ok
+test_coach_required_redirects_non_coach (strength_app.tests.test_group4.CoachViewTests.test_coach_required_redirects_non_coach) ... ok
+test_coach_set_competition_sets_date (strength_app.tests.test_group4.CoachViewTests.test_coach_set_competition_sets_date) ... ok
+test_save_gate_test_result_creates_records (strength_app.tests.test_group4.GateTestEndpointTests.test_save_gate_test_result_creates_records) ... ok
+test_food_search_requires_auth (strength_app.tests.test_group4.NutritionApiTests.test_food_search_requires_auth) ... Unauthorized: /nutrition/api/search/
+ok
+test_food_search_returns_results (strength_app.tests.test_group4.NutritionApiTests.test_food_search_returns_results) ... ok
+test_quick_log_creates_entry (strength_app.tests.test_group4.NutritionApiTests.test_quick_log_creates_entry) ... ok
+test_quick_log_requires_auth (strength_app.tests.test_group4.NutritionApiTests.test_quick_log_requires_auth) ... Unauthorized: /nutrition/api/quick-log/
+ok
+test_ankle_pumps_gets_interval_pacer (strength_app.tests.test_guided_pacer.TestGuidedPacer.test_ankle_pumps_gets_interval_pacer) ... 
+======================================================================
+1️⃣  STRETCHING & WARM-UP
+======================================================================
+
+📋 Quadriceps Stretch
+   Prescription: 2 sets × 1 reps
+   ✅ Completed!
+
+📋 Hamstring Stretch
+   Prescription: 2 sets × 1 reps
+   ✅ Completed!
+
+📋 Hip Flexor Stretch
+   Prescription: 2 sets × 1 reps
+   ✅ Completed!
+
+📋 Calf Stretch
+   Prescription: 2 sets × 1 reps
+   ✅ Completed!
+
+📋 Static Glutei
+   Prescription: 2 sets × 1 reps
+   ✅ Completed!
+
+📋 Chest Stretch Doorway
+   Prescription: 2 sets × 1 reps
+   ✅ Completed!
+
+📋 Shoulder Stretch Overhead
+   Prescription: 2 sets × 1 reps
+   ✅ Completed!
+
+📋 Wrist Forearm Stretch
+   Prescription: 2 sets × 1 reps
+   ✅ Completed!
+
+======================================================================
+2️⃣  STRENGTH TRAINING
+======================================================================
+
+📋 Sit to Stand
+   Prescription: 2 sets × 7 reps
+
+   Set 1/2:
+🟡 Rep 1 - Focus on controlled movement
+🟢 Rep 2 ✓
+🟢 Rep 3 ✓
+🟢 Rep 4 ✓
+🟡 Rep 5 - Engage your core, reduce wobbling
+🟢 Rep 6 ✓
+🟢 Rep 7 ✓
+🟢 Rep 8 ✓
+🟡 Rep 9 - Lower your hips more
+🟢 Rep 10 ✓
+   😮‍💨 Rest 60s...
+
+   Set 2/2:
+🟡 Rep 1 - Lower your hips more
+🟢 Rep 2 ✓
+🟢 Rep 3 ✓
+🟢 Rep 4 ✓
+🟢 Rep 5 ✓
+🟢 Rep 6 ✓
+🟢 Rep 7 ✓
+🟢 Rep 8 ✓
+
+   📊 Exercise Summary:
+      🟢 Green reps: 14/14
+      📈 Form score: 80.0%
+      ✅ Completion: 100.0%
+
+📋 Glute Bridge
+   Prescription: 2 sets × 7 reps
+
+   Set 1/2:
+🟡 Rep 1 - Engage your core, reduce wobbling
+🟢 Rep 2 ✓
+🟢 Rep 3 ✓
+🟡 Rep 4 - Focus on controlled movement
+🟢 Rep 5 ✓
+🟢 Rep 6 ✓
+🟡 Rep 7 - Engage your core, reduce wobbling
+🟢 Rep 8 ✓
+🟢 Rep 9 ✓
+🟡 Rep 10 - Focus on controlled movement
+🟢 Rep 11 ✓
+   😮‍💨 Rest 60s...
+
+   Set 2/2:
+🟢 Rep 1 ✓
+🟢 Rep 2 ✓
+🟡 Rep 3 - Lower your hips more
+🟢 Rep 4 ✓
+🟢 Rep 5 ✓
+🟢 Rep 6 ✓
+🟡 Rep 7 - Engage your core, reduce wobbling
+🟢 Rep 8 ✓
+🟢 Rep 9 ✓
+
+   📊 Exercise Summary:
+      🟢 Green reps: 14/14
+      📈 Form score: 79.8%
+      ✅ Completion: 100.0%
+
+📋 Step Ups
+   Prescription: 2 sets × 7 reps
+
+   Set 1/2:
+🟢 Rep 1 ✓
+🟢 Rep 2 ✓
+🟢 Rep 3 ✓
+🟡 Rep 4 - Lower your hips more
+🟡 Rep 5 - Engage your core, reduce wobbling
+🟡 Rep 6 - Lower your hips more
+🟢 Rep 7 ✓
+🟢 Rep 8 ✓
+🟢 Rep 9 ✓
+🟡 Rep 10 - Lower your hips more
+🟡 Rep 11 - Lower your hips more
+🟢 Rep 12 ✓
+   😮‍💨 Rest 60s...
+
+   Set 2/2:
+🟡 Rep 1 - Focus on controlled movement
+🟢 Rep 2 ✓
+🟢 Rep 3 ✓
+🟢 Rep 4 ✓
+🟢 Rep 5 ✓
+🟢 Rep 6 ✓
+🟢 Rep 7 ✓
+🟡 Rep 8 - Focus on controlled movement
+🟢 Rep 9 ✓
+
+   📊 Exercise Summary:
+      🟢 Green reps: 14/14
+      📈 Form score: 78.9%
+      ✅ Completion: 100.0%
+
+📋 Tricep Extensions
+   Prescription: 2 sets × 7 reps
+
+   Set 1/2:
+🟢 Rep 1 ✓
+🟢 Rep 2 ✓
+🟢 Rep 3 ✓
+🟢 Rep 4 ✓
+🟢 Rep 5 ✓
+🟡 Rep 6 - Lower your hips more
+🟢 Rep 7 ✓
+🟢 Rep 8 ✓
+   😮‍💨 Rest 60s...
+
+   Set 2/2:
+🟢 Rep 1 ✓
+🟡 Rep 2 - Engage your core, reduce wobbling
+🟡 Rep 3 - Engage your core, reduce wobbling
+🟡 Rep 4 - Focus on controlled movement
+🟡 Rep 5 - Lower your hips more
+🟢 Rep 6 ✓
+🟡 Rep 7 - Focus on controlled movement
+🟢 Rep 8 ✓
+🟢 Rep 9 ✓
+🟢 Rep 10 ✓
+🟡 Rep 11 - Engage your core, reduce wobbling
+🟢 Rep 12 ✓
+🟢 Rep 13 ✓
+
+   📊 Exercise Summary:
+      🟢 Green reps: 14/14
+      📈 Form score: 79.5%
+      ✅ Completion: 100.0%
+
+======================================================================
+3️⃣  CARDIO FINISHER
+======================================================================
+
+📋 Marching on Spot
+   Prescription: 1 sets × 1 reps
+   ✅ Completed!
+
+======================================================================
+1️⃣  STRETCHING & WARM-UP
+======================================================================
+
+📋 Hamstring Stretch
+   Prescription: 1 sets × 1 reps
+   ✅ Completed!
+
+======================================================================
+2️⃣  STRENGTH TRAINING
+======================================================================
+
+📋 Partial Squats
+   Prescription: 1 sets × 1 reps
+
+   Set 1/1:
+🟡 Rep 1 - Engage your core, reduce wobbling
+🟢 Rep 2 ✓
+
+   📊 Exercise Summary:
+      🟢 Green reps: 1/1
+      📈 Form score: 76.0%
+      ✅ Completion: 100.0%
+
+======================================================================
+3️⃣  CARDIO FINISHER
+======================================================================
+
+📋 Walking
+   Prescription: 1 sets × 1 reps
+   ✅ Completed!
+ok
+test_both_exercises_stay_guided (strength_app.tests.test_guided_pacer.TestGuidedPacer.test_both_exercises_stay_guided) ... ok
+test_glute_squeeze_gets_squeeze_cycle_pacer (strength_app.tests.test_guided_pacer.TestGuidedPacer.test_glute_squeeze_gets_squeeze_cycle_pacer) ... ok
+test_other_guided_exercises_have_no_pacer (strength_app.tests.test_guided_pacer.TestGuidedPacer.test_other_guided_exercises_have_no_pacer) ... ok
+test_empty_state (strength_app.tests.test_mind_lab.TestMindLabCoachCard.test_empty_state) ... ok
+test_latest_session_shown (strength_app.tests.test_mind_lab.TestMindLabCoachCard.test_latest_session_shown) ... ok
+test_bad_game_id_404 (strength_app.tests.test_mind_lab.TestMindLabRunner.test_bad_game_id_404) ... Not Found: /athlete/mind-lab/Bad.Id/
+ok
+test_runner_redirects_when_not_signed_in (strength_app.tests.test_mind_lab.TestMindLabRunner.test_runner_redirects_when_not_signed_in) ... ok
+test_runner_renders_for_any_game_id (strength_app.tests.test_mind_lab.TestMindLabRunner.test_runner_renders_for_any_game_id) ... ok
+test_save_creates_session (strength_app.tests.test_mind_lab.TestMindLabRunner.test_save_creates_session) ... ok
+test_save_is_post_only (strength_app.tests.test_mind_lab.TestMindLabRunner.test_save_is_post_only) ... Method Not Allowed (GET): /athlete/mind-lab/g/save/
+ok
+test_save_rejects_bad_values (strength_app.tests.test_mind_lab.TestMindLabRunner.test_save_rejects_bad_values) ... Bad Request: /athlete/mind-lab/any_game/save/
+Bad Request: /athlete/mind-lab/any_game/save/
+Bad Request: /athlete/mind-lab/any_game/save/
+Bad Request: /athlete/mind-lab/any_game/save/
+Bad Request: /athlete/mind-lab/any_game/save/
+Bad Request: /athlete/mind-lab/any_game/save/
+Bad Request: /athlete/mind-lab/any_game/save/
+Bad Request: /athlete/mind-lab/any_game/save/
+ok
+test_save_rejects_non_json_and_signed_out (strength_app.tests.test_mind_lab.TestMindLabRunner.test_save_rejects_non_json_and_signed_out) ... Bad Request: /athlete/mind-lab/g/save/
+Forbidden: /athlete/mind-lab/any_game/save/
+ok
+test_compute_lsi_sets_flag (strength_app.tests.test_models.FootballProfileModelTests.test_compute_lsi_sets_flag) ... ok
+test_daily_food_log_caches_macros (strength_app.tests.test_models.NutritionModelTests.test_daily_food_log_caches_macros) ... ok
+test_to_summary_dict_has_expected_keys (strength_app.tests.test_models.PatientFamilyCapabilityTests.test_to_summary_dict_has_expected_keys) ... ok
+test_age_validator_blocks_under_13 (strength_app.tests.test_models.PatientProfileModelTests.test_age_validator_blocks_under_13) ... ok
+test_fitness_level_property_returns_json (strength_app.tests.test_models.PatientProfileModelTests.test_fitness_level_property_returns_json) ... ok
+test_save_sets_traffic_light (strength_app.tests.test_models.SessionFeedbackModelTests.test_save_sets_traffic_light) ... ok
+test_camera_screen_has_capture_controls (strength_app.tests.test_r1_capture.TestR1CaptureUIRendered.test_camera_screen_has_capture_controls) ... ok
+test_guided_screen_has_capture_controls (strength_app.tests.test_r1_capture.TestR1CaptureUIRendered.test_guided_screen_has_capture_controls) ... ok
+test_camera_set_log_round_trip_with_clamps (strength_app.tests.test_r1_capture.TestR1aSetLog.test_camera_set_log_round_trip_with_clamps) ... ok
+test_guided_set_row (strength_app.tests.test_r1_capture.TestR1aSetLog.test_guided_set_row) ... ok
+test_malformed_reps_array_dropped_never_500 (strength_app.tests.test_r1_capture.TestR1aSetLog.test_malformed_reps_array_dropped_never_500) ... set_log: malformed reps array dropped (patient=THERA_ANIKA exercise=ex_glute_bridge set=1)
+set_log: malformed reps array dropped (patient=THERA_ANIKA exercise=ex_glute_bridge set=1)
+set_log: malformed reps array dropped (patient=THERA_ANIKA exercise=ex_glute_bridge set=1)
+ok
+test_non_dict_body_is_400 (strength_app.tests.test_r1_capture.TestR1aSetLog.test_non_dict_body_is_400) ... Bad Request: /therapist-session/set-log/0/
+ok
+test_requires_live_session (strength_app.tests.test_r1_capture.TestR1aSetLog.test_requires_live_session) ... Bad Request: /therapist-session/set-log/0/
+ok
+test_set_log_retry_is_idempotent (strength_app.tests.test_r1_capture.TestR1aSetLog.test_set_log_retry_is_idempotent) ... ok
+test_bad_kind_is_400_and_seconds_clamped (strength_app.tests.test_r1_capture.TestR1bRestEvents.test_bad_kind_is_400_and_seconds_clamped) ... Bad Request: /therapist-session/rest-event/0/
+ok
+test_extension_pause_and_skip_rows (strength_app.tests.test_r1_capture.TestR1bRestEvents.test_extension_pause_and_skip_rows) ... ok
+test_exercise_page_stamps_started_at_once (strength_app.tests.test_r1_capture.TestR1cTimestamps.test_exercise_page_stamps_started_at_once) ... ok
+test_rep_number_clamped_and_optional (strength_app.tests.test_r1_capture.TestR1dRepPinnedPain.test_rep_number_clamped_and_optional) ... ok
+test_rep_number_persisted (strength_app.tests.test_r1_capture.TestR1dRepPinnedPain.test_rep_number_persisted) ... ok
+test_set_number_clamped_never_500 (strength_app.tests.test_r1_capture.TestR1dRepPinnedPain.test_set_number_clamped_never_500) ... ok
+test_generate_twice_is_one_immutable_row (strength_app.tests.test_r2_report.TestR2GenerateIdempotent.test_generate_twice_is_one_immutable_row) ... ok
+test_builder_is_deterministic (strength_app.tests.test_r2_report.TestR2GoldenReport.test_builder_is_deterministic) ... ok
+test_golden_full_report_dict (strength_app.tests.test_r2_report.TestR2GoldenReport.test_golden_full_report_dict) ... ok
+test_bare_session_with_zero_activity (strength_app.tests.test_r2_report.TestR2NeverRaises.test_bare_session_with_zero_activity) ... ok
+test_corrupt_reps_json_shapes_do_not_raise (strength_app.tests.test_r2_report.TestR2NeverRaises.test_corrupt_reps_json_shapes_do_not_raise) ... ok
+test_item_pain_is_ignored_painevent_is_used (strength_app.tests.test_r2_report.TestR2PainSourceOfTruth.test_item_pain_is_ignored_painevent_is_used) ... ok
+test_late_rest_extensions_fire_fatigue (strength_app.tests.test_r2_report.TestR2PatternToggles.test_late_rest_extensions_fire_fatigue) ... ok
+test_no_patterns_on_stable_form (strength_app.tests.test_r2_report.TestR2PatternToggles.test_no_patterns_on_stable_form) ... ok
+test_tempo_tendency_fires_when_dominant (strength_app.tests.test_r2_report.TestR2PatternToggles.test_tempo_tendency_fires_when_dominant) ... ok
+test_warm_in_fires_on_improving_form (strength_app.tests.test_r2_report.TestR2PatternToggles.test_warm_in_fires_on_improving_form) ... ok
+test_form_delta_recurrence_and_streak (strength_app.tests.test_r2_report.TestR2Trends.test_form_delta_recurrence_and_streak) ... ok
+test_no_trends_without_previous_reports (strength_app.tests.test_r2_report.TestR2Trends.test_no_trends_without_previous_reports) ... ok
+test_completion_trigger_creates_complete_report (strength_app.tests.test_r2_report.TestR2TriggersHTTP.test_completion_trigger_creates_complete_report) ... ok
+test_finished_safety_net_is_idempotent (strength_app.tests.test_r2_report.TestR2TriggersHTTP.test_finished_safety_net_is_idempotent) ... ok
+test_pain_pause_trigger_creates_early_end_report (strength_app.tests.test_r2_report.TestR2TriggersHTTP.test_pain_pause_trigger_creates_early_end_report) ... ok
+test_r2_w1_execution_row_marked_manual (strength_app.tests.test_r2_ship.TestR2W1ManualSave.test_r2_w1_execution_row_marked_manual)
+Manual result → ExerciseExecution with source 'manual', form None. ... ok
+test_r2_w1_form_score_75_not_fabricated_when_absent (strength_app.tests.test_r2_ship.TestR2W1ManualSave.test_r2_w1_form_score_75_not_fabricated_when_absent)
+A payload with no form_score key must not invent 75 any more. ... ok
+test_r2_w1_null_form_score_stored_as_none (strength_app.tests.test_r2_ship.TestR2W1ManualSave.test_r2_w1_null_form_score_stored_as_none) ... ok
+test_r2_w1_xp_completion_based_for_manual (strength_app.tests.test_r2_ship.TestR2W1ManualSave.test_r2_w1_xp_completion_based_for_manual) ... ok
+test_r2_w1_camera_exercise_embeds_config (strength_app.tests.test_r2_ship.TestR2W1TemplateIntegration.test_r2_w1_camera_exercise_embeds_config) ... ok
+test_r2_w1_manual_exercise_embeds_manual_config (strength_app.tests.test_r2_ship.TestR2W1TemplateIntegration.test_r2_w1_manual_exercise_embeds_manual_config) ... ok
+test_r2_w1_no_rounding_claim_in_measurement_cues (strength_app.tests.test_r2_ship.TestR2W1TemplateIntegration.test_r2_w1_no_rounding_claim_in_measurement_cues)
+SB-15: measurement-driven cues must not claim to see rounding. ... ok
+test_r2_w2_intermediate_keeps_four_week_ceiling (strength_app.tests.test_r2_ship.TestR2W2DeloadTrainingAge.test_r2_w2_intermediate_keeps_four_week_ceiling) ... ok
+test_r2_w2_novice_five_weeks_no_mandatory_deload (strength_app.tests.test_r2_ship.TestR2W2DeloadTrainingAge.test_r2_w2_novice_five_weeks_no_mandatory_deload) ... ok
+test_r2_w2_novice_six_weeks_deloads (strength_app.tests.test_r2_ship.TestR2W2DeloadTrainingAge.test_r2_w2_novice_six_weeks_deloads) ... ok
+test_r2_w2_hop_keeps_90_band (strength_app.tests.test_r2_ship.TestR2W2LsiPerTest.test_r2_w2_hop_keeps_90_band) ... ok
+test_r2_w2_ybalance_uses_94_band (strength_app.tests.test_r2_ship.TestR2W2LsiPerTest.test_r2_w2_ybalance_uses_94_band) ... ok
+test_r2_u1_generic_response_for_unknown_and_known_phone (strength_app.tests.test_r2_ship.TestR2W3ForgotPassword.test_r2_u1_generic_response_for_unknown_and_known_phone) ... ok
+test_r2_u1_must_change_password_forces_change (strength_app.tests.test_r2_ship.TestR2W3ForgotPassword.test_r2_u1_must_change_password_forces_change) ... ok
+test_r2_u1_no_token_without_email (strength_app.tests.test_r2_ship.TestR2W3ForgotPassword.test_r2_u1_no_token_without_email) ... ok
+test_r2_u1_token_created_and_reset_works (strength_app.tests.test_r2_ship.TestR2W3ForgotPassword.test_r2_u1_token_created_and_reset_works) ... ok
+test_r2_u1_weak_password_rejected (strength_app.tests.test_r2_ship.TestR2W3ForgotPassword.test_r2_u1_weak_password_rejected) ... ok
+test_r2_u7_equipment_change_clears_cached_session (strength_app.tests.test_r2_ship.TestR2W3ProfileEdit.test_r2_u7_equipment_change_clears_cached_session) ... ok
+test_r2_u2_resume_markers_set_and_dashboard_offers_continue (strength_app.tests.test_r2_ship.TestR2W3ResumeAndUndo.test_r2_u2_resume_markers_set_and_dashboard_offers_continue) ... ok
+test_r2_u3_undo_pops_last_result_and_redirects_back (strength_app.tests.test_r2_ship.TestR2W3ResumeAndUndo.test_r2_u3_undo_pops_last_result_and_redirects_back) ... ok
+test_r2_u3_undo_with_nothing_done_is_safe (strength_app.tests.test_r2_ship.TestR2W3ResumeAndUndo.test_r2_u3_undo_with_nothing_done_is_safe) ... ok
+test_r2_u4_detail_renders_manual_without_fake_form (strength_app.tests.test_r2_ship.TestR2W3SessionHistory.test_r2_u4_detail_renders_manual_without_fake_form) ... ok
+test_r2_u4_history_lists_own_sessions (strength_app.tests.test_r2_ship.TestR2W3SessionHistory.test_r2_u4_history_lists_own_sessions) ... ok
+test_r2_u4_other_patients_session_404s (strength_app.tests.test_r2_ship.TestR2W3SessionHistory.test_r2_u4_other_patients_session_404s) ... Not Found: /v1/history/2/
+ok
+test_r2_t1_dashboard_orders_alerted_patient_first (strength_app.tests.test_r2_ship.TestR2W4Therapist.test_r2_t1_dashboard_orders_alerted_patient_first) ... ok
+test_r2_t2_inbox_lists_and_mark_reviewed (strength_app.tests.test_r2_ship.TestR2W4Therapist.test_r2_t2_inbox_lists_and_mark_reviewed) ... ok
+test_r2_t2_other_therapists_alert_blocked (strength_app.tests.test_r2_ship.TestR2W4Therapist.test_r2_t2_other_therapists_alert_blocked) ... Not Found: /therapist/alerts/1/reviewed/
+ok
+test_r2_t2_pain_alert_created_on_sharp_pain (strength_app.tests.test_r2_ship.TestR2W4Therapist.test_r2_t2_pain_alert_created_on_sharp_pain) ... ok
+test_r2_t3_copy_week_clones_items_as_draft (strength_app.tests.test_r2_ship.TestR2W4Therapist.test_r2_t3_copy_week_clones_items_as_draft) ... ok
+test_r2_t7_visit_note_created_and_listed (strength_app.tests.test_r2_ship.TestR2W4Therapist.test_r2_t7_visit_note_created_and_listed) ... ok
+test_r2_u1_therapist_reset_issues_temp_password (strength_app.tests.test_r2_ship.TestR2W4Therapist.test_r2_u1_therapist_reset_issues_temp_password) ... ok
+test_r2_w5_django_patched (strength_app.tests.test_r2_ship.TestR2W5Security.test_r2_w5_django_patched) ... ok
+test_r2_w5_security_headers_on_every_response (strength_app.tests.test_r2_ship.TestR2W5Security.test_r2_w5_security_headers_on_every_response) ... ok
+test_r2_w5_session_settings_not_contradictory (strength_app.tests.test_r2_ship.TestR2W5Security.test_r2_w5_session_settings_not_contradictory) ... ok
+test_r2_w6_healthz_unauthenticated_200 (strength_app.tests.test_r2_ship.TestR2W6Healthz.test_r2_w6_healthz_unauthenticated_200) ... ok
+test_patient_and_therapist_render_same_document (strength_app.tests.test_r3_report_ui.TestR3BothAudiencesIdentical.test_patient_and_therapist_render_same_document) ... ok
+test_patient_entry_points_link_to_report (strength_app.tests.test_r3_report_ui.TestR3BothAudiencesIdentical.test_patient_entry_points_link_to_report) ... ok
+test_hostile_content_is_escaped_on_both_pages (strength_app.tests.test_r3_report_ui.TestR3HostileDataRender.test_hostile_content_is_escaped_on_both_pages) ... ok
+test_anonymous_redirects_to_login (strength_app.tests.test_r3_report_ui.TestR3IDORMatrix.test_anonymous_redirects_to_login) ... ok
+test_other_patient_404s (strength_app.tests.test_r3_report_ui.TestR3IDORMatrix.test_other_patient_404s) ... Not Found: /therapist-session/report/1/
+ok
+test_other_therapist_404s (strength_app.tests.test_r3_report_ui.TestR3IDORMatrix.test_other_therapist_404s) ... Not Found: /therapist/patient/ef6800bc-d0db-4c63-968d-1186c7cd97bc/session-reports/1/
+Not Found: /therapist/patient/eae591e9-1653-4fa6-b4b6-1958c3beef45/session-reports/1/
+ok
+test_report_pages_inline_js_parses (strength_app.tests.test_r3_report_ui.TestR3ReportPagesInlineJS.test_report_pages_inline_js_parses) ... ok
+test_arbiter_is_loaded_and_owns_the_cue_sites (strength_app.tests.test_r4_coaching.TestR4CoachWiring.test_arbiter_is_loaded_and_owns_the_cue_sites) ... ok
+test_calibration_confidence_and_coloring_wired (strength_app.tests.test_r4_coaching.TestR4CoachWiring.test_calibration_confidence_and_coloring_wired) ... ok
+test_coach_core_module_ships (strength_app.tests.test_r4_coaching.TestR4CoachWiring.test_coach_core_module_ships) ... ok
+test_tempo_speech_yields_to_arbitration (strength_app.tests.test_r4_coaching.TestR4CoachWiring.test_tempo_speech_yields_to_arbitration) ... ok
+test_every_event_appears_in_human_readable_prose (strength_app.tests.test_r5_integration.TestR5EndToEndAcceptance.test_every_event_appears_in_human_readable_prose) ... ok
+test_fatigue_pattern_lands_in_report (strength_app.tests.test_r5_integration.TestR5EndToEndAcceptance.test_fatigue_pattern_lands_in_report) ... ok
+test_both_sides_identical_bytes (strength_app.tests.test_report_pdf.TestReportPdfExport.test_both_sides_identical_bytes) ... ok
+test_cross_patient_404 (strength_app.tests.test_report_pdf.TestReportPdfExport.test_cross_patient_404) ... Not Found: /therapist-session/report/1/pdf/
+ok
+test_patient_downloads_own_pdf (strength_app.tests.test_report_pdf.TestReportPdfExport.test_patient_downloads_own_pdf) ... ok
+test_pdf_content_carries_names_and_honest_labels (strength_app.tests.test_report_pdf.TestReportPdfExport.test_pdf_content_carries_names_and_honest_labels) ... ok
+test_plyo_label_passes_through_verbatim (strength_app.tests.test_report_pdf.TestReportPdfExport.test_plyo_label_passes_through_verbatim) ... ok
+test_therapist_linked_200_unlinked_404 (strength_app.tests.test_report_pdf.TestReportPdfExport.test_therapist_linked_200_unlinked_404) ... Not Found: /therapist/patient/b43021f8-e9a0-4227-a0df-e5a7ec6c975a/session-reports/1/pdf/
+ok
+test_set_dsn_reaches_templates (strength_app.tests.test_sentry.TestSentryContextProcessor.test_set_dsn_reaches_templates) ... ok
+test_unset_dsn_reaches_templates_as_empty (strength_app.tests.test_sentry.TestSentryContextProcessor.test_unset_dsn_reaches_templates_as_empty) ... ok
+test_settings_import_clean_with_dsn (strength_app.tests.test_sentry.TestSettingsImportWithAndWithoutDSN.test_settings_import_clean_with_dsn) ... ok
+test_settings_import_clean_without_dsn_and_sdk_untouched (strength_app.tests.test_sentry.TestSettingsImportWithAndWithoutDSN.test_settings_import_clean_without_dsn_and_sdk_untouched) ... ok
+test_send_message_creates_record (therapist_app.test_group4.TherapistMessagingTests.test_send_message_creates_record) ... ok
+test_get_linked_patient_or_404_blocks_other_therapist (therapist_app.test_group4.TherapistPermissionTests.test_get_linked_patient_or_404_blocks_other_therapist) ... ok
+test_therapist_required_forbids_non_therapist (therapist_app.test_group4.TherapistPermissionTests.test_therapist_required_forbids_non_therapist) ... ok
+test_therapist_required_redirects_anonymous (therapist_app.test_group4.TherapistPermissionTests.test_therapist_required_redirects_anonymous) ... ok
+test_dashboard_pain_flag_fires_from_painevent (therapist_app.test_group4.TherapistProgramBuilderTests.test_dashboard_pain_flag_fires_from_painevent) ... ok
+test_save_program_draft_only (therapist_app.test_group4.TherapistProgramBuilderTests.test_save_program_draft_only) ... ok
+test_save_program_publishes_items (therapist_app.test_group4.TherapistProgramBuilderTests.test_save_program_publishes_items) ... ok
+test_save_program_threshold_zero_survives_blank_is_null (therapist_app.test_group4.TherapistProgramBuilderTests.test_save_program_threshold_zero_survives_blank_is_null) ... ok
+test_unique_link_week_constraint (therapist_app.test_models.PrescriptionModelTests.test_unique_link_week_constraint) ... ok
+test_completion_pct_and_duration (therapist_app.test_models.SessionLogTests.test_completion_pct_and_duration) ... ok
+test_initials_handles_dr_prefix (therapist_app.test_models.TherapistModelTests.test_initials_handles_dr_prefix) ... ok
+test_current_week_from_program_start (therapist_app.test_models.TherapistPatientLinkTests.test_current_week_from_program_start) ... ok
+test_authenticated_patient_gets_403 (therapist_app.tests.TherapistPermissionTests.test_authenticated_patient_gets_403)
+Case 2: anika (a patient, not a therapist) → 403 on dashboard. ... Forbidden: /therapist/dashboard/
+ok
+test_cross_therapist_detail_returns_404 (therapist_app.tests.TherapistPermissionTests.test_cross_therapist_detail_returns_404)
+Case 3: dr_shah cannot view vikram's detail (vikram is dr_iyer's). ... Not Found: /therapist/patient/f81e5d12-f455-4afe-86de-8e12a30b8bdc/
+ok
+test_cross_therapist_program_save_returns_404 (therapist_app.tests.TherapistPermissionTests.test_cross_therapist_program_save_returns_404)
+Case 4: dr_iyer cannot POST to anika's program save (anika is dr_shah's). ... Not Found: /therapist/patient/233f7805-5498-4f36-90c2-96ab84fed2b2/program/save/
+ok
+test_logged_out_redirects_to_login (therapist_app.tests.TherapistPermissionTests.test_logged_out_redirects_to_login)
+Case 1: anonymous → redirect to login. ... ok
+test_infer_clusteral_dimensions (strength_app.tests.test_group3.MainCoordinatorTests.test_infer_clusteral_dimensions) ... ok
+test_v1_progression_chains_have_levels (strength_app.tests.test_group3.ProgressionChainTests.test_v1_progression_chains_have_levels) ... ok
+test_django_to_backend_category_mapping (strength_app.tests.test_group3.UtilsMappingTests.test_django_to_backend_category_mapping) ... ok
+test_sanitize_json_field_converts_enum (strength_app.tests.test_group3.UtilsMappingTests.test_sanitize_json_field_converts_enum) ... ok
+test_analyze_frame_route_removed (strength_app.tests.test_group4.CVEndpointTests.test_analyze_frame_route_removed) ... ok
+test_permissions_policy_header (strength_app.tests.test_group4.MiddlewareTests.test_permissions_policy_header) ... ok
+test_rate_limit_blocks_after_max_attempts (strength_app.tests.test_group4.RateLimiterTests.test_rate_limit_blocks_after_max_attempts) ... ok
+test_rate_limit_skips_get (strength_app.tests.test_group4.RateLimiterTests.test_rate_limit_skips_get) ... ok
+test_r2_w1_april27_mapping_fixes (strength_app.tests.test_r2_ship.TestR2W1ExportArtifact.test_r2_w1_april27_mapping_fixes) ... ok
+test_r2_w1_artifact_exists_and_covers_registry (strength_app.tests.test_r2_ship.TestR2W1ExportArtifact.test_r2_w1_artifact_exists_and_covers_registry) ... ok
+test_r2_w1_camera_entries_have_valid_js_type (strength_app.tests.test_r2_ship.TestR2W1ExportArtifact.test_r2_w1_camera_entries_have_valid_js_type) ... ok
+test_r2_w1_export_is_fresh (strength_app.tests.test_r2_ship.TestR2W1ExportArtifact.test_r2_w1_export_is_fresh)
+Regenerate to a temp file and diff against the committed artifact. ... ok
+test_r2_w1_no_scored_back_targets_for_camera_exercises (strength_app.tests.test_r2_ship.TestR2W1ExportArtifact.test_r2_w1_no_scored_back_targets_for_camera_exercises)
+SB-15 (JS path): no camera exercise may carry a scored back/spine ... ok
+test_r2_w1_stretches_are_manual (strength_app.tests.test_r2_ship.TestR2W1ExportArtifact.test_r2_w1_stretches_are_manual)
+The old STRETCH fallback faked shoulder tracking for everything. ... ok
+test_r2_w1_unknown_exercise_defaults_to_manual (strength_app.tests.test_r2_ship.TestR2W1ExportArtifact.test_r2_w1_unknown_exercise_defaults_to_manual) ... ok
+test_r2_w2_raw_fallback_when_missing (strength_app.tests.test_r2_ship.TestR2W2AsymmetryRaw.test_r2_w2_raw_fallback_when_missing) ... ok
+test_r2_w2_same_raw_same_class_regardless_of_bands (strength_app.tests.test_r2_ship.TestR2W2AsymmetryRaw.test_r2_w2_same_raw_same_class_regardless_of_bands) ... ok
+test_r2_w2_cooldown_static_holds_within_acsm_band (strength_app.tests.test_r2_ship.TestR2W2ProtocolHygiene.test_r2_w2_cooldown_static_holds_within_acsm_band) ... ok
+test_r2_w2_no_rsi_claim_anywhere_user_facing (strength_app.tests.test_r2_ship.TestR2W2ProtocolHygiene.test_r2_w2_no_rsi_claim_anywhere_user_facing) ... ok
+test_r2_w2_normalisation_table_complete_and_tagged (strength_app.tests.test_r2_ship.TestR2W2ProtocolHygiene.test_r2_w2_normalisation_table_complete_and_tagged) ... ok
+test_r2_w2_prematch_protocol_is_dynamic (strength_app.tests.test_r2_ship.TestR2W2ProtocolHygiene.test_r2_w2_prematch_protocol_is_dynamic) ... ok
+test_r2_w2_short_night_good_energy_is_green (strength_app.tests.test_r2_ship.TestR2W2SleepTrafficLight.test_r2_w2_short_night_good_energy_is_green) ... ok
+test_r2_w2_short_night_tired_is_yellow (strength_app.tests.test_r2_ship.TestR2W2SleepTrafficLight.test_r2_w2_short_night_tired_is_yellow) ... ok
+test_r2_w2_under_5_always_at_least_yellow (strength_app.tests.test_r2_ship.TestR2W2SleepTrafficLight.test_r2_w2_under_5_always_at_least_yellow) ... ok
+test_boundary_triplets_cover_all_thresholds (strength_app.tests.clinical_audit.tests.test_adversarial_generator.TestBoundaryTriplets.test_boundary_triplets_cover_all_thresholds)
+Every threshold must have exactly 3 triplets (below/at/above). ... ok
+test_boundary_triplets_epsilon_float (strength_app.tests.clinical_audit.tests.test_adversarial_generator.TestBoundaryTriplets.test_boundary_triplets_epsilon_float)
+Float thresholds must use epsilon=0.1. ... ok
+test_boundary_triplets_epsilon_integer (strength_app.tests.clinical_audit.tests.test_adversarial_generator.TestBoundaryTriplets.test_boundary_triplets_epsilon_integer)
+Integer thresholds must use epsilon=1. ... ok
+test_category_diversity_in_n100 (strength_app.tests.clinical_audit.tests.test_adversarial_generator.TestCategoryDiversity.test_category_diversity_in_n100)
+At least 5 of 7 categories must appear in a n=100 run. ... ok
+test_each_builder_produces_cases (strength_app.tests.clinical_audit.tests.test_adversarial_generator.TestCategoryDiversity.test_each_builder_produces_cases) ... ok
+test_determinism_same_seed (strength_app.tests.clinical_audit.tests.test_adversarial_generator.TestDeterminism.test_determinism_same_seed)
+Same seed must produce same case_ids in same order. ... ok
+test_different_seeds_produce_different_cases (strength_app.tests.clinical_audit.tests.test_adversarial_generator.TestDeterminism.test_different_seeds_produce_different_cases)
+Different seeds should produce different outputs. ... ok
+test_extreme_age_200_is_valid (strength_app.tests.clinical_audit.tests.test_adversarial_generator.TestExtremeCases.test_extreme_age_200_is_valid) ... ok
+test_extreme_cases_all_valid_objects (strength_app.tests.clinical_audit.tests.test_adversarial_generator.TestExtremeCases.test_extreme_cases_all_valid_objects) ... ok
+test_extreme_lsi_boundary (strength_app.tests.clinical_audit.tests.test_adversarial_generator.TestExtremeCases.test_extreme_lsi_boundary) ... ok
+test_extreme_pain_vas_11_is_valid (strength_app.tests.clinical_audit.tests.test_adversarial_generator.TestExtremeCases.test_extreme_pain_vas_11_is_valid) ... ok
+test_extreme_weight_2kg_is_valid (strength_app.tests.clinical_audit.tests.test_adversarial_generator.TestExtremeCases.test_extreme_weight_2kg_is_valid) ... ok
+test_all_cases_are_synthetic_patient_cases (strength_app.tests.clinical_audit.tests.test_adversarial_generator.TestGeneratorBasics.test_all_cases_are_synthetic_patient_cases) ... ok
+test_all_cases_have_adversarial_kind (strength_app.tests.clinical_audit.tests.test_adversarial_generator.TestGeneratorBasics.test_all_cases_have_adversarial_kind) ... ok
+test_all_cases_have_non_empty_case_id (strength_app.tests.clinical_audit.tests.test_adversarial_generator.TestGeneratorBasics.test_all_cases_have_non_empty_case_id) ... ok
+test_generate_n_1 (strength_app.tests.clinical_audit.tests.test_adversarial_generator.TestGeneratorBasics.test_generate_n_1)
+generate(n=1) must return exactly 1 case. ... ok
+test_generate_negative_n (strength_app.tests.clinical_audit.tests.test_adversarial_generator.TestGeneratorBasics.test_generate_negative_n)
+generate(n=-1) must not raise and must return nothing. ... ok
+test_generate_zero_n (strength_app.tests.clinical_audit.tests.test_adversarial_generator.TestGeneratorBasics.test_generate_zero_n)
+generate(n=0) must return an empty iterator without raising. ... ok
+test_all_cases_json_serialisable (strength_app.tests.clinical_audit.tests.test_adversarial_generator.TestSerialisation.test_all_cases_json_serialisable) ... ok
+test_to_dict_from_dict_roundtrip (strength_app.tests.clinical_audit.tests.test_adversarial_generator.TestSerialisation.test_to_dict_from_dict_roundtrip) ... ok
+test_combined_cases_pregnancy_only_female (strength_app.tests.clinical_audit.tests.test_adversarial_generator.TestSpecialCaseGuards.test_combined_cases_pregnancy_only_female) ... ok
+test_gate_cases_produce_orphan_states (strength_app.tests.clinical_audit.tests.test_adversarial_generator.TestSpecialCaseGuards.test_gate_cases_produce_orphan_states) ... ok
+test_gate_cases_produce_position_without_football (strength_app.tests.clinical_audit.tests.test_adversarial_generator.TestSpecialCaseGuards.test_gate_cases_produce_position_without_football) ... ok
+test_generates_exactly_n_cases (strength_app.tests.clinical_audit.tests.test_adversarial_generator.TestSpecialCaseGuards.test_generates_exactly_n_cases)
+generate(n=50) must yield exactly 50 cases even when pools are smaller than n. ... ok
+test_missing_data_cases_valid (strength_app.tests.clinical_audit.tests.test_adversarial_generator.TestSpecialCaseGuards.test_missing_data_cases_valid) ... ok
+test_missing_empty_pattern_scores_valid (strength_app.tests.clinical_audit.tests.test_adversarial_generator.TestSpecialCaseGuards.test_missing_empty_pattern_scores_valid) ... ok
+test_time_contradiction_cases_have_surgery (strength_app.tests.clinical_audit.tests.test_adversarial_generator.TestSpecialCaseGuards.test_time_contradiction_cases_have_surgery) ... ok
+test_thresholds_have_required_keys (strength_app.tests.clinical_audit.tests.test_adversarial_generator.TestThresholdExtraction.test_thresholds_have_required_keys) ... ok
+test_thresholds_include_age_boundaries (strength_app.tests.clinical_audit.tests.test_adversarial_generator.TestThresholdExtraction.test_thresholds_include_age_boundaries) ... ok
+test_thresholds_include_known_football_values (strength_app.tests.clinical_audit.tests.test_adversarial_generator.TestThresholdExtraction.test_thresholds_include_known_football_values)
+Spot-check: known thresholds from v1_football_constants.py must appear. ... ok
+test_thresholds_non_empty (strength_app.tests.clinical_audit.tests.test_adversarial_generator.TestThresholdExtraction.test_thresholds_non_empty) ... ok
+test_thresholds_values_are_numeric (strength_app.tests.clinical_audit.tests.test_adversarial_generator.TestThresholdExtraction.test_thresholds_values_are_numeric) ... ok
+test_acl_r_seed_has_asymmetric_hop (strength_app.tests.clinical_audit.tests.test_football_generator.TestAdversarialSeeds.test_acl_r_seed_has_asymmetric_hop) ... ok
+test_adversarial_seed_count_at_least_30 (strength_app.tests.clinical_audit.tests.test_football_generator.TestAdversarialSeeds.test_adversarial_seed_count_at_least_30) ... ok
+test_all_seed_tags_present_in_n50_batch (strength_app.tests.clinical_audit.tests.test_football_generator.TestAdversarialSeeds.test_all_seed_tags_present_in_n50_batch) ... ok
+test_cardiac_seed (strength_app.tests.clinical_audit.tests.test_football_generator.TestAdversarialSeeds.test_cardiac_seed) ... ok
+test_orphan_seeds_not_coach_linked (strength_app.tests.clinical_audit.tests.test_football_generator.TestAdversarialSeeds.test_orphan_seeds_not_coach_linked) ... ok
+test_pain_vas6_seed (strength_app.tests.clinical_audit.tests.test_football_generator.TestAdversarialSeeds.test_pain_vas6_seed) ... ok
+test_phv_seeds_have_phv_flag (strength_app.tests.clinical_audit.tests.test_football_generator.TestAdversarialSeeds.test_phv_seeds_have_phv_flag) ... ok
+test_pregnant_seed (strength_app.tests.clinical_audit.tests.test_football_generator.TestAdversarialSeeds.test_pregnant_seed) ... ok
+test_seeds_are_all_football_kind (strength_app.tests.clinical_audit.tests.test_football_generator.TestAdversarialSeeds.test_seeds_are_all_football_kind) ... ok
+test_seeds_injected_into_n500_batch (strength_app.tests.clinical_audit.tests.test_football_generator.TestAdversarialSeeds.test_seeds_injected_into_n500_batch) ... ok
+test_exactly_30_adversarial_seeds_in_n50_batch (strength_app.tests.clinical_audit.tests.test_football_generator.TestBatchSize.test_exactly_30_adversarial_seeds_in_n50_batch)
+Adversarial seeds account for exactly 30 of the first 50 cases. ... ok
+test_n_500_produces_500_cases (strength_app.tests.clinical_audit.tests.test_football_generator.TestBatchSize.test_n_500_produces_500_cases) ... ok
+test_n_50_produces_50_cases (strength_app.tests.clinical_audit.tests.test_football_generator.TestBatchSize.test_n_50_produces_50_cases) ... ok
+test_all_cases_are_football (strength_app.tests.clinical_audit.tests.test_football_generator.TestCaseKind.test_all_cases_are_football) ... ok
+test_all_cases_have_football_raw_inputs (strength_app.tests.clinical_audit.tests.test_football_generator.TestCaseKind.test_all_cases_have_football_raw_inputs) ... ok
+test_cod_bilateral (strength_app.tests.clinical_audit.tests.test_football_generator.TestCaseKind.test_cod_bilateral) ... ok
+test_hop_test_bilateral (strength_app.tests.clinical_audit.tests.test_football_generator.TestCaseKind.test_hop_test_bilateral) ... ok
+test_raw_inputs_have_all_six_tests (strength_app.tests.clinical_audit.tests.test_football_generator.TestCaseKind.test_raw_inputs_have_all_six_tests) ... ok
+test_ybalance_bilateral (strength_app.tests.clinical_audit.tests.test_football_generator.TestCaseKind.test_ybalance_bilateral) ... ok
+test_at_least_one_orphan_in_50 (strength_app.tests.clinical_audit.tests.test_football_generator.TestCoachLinkedRate.test_at_least_one_orphan_in_50) ... ok
+test_coach_linked_false_rate_in_500 (strength_app.tests.clinical_audit.tests.test_football_generator.TestCoachLinkedRate.test_coach_linked_false_rate_in_500)
+coach_linked=False rate should be ~5% (allow 2-20% band). ... ok
+test_all_age_bands_covered (strength_app.tests.clinical_audit.tests.test_football_generator.TestCoverage.test_all_age_bands_covered) ... ok
+test_all_competition_phases_covered (strength_app.tests.clinical_audit.tests.test_football_generator.TestCoverage.test_all_competition_phases_covered) ... ok
+test_all_positions_covered (strength_app.tests.clinical_audit.tests.test_football_generator.TestCoverage.test_all_positions_covered) ... ok
+test_all_positions_substantial (strength_app.tests.clinical_audit.tests.test_football_generator.TestCoverage.test_all_positions_substantial) ... ok
+test_all_sexes_covered (strength_app.tests.clinical_audit.tests.test_football_generator.TestCoverage.test_all_sexes_covered) ... ok
+test_all_training_histories_covered (strength_app.tests.clinical_audit.tests.test_football_generator.TestCoverage.test_all_training_histories_covered) ... ok
+test_both_sexes_substantial (strength_app.tests.clinical_audit.tests.test_football_generator.TestCoverage.test_both_sexes_substantial) ... ok
+test_case_id_stable_round_trip (strength_app.tests.clinical_audit.tests.test_football_generator.TestDeterminism.test_case_id_stable_round_trip)
+case_id survives to_dict()/from_dict() round-trip. ... ok
+test_different_seed_different_cases (strength_app.tests.clinical_audit.tests.test_football_generator.TestDeterminism.test_different_seed_different_cases)
+Different seeds → different case sets (n must exceed adversarial seed count ~30). ... ok
+test_same_seed_same_cases (strength_app.tests.clinical_audit.tests.test_football_generator.TestDeterminism.test_same_seed_same_cases)
+Identical seed → identical case IDs in identical order. ... ok
+test_cod_range (strength_app.tests.clinical_audit.tests.test_football_generator.TestPhysiologicalRanges.test_cod_range) ... ok
+test_hop_range (strength_app.tests.clinical_audit.tests.test_football_generator.TestPhysiologicalRanges.test_hop_range) ... ok
+test_lsi_realistic_hop (strength_app.tests.clinical_audit.tests.test_football_generator.TestPhysiologicalRanges.test_lsi_realistic_hop)
+LSI must be ≤100% and ≥30%. ... ok
+test_nordic_range (strength_app.tests.clinical_audit.tests.test_football_generator.TestPhysiologicalRanges.test_nordic_range) ... ok
+test_pogo_range (strength_app.tests.clinical_audit.tests.test_football_generator.TestPhysiologicalRanges.test_pogo_range) ... ok
+test_sprint_range (strength_app.tests.clinical_audit.tests.test_football_generator.TestPhysiologicalRanges.test_sprint_range) ... ok
+test_ybalance_range (strength_app.tests.clinical_audit.tests.test_football_generator.TestPhysiologicalRanges.test_ybalance_range) ... ok
+test_age_within_defined_bands (strength_app.tests.clinical_audit.tests.test_football_generator.TestProfileConsistency.test_age_within_defined_bands) ... ok
+test_pain_vas_positive_when_pain_reported (strength_app.tests.clinical_audit.tests.test_football_generator.TestProfileConsistency.test_pain_vas_positive_when_pain_reported) ... ok
+test_position_is_valid (strength_app.tests.clinical_audit.tests.test_football_generator.TestProfileConsistency.test_position_is_valid) ... ok
+test_pregnancy_only_for_female (strength_app.tests.clinical_audit.tests.test_football_generator.TestProfileConsistency.test_pregnancy_only_for_female) ... ok
+test_training_history_is_valid (strength_app.tests.clinical_audit.tests.test_football_generator.TestProfileConsistency.test_training_history_is_valid) ... ok
+test_academy_hops_higher_than_recreational (strength_app.tests.clinical_audit.tests.test_football_generator.TestRealisticTestInputs.test_academy_hops_higher_than_recreational)
+Academy M 24-29 average hop > recreational M 24-29 average hop. ... ok
+test_no_zero_hop_values_outside_adversarial (strength_app.tests.clinical_audit.tests.test_football_generator.TestRealisticTestInputs.test_no_zero_hop_values_outside_adversarial) ... ok
+test_sprint_times_have_variance (strength_app.tests.clinical_audit.tests.test_football_generator.TestRealisticTestInputs.test_sprint_times_have_variance) ... ok
+test_json_serialisable (strength_app.tests.clinical_audit.tests.test_football_generator.TestSerialisation.test_json_serialisable) ... ok
+test_to_dict_and_back (strength_app.tests.clinical_audit.tests.test_football_generator.TestSerialisation.test_to_dict_and_back) ... ok
+test_adversarial_are_valid_cases (strength_app.tests.clinical_audit.tests.test_strength_generator.TestAdversarialSeeds.test_adversarial_are_valid_cases)
+All adversarial seeds must be valid SyntheticPatientCase instances. ... ok
+test_adversarial_count (strength_app.tests.clinical_audit.tests.test_strength_generator.TestAdversarialSeeds.test_adversarial_count)
+Must have at least 20 adversarial seeds. ... ok
+test_specific_adversarial_cases_present (strength_app.tests.clinical_audit.tests.test_strength_generator.TestAdversarialSeeds.test_specific_adversarial_cases_present)
+Spot-check specific adversarial cases exist. ... ok
+test_all_acuities_present (strength_app.tests.clinical_audit.tests.test_strength_generator.TestCoverage.test_all_acuities_present) ... ok
+test_all_age_bands_present (strength_app.tests.clinical_audit.tests.test_strength_generator.TestCoverage.test_all_age_bands_present) ... ok
+test_all_cells_hit_at_10000 (strength_app.tests.clinical_audit.tests.test_strength_generator.TestCoverage.test_all_cells_hit_at_10000)
+generate(10000) must hit every (age_band × sex × pattern_profile) cell. ... ok
+test_all_pattern_profiles_present (strength_app.tests.clinical_audit.tests.test_strength_generator.TestCoverage.test_all_pattern_profiles_present) ... ok
+test_all_training_histories_present (strength_app.tests.clinical_audit.tests.test_strength_generator.TestCoverage.test_all_training_histories_present) ... ok
+test_both_sexes_present (strength_app.tests.clinical_audit.tests.test_strength_generator.TestCoverage.test_both_sexes_present) ... ok
+test_report_keys_present (strength_app.tests.clinical_audit.tests.test_strength_generator.TestCoverageReport.test_report_keys_present) ... ok
+test_report_total_matches (strength_app.tests.clinical_audit.tests.test_strength_generator.TestCoverageReport.test_report_total_matches) ... ok
+test_total_cells_possible_is_correct (strength_app.tests.clinical_audit.tests.test_strength_generator.TestCoverageReport.test_total_cells_possible_is_correct) ... ok
+test_case_count_matches_n (strength_app.tests.clinical_audit.tests.test_strength_generator.TestDeterminism.test_case_count_matches_n)
+generate(n) must yield exactly n cases. ... ok
+test_different_seeds_different_cases (strength_app.tests.clinical_audit.tests.test_strength_generator.TestDeterminism.test_different_seeds_different_cases)
+Different seeds should produce different cases (allow very small collision). ... ok
+test_same_seed_same_case_ids (strength_app.tests.clinical_audit.tests.test_strength_generator.TestDeterminism.test_same_seed_same_case_ids)
+Same seed must produce identical case_id sequences. ... ok
+test_no_errors_10000_cases (strength_app.tests.clinical_audit.tests.test_strength_generator.TestNoValidationErrors.test_no_errors_10000_cases)
+Build 10,000 cases and verify all pass basic field invariants. ... ok
+test_no_football_fields (strength_app.tests.clinical_audit.tests.test_strength_generator.TestNoValidationErrors.test_no_football_fields)
+Strength cases must not carry football-specific fields. ... ok
+test_to_dict_round_trip (strength_app.tests.clinical_audit.tests.test_strength_generator.TestNoValidationErrors.test_to_dict_round_trip)
+Cases must survive a to_dict / from_dict round trip. ... ok
+test_constants_are_coherent (strength_app.tests.test_mind_lab_adaptive.TestNextLevel.test_constants_are_coherent) ... ok
+test_down_threshold_edges (strength_app.tests.test_mind_lab_adaptive.TestNextLevel.test_down_threshold_edges) ... ok
+test_holds_in_the_middle_band (strength_app.tests.test_mind_lab_adaptive.TestNextLevel.test_holds_in_the_middle_band) ... ok
+test_invalid_input_raises (strength_app.tests.test_mind_lab_adaptive.TestNextLevel.test_invalid_input_raises) ... ok
+test_level_bounds (strength_app.tests.test_mind_lab_adaptive.TestNextLevel.test_level_bounds) ... ok
+test_min_trials_edges (strength_app.tests.test_mind_lab_adaptive.TestNextLevel.test_min_trials_edges) ... ok
+test_module_has_no_django_import (strength_app.tests.test_mind_lab_adaptive.TestNextLevel.test_module_has_no_django_import) ... ok
+test_out_of_range_level_is_clamped (strength_app.tests.test_mind_lab_adaptive.TestNextLevel.test_out_of_range_level_is_clamped) ... ok
+test_unknown_accuracy_holds (strength_app.tests.test_mind_lab_adaptive.TestNextLevel.test_unknown_accuracy_holds) ... ok
+test_up_threshold_edges (strength_app.tests.test_mind_lab_adaptive.TestNextLevel.test_up_threshold_edges) ... ok
+
+----------------------------------------------------------------------
+Ran 427 tests in 544.820s
+
+OK
+Destroying test database for alias 'default' ('file:memorydb_default?mode=memory&cache=shared')...
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+⚠️  Speech error: run loop already started
+exit=0

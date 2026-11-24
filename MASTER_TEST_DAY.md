@@ -464,3 +464,177 @@ mentor sign-off on MENTOR_REVIEW_QUEUE §2026-07 cue strings. Flip day per
 exercise = one line in therapist_app/exercise_catalog.py + remove that
 exercise's DARK assertions in strength_app/tests/test_camera_dark.py
 (lines 99-101 invariant + '>DARK<' count).
+
+### L4. Mind Lab scaffold (K4) — runner page + coach card
+No game exists yet (games arrive with K5), so this walk checks the shell only.
+1. Sign in as a coached football athlete (e.g. the seeded football demo
+   athlete). Open `/athlete/mind-lab/anything_goes/` on the phone.
+   Expect: page with a "Mind Lab" card and the line "No game is loaded."
+   No console errors (a missing game is not an error).
+2. Open `/athlete/mind-lab/Bad.Id/` → 404. Sign out and reopen step 1's URL →
+   redirected to login.
+3. Sign in as the athlete's coach. Open that athlete's detail page
+   (Squad → athlete). Right column, under "Athlete Profile": card
+   "Mind Lab — Latest Session" reads "No Mind Lab sessions yet."
+4. Optional, to see the filled card: in `python manage.py shell` create
+   `GameSession.objects.create(athlete=<PatientProfile>, game_id='demo',
+   level=2, n_trials=20, accuracy=0.8, median_rt_ms=410)`; reload the coach
+   page → card shows game, date, level 2, trials 20, accuracy 80%,
+   median reaction 410 ms.
+5. Athlete-visible text added: "Mind Lab", "No game is loaded.", "Saved.",
+   "Could not save." — flagged for Pawan's physio mentor (cognitive-performance
+   wording) before any wider release.
+
+---
+
+## Part M — Exhibition host acceptance walk, phone over mobile data (2026-11-17, K1)
+
+Do this yourself after `docs/DEPLOY_DECISION.md` runbook step 8, before Wed 25 Nov.
+Needs: the deployed `https://<name>.fly.dev` link, one phone, Wi-Fi OFF
+(mobile data only), seeded demo (`DEMO_SEED=1`).
+
+### M1. Reach + HTTPS
+1. Phone browser (Chrome Android / Safari iOS): open `https://<name>.fly.dev/login/`.
+2. Padlock shows, page loads in under 5 s. `http://` must jump to `https://`.
+3. Open `/healthz/` → `{"status":"ok"}`.
+
+### M2. Athlete login + first page (the slow one)
+1. `/login/` → phone `9000000005`, password `athlete` → Log in.
+2. Expected: lands on `/athlete/today/`, "Today's Training, Kabir", "In-Season" pill.
+3. Time it. First visit after a deploy/restart may take 10–60 s (the registry
+   import). Note the seconds: ______. Second visit must be under 3 s.
+
+### M3. Football assessment on the phone
+1. Bottom nav / Today → "Performance tests due" card → `/football/assessment/`:
+   intro lists 8 tests.
+2. Tap Start → test 1 (Single-Leg Hop) opens with `?side=left`. Enter a value,
+   tap Save → goes to `?side=right`. Save → test 2.
+3. Walk tests 2–6 the same way (Nordic, Sprint, Pogo, COD both sides, Y-Balance
+   both sides). Each Save moves to the next test, no error banner.
+4. Tests 7–8 (bench / leg press): enter 60 kg × 8, Save; tap "No equipment
+   available — skip" on the last, or enter 140 × 10.
+5. Results page renders with a football level. No pain/rehab wording.
+
+### M4. Camera session over HTTPS on the phone
+1. Today → "Start Training" → `/v1/session/` → open the first camera exercise.
+2. Browser asks for camera permission → Allow. Camera must open (needs HTTPS).
+3. Do 3 reps. Skeleton overlay follows you; rep counter climbs; a cue is spoken.
+4. Finish the session, give feedback (sRPE) → Today shows the session done.
+5. Tap Progress and Profile tabs: both render, active tab highlighted.
+
+### M5. Stall conditions
+1. Leave the phone idle on the page 20 minutes, then tap any link. Must
+   respond in under 3 s (server must not have slept).
+2. Second phone (or laptop) logs in as `9100000001 / athletepass123` at the same
+   time and opens `/athlete/today/`. Both phones stay responsive.
+3. Log out on both → back to `/login/`.
+
+If any step fails, write what you saw and the time; run `fly logs` and look for
+`Out of memory` / `Killed`. If seen: `fly scale memory 2048`.
+
+---
+
+## Part N — Exhibition demo walk: 4-week football athlete (K3)
+
+Prep: `DJANGO_SECRET_KEY=test-key DJANGO_DEBUG=True python manage.py seed_football_demo`
+(re-run on the day: the next match is seeded 3 days out). Script: `docs/DEMO_SCRIPT.md`.
+
+### N1. Athlete side (phone)
+1. Warm-up: `/login/` → `9000000005` / `athlete` → open `/athlete/today/` once. Note the load time.
+2. Yellow "DEMO DATA · Not a real athlete" bar shows on Today, Progress and Profile.
+3. Next-match card reads "3 DAYS AWAY" (Rajkot Rovers, "DEMO · League — home").
+4. Amber "Deload" pill is on today's session; the list is short (about 3 exercises).
+5. Progress tab: L3, six battery bars, 14 sessions in four weeks. No pain wording, no "RSI", no ACWR.
+
+### N2. Coach side
+1. `/coach/login/` → `coach_arjun` / `simple` → squad lists "Kabir Singh (DEMO)".
+2. Athlete detail → Asymmetry card shows Hop LSI 87.4 % (below 90 %), flagged.
+3. Coach notes begin "DEMO DATA — fictional athlete".
+
+### N3. Honesty checks
+1. No session shows green/yellow/red rep counts or a form score (all 14 are guided, self-counted).
+2. Wording on every page is training-readiness only; none reads as diagnosis.
+3. `seed_football_demo --reset` removes the athlete; rerun restores it with identical counts.
+
+## Part O — Check-In 4, Mind Lab day gating, visitor mode (step 2)
+
+Setup: start the server with `MIND_LAB_ENABLED=True`. Sign in as a coach-linked football athlete (phone, mobile data or Wi-Fi). Flag unset = every URL below is 404.
+
+1. Open `/athlete/mind-lab/checkin/`. Expect 4 questions: sleep (3 choices) and three 1-5 sliders. Tap Done without a sleep choice. Expect it refuses.
+2. Sleep over 6 h, stress 2, energy 5, focus 5, athlete's last traffic light green. Expect "Full day" and "Full Mind Lab today."
+3. Sleep 5 to 6 h, same sliders. Expect "Light day" and the shorter-day line.
+4. Sleep under 5 h, same sliders. Expect "Recovery-only day".
+5. Last traffic light yellow (give a session feedback with joint pain), sleep over 6 h. Expect the shorter-day line.
+6. Last traffic light red, sleep over 6 h. Expect "Recovery-only day" and "Check-In and Reset Breath only today." Red must win over good sleep.
+7. Energy 1 (then stress 1 in a new check-in). Expect the line "If you feel very low, please talk to your coach or a qualified professional." The athlete is never blocked.
+8. Coach dashboard for the same athlete. Expect NO check-in answers anywhere.
+9. Visitor mode: signed OUT, open `/exhibition/mind-lab/`. Answer sleep and energy. Expect a day label and "Nothing was saved." Tap "Next visitor". Expect a blank form.
+10. After step 9, open `/admin/` and confirm no new Mind Lab check-in row and no new game session from the visitor run. Energy 1 in the visitor run shows the support line.
+
+## Part P — Pass Window + exhibition visitor mode (step 3)
+
+Needs `MIND_LAB_ENABLED=True` in the environment. Phone, portrait. The 8 scenarios are demo scenarios and still UNREVIEWED: do not treat any answer as coaching advice.
+
+1. Log in as an athlete. Open `/athlete/mind-lab/checkin/` and answer Sleep over 6 h, others 3 to 5. Open `/athlete/mind-lab/pass_window/`. The rules card shows "Demo scenarios", the shape key (circle you, squares teammates, triangles defenders), "Time Assist: 0.3x" and the not-a-return-to-play line.
+2. Tap Start. A pitch appears. The triangle(s) slide toward you slowly. Nothing flashes. Tap a teammate square. The screen freezes about 2 s, shows a dashed amber line to the best teammate and a one-line reason ending "(Demo scenario)".
+3. Let one trial run out without tapping. It says "Time ran out" and shows the best pass.
+4. Finish all 8 trials (or 90 s). End card says "N of M best passes at 0.3x Time Assist" and "Compare only with your own earlier sessions at the same level". Status line below reads "Saved." Check no text mentions learning speed, leaderboards or match speed.
+5. Gating, no check-in today (delete today's check-in or use a new athlete): `/athlete/mind-lab/pass_window/` shows "Check-In and Reset Breath only today." and no game. Repeat with Sleep under 5 h: "Recovery only today." and no game.
+6. Sleep 5 to 6 h: game plays. After a perfect session the level does not rise (shortened day holds the level).
+7. Level 3 and up (set by perfect sessions on full days, or edit nothing and trust the node/Django tests): after tapping a teammate a lane choice appears (Direct, or through the gap). Level 5 layouts may be mirrored left to right.
+8. Visitor mode, signed out, phone: open `/exhibition/mind-lab/pass-window/`. It plays exactly 3 trials at Level 2 (0.5x), then reads "Nothing was saved." No login prompt. In the coach view and Django admin, no new GameSession appears.
+
+Unsigned wording and numbers: see `docs/UNSIGNED_DEFAULTS.md` "Pass Window".
+
+
+## Part Q — Return-to-play Tier 1: holds and coach lock (step 4)
+
+Needs `RTP_ENABLED=True`. Laptop, coach login plus Django admin. There is no therapist screen yet, so set status in `python manage.py shell` with `strength_app.rtp.availability` (functions `place_hold`, `lift_hold`, `set_stage`, `set_base_status`). Wording of the athlete hold text is UNSIGNED: physio mentor must review it.
+
+1. Flag off (`RTP_ENABLED` unset): coach athlete page, Override page and athlete Today look exactly as before. No "Override locked" anywhere.
+2. Flag on, athlete with no hold: same screens, same session as step 1.
+3. Place a hold (shell: `place_hold(patient, role='system')`). Athlete Today shows "Training paused" with the hold text. Starting a session shows the stopped page. A session cached earlier the same day is also stopped.
+4. Coach athlete page: "Override locked" shows instead of the Override button. Open `/coach/athlete/<id>/override/` by URL: a red locked message, no form. Admin > Audit logs shows a "denied" row only after a POST attempt.
+5. Flag for Review with a note still works while held. The athlete stays on hold.
+6. As therapist (shell: `lift_hold(patient, actor=<assigned TherapistProfile>)`): hold lifts, athlete gets a session again. Try the same call as the coach profile: returns False and a "denied" audit row appears.
+7. `set_stage(patient, 2, actor=<assigned therapist>)`: coach Override is locked again (rehab stage). Place and lift a hold: stage stays 2.
+8. `set_base_status(patient, 'restricted', ...)`: Override opens with "you can only remove exercises". Adding an exercise is rejected (denied row). Removing is saved.
+9. Admin: Audit logs, Availability statuses and Injury episodes are listed. Rehab pathways shows `hamstring` and `ankle` with no stages.
+
+## Part R — Return-to-play Tier 2: injury questions, hold on feedback, coach view (step 4)
+
+Needs `RTP_ENABLED=True`. Laptop for the coach and Django admin, phone for the athlete. There is no therapist screen yet: open an episode in Django admin (Injury episodes > Add, tick nothing for closed) or `python manage.py shell` with `strength_app.rtp.availability`, `clearance` and `checkpoints`. The wording of the five athlete questions is UNSIGNED: physio mentor must review it.
+
+1. Flag off: the post-session feedback page has no injury questions and the coach athlete page has no status strip. Same as before.
+2. Flag on, athlete with NO episode: feedback page has no injury questions. Submit with pain "None": no hold, coach page unchanged.
+3. Open an episode for the athlete (admin). Flag on. Do a session and reach the feedback page: a card "A few quick questions about your injury" shows swelling, giving way, locking, tightness (0 to 10) and where. Answer all "No" and tightness 2, submit. Athlete is not on hold. Admin > Session feedbacks shows the five values saved.
+4. Next session, answer swelling "Yes", submit. Athlete Today now shows "Training paused" and a new session is refused. Admin > Audit logs shows `place_hold` allowed, role system, reason `session_feedback`. Stage number unchanged.
+5. Repeat on a second athlete with an active episode using giving way "Yes". Same result. Repeat with locking "Yes". Same result.
+6. Leave every question blank and submit: no hold (blank never holds).
+7. Coach login, athlete page: a strip shows Status, Traffic light, Stage (blank until W1 content exists), Restrictions, Checkpoint (due or passed) and "Injury signal yes/no". Injury signal is "yes" after step 4. View page source and search for "swelling", "giving way", "tightness", "locking": none of the athlete's answers appear.
+8. Shell: `clearance.decide(patient, 'approved', actor=<assigned therapist>)` while held returns None. Lift the hold (`lift_hold`), approve: returns a row. Submit feedback with swelling "Yes": hold is placed and the clearance shows `invalidated_reason = red_flag` in admin shell.
+9. Shell: `cp = checkpoints.open_checkpoint(patient, actor=<therapist>)`. As the coach profile: `enter_measure(cp, 'hop', '150', actor=<coach>)` stays pending. `enter_measure(cp, 'range', 'x', actor=<coach>)` returns None. `pass_gate(cp, actor=<coach>)` returns False. Coach page shows "Checkpoint due". Therapist `confirm_measure` then `pass_gate`: coach page shows "Checkpoint passed". Stage number unchanged. Audit logs list each denied attempt.
+
+## Part S — Return-to-play Tier 3: notices, auto-hold on worse, inbox, status lines (step 4)
+
+Needs `RTP_ENABLED=True`. Laptop for coach and therapist logins (both use `/coach/login/`), phone for the athlete. New wording is UNSIGNED: physio mentor must review it (list in the Tier 3 report). The therapist is the athlete's assigned therapist (admin > Patient profiles).
+
+1. Flag off: coach squad has no Inbox button and no status line under athlete names. `/coach/inbox/` is a 404. Athlete Today has no status line.
+2. Flag on, athlete with no episode and no hold: athlete Today has no status line. Squad shows no status line for that athlete.
+3. Open an episode (admin). Athlete does a session, feedback: tightness 2, swelling No. Next session: tightness 6, swelling No. Athlete is put on hold (answers got worse). Athlete Today shows the hold text. Stage number in admin is unchanged.
+4. Log in as the assigned therapist at `/coach/login/`, open Squad: Inbox button shows (1). Open it: the notice "Training paused for <name>. Their answers got worse since the last session." is under Notices, the athlete is under "Waiting for your decision". No swelling, giving way, tightness or locking values anywhere. Click Mark read: the notice goes, the count clears.
+5. Shell: open a checkpoint, coach enters a hop result. Therapist Inbox shows it under "Checkpoints due" with "1 result to confirm". Confirm and pass: it leaves the list.
+6. Log in as the coach: Squad shows "Medical hold · Injury signal: yes" under the athlete. No raw answers in the page source. Coach `/coach/inbox/` lists nothing about the athlete.
+7. Coach cannot lift the hold or mark the therapist's notice read (shell `lift_hold` with the coach profile returns False, audit row denied).
+8. Athlete with a "restricted" status and restriction `no_plyo` (shell `set_base_status`, then admin edit): Today shows "Status: Restricted" and "Restrictions: no_plyo".
+9. Therapist lifts the hold (`lift_hold`): Today status line clears, session available again.
+
+## Part T — Check-In 4 and Pass Window, phone walk (pre-merge round 3)
+
+Needs `MIND_LAB_ENABLED=True`. Phone, portrait. Login: `/login/` → `9000000005` / `athlete` (seeded football demo athlete, Kabir Singh). Seeded: the athlete, his 14 sessions and the login. Live: today's check-in, the Pass Window game and its saved session. Pass Window scenarios are UNREVIEWED demo scenarios.
+
+1. Log in, open `/athlete/mind-lab/checkin/`. Tap Done with no sleep choice: it refuses. Pick Sleep over 6 h, stress 2, energy 5, focus 5, tap Done: "Full day" shows.
+2. Open `/athlete/mind-lab/pass_window/`. The rules card shows "Demo scenarios", "Time Assist: 0.3x" and the not-a-return-to-play line. Tap Start.
+3. Tap a teammate square: the screen freezes about 2 s and a dashed amber line and a one-line reason ending "(Demo scenario)" show. Let one trial time out: "Time ran out" shows.
+4. Finish the session: the end card shows "N of M best passes at 0.3x Time Assist" and the status line reads "Saved."
+5. New check-in with Sleep under 5 h, then reopen `/athlete/mind-lab/pass_window/`: it shows "Recovery only today." and no game.

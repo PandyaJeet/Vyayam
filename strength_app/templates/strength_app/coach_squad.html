@@ -4,6 +4,11 @@
 {% block page_title %}Squad — Football S&amp;C{% endblock %}
 
 {% block header_actions %}
+{% if rtp_inbox_unread is not None %}
+<a href="{% url 'rtp_inbox' %}" class="btn-coach btn-sm-c" style="margin-right:8px;" id="rtpInboxLink">
+  <i class="fas fa-inbox"></i> Inbox{% if rtp_inbox_unread %} ({{ rtp_inbox_unread }}){% endif %}
+</a>
+{% endif %}
 <a href="{% url 'coach_add_athlete' %}" class="btn-coach btn-primary-c btn-sm-c">
   <i class="fas fa-user-plus"></i> Add Athlete
 </a>
@@ -107,6 +112,9 @@
       {{ a.sport|title }}{% if a.position %} · {{ a.position }}{% endif %}
       {% if a.patient.age %} · {{ a.patient.age }}y{% endif %}
     </div>
+    {% if a.rtp_coach %}
+    <div class="athlete-meta rtp-squad-line">{{ a.rtp_coach.status|capfirst }} · Injury signal: {% if a.rtp_coach.injury_signal %}yes{% else %}no{% endif %}{% if a.rtp_coach.checkpoint %} · Checkpoint {{ a.rtp_coach.checkpoint }}{% endif %}</div>
+    {% endif %}
     {% if a.flagged %}
     <span class="flag-strip"><i class="fas fa-flag"></i> Flagged</span>
     {% endif %}

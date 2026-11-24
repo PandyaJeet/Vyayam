@@ -21,9 +21,15 @@ except ImportError:
         'pyttsx3 not installed - desktop voice coaching disabled '
         '(pip install pyttsx3)')
 
+import sys
 import threading
 import queue
 import time
+
+# Never start a real TTS engine while the test runner is active: pyttsx3.init()
+# and runAndWait() start a macOS speech run loop that can block the suite.
+# Outside `manage.py test` nothing changes.
+UNDER_TESTS = len(sys.argv) > 1 and sys.argv[1] == 'test'
 
 
 class VoiceCoachV2:
@@ -39,7 +45,7 @@ class VoiceCoachV2:
     _tts_engine = None
     _tts_lock = threading.Lock()
     _engine_initialized = False
-    _voice_enabled = PYTTSX3_AVAILABLE  # Disabled if pyttsx3 not available
+    _voice_enabled = PYTTSX3_AVAILABLE and not UNDER_TESTS  # off without pyttsx3 or under tests
     
     @classmethod
     def _get_engine(cls):

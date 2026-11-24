@@ -1146,6 +1146,20 @@ def generate_v1_session(patient):
             'cooldown': {}, 'session_summary': {},
         }
 
+    # ── 0a. RTP medical hold (S12): a held athlete gets no session ───────
+    from django.conf import settings as _settings
+    if getattr(_settings, 'RTP_ENABLED', False):
+        from .rtp import availability as _rtp_availability
+        if _rtp_availability.is_held(patient):
+            from .rtp.config import ATHLETE_HOLD_TEXT
+            return {
+                'status': 'stopped',
+                'stop_reason': ATHLETE_HOLD_TEXT,
+                'meta': {'patient_id': patient.patient_id, 'patient_name': patient.name},
+                'modifiers_applied': {}, 'warmup': {}, 'working_sets': [],
+                'cooldown': {}, 'session_summary': {},
+            }
+
     # ── 0b. Drop-off / gap detection (Task 4) ────────────────────────────
     gap_adj = get_return_session_adjustments(patient)
     if gap_adj.get('redirect_to_onboarding'):
