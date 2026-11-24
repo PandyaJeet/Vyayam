@@ -696,3 +696,12 @@ Needs `EXHIBITION_MODE=True`. Laptop, any browser, no login.
 6. No word like fracture, cleared, healing or diagnosis appears anywhere. The page has no script and no form.
 7. Reload 5 times: the numbers stay the same (the non-lunge rows can change with the day of the week). In the Django admin the counts of patients, sessions and strength profiles do not change. No patient named EXHDEMO_ exists.
 8. Open the page in two browser tabs at the same moment: both load, neither shows an error.
+
+## Part U5 — Progression review fixes (2026-11)
+
+1. `/exhibition/progression/`, "What changed", lunge row, Now column: Level reads 2 and the Why line says "Ready to progress: level 3 saved for the next session". Nothing on the page says the level is already 3.
+2. The lunge rows are still in both plans (persona session length is 90 minutes, the top of the onboarding slider). The weaker-side sets are still sets + 2 and sets + 1.
+3. The history table's last row reads "Week 6 (latest)". No other week number is on the page.
+4. Phone 375 x 667, `/exhibition/squat/`, camera on: let a cue wrap to 2 lines. Both lines show in full, nothing is cut, the page does not scroll. A third line is not shown.
+5. Page tab titles: index "VYAYAM", squat "Full Squats — VYAYAM", games "VYAYAM demo games", progression "VYAYAM: How a plan changes".
+6. On Render free plan (512 MB), after deploy, open each page once. Compare with the memory table in `audit/EXHIBITION_FIXES2.md`. Order to try: `/exhibition/`, `/exhibition/squat/`, `/exhibition/games/`, `/exhibition/progression/`. Check the Render memory graph does not hit the limit.
