@@ -712,7 +712,7 @@ Needs `EXHIBITION_MODE=True` and HTTPS. Phone 375 x 667, portrait, no login. The
 
 1. Open `/exhibition/squat/`. Before any tap, the squat demo plays (muted, looped) above the Start button. No camera prompt appears. Start, "Show demo" and the hint all show without scrolling.
 2. Tap "Show demo" on the Start screen: the clip restarts from the top.
-3. Tap Start and allow the camera. Tap "Show demo" under the rep count: the coach runs its demo and the small Reference video plays. The page does not scroll, and the rep count is not covered.
+3. Tap Start and allow the camera. The camera page's own demo runs on the Start tap: camera on, setup guidance, "Watch me first" with the small Reference video playing `full_squats.mp4`, then "Now you try", then live rep counting and form cues. Every spoken line shows in the caption bar. Tap "Show demo" under the rep count: the demo runs again. The page does not scroll, and the rep count is not covered.
 4. Let a long cue wrap. The caption bar shows at most 3 lines and does not cover the rep count.
 5. Reload, tap Start, choose Don't Allow: the "Camera not available" panel shows the message, the playing demo, "Show demo" and "Try again". "Show demo" restarts the clip.
 6. Leave the page alone for 60 s after Start: it reloads to the Start screen.

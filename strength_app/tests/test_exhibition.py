@@ -140,6 +140,13 @@ class ExhibitionFlagOnTests(TestCase):
         self.assertNotRegex(css, r'show-demo[^{]*\{[^}]*display\s*:\s*none')
         self.assertNotRegex(css, r'#exh(Fail)?Replay[^{]*\{[^}]*display\s*:\s*none')
 
+    def test_start_handler_calls_showdemo_with_startcamera_fallback(self):
+        js = (STATIC_JS / 'exhibition_squat.js').read_text()
+        self.assertIn("core.startMode(window.showDemo, tracking) === 'demo'", js)
+        self.assertIn('window.showDemo();', js)
+        self.assertIn('window.startCamera();', js)   # fallback path kept
+        self.assertIn('fail(', js)
+
     def test_squat_page_runs_video_mode_and_uses_only_full_squats_clip(self):
         from strength_app.cv_targets import get_video_mode_exercises
         self.assertIn('full_squats', get_video_mode_exercises())

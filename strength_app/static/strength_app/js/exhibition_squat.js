@@ -30,7 +30,16 @@
     return gs ? [gs.mode, gs.currentPhaseIndex, gs.repCount].join(':') : '';
   }
 
-  return { shouldReset: shouldReset, noFrames: noFrames, stateKey: stateKey };
+  // What the Start tap runs. 'demo' = the camera page's own showDemo(): it turns the
+  // camera on, then runs guidance -> "Watch me first" demo -> "Now you try" -> detection.
+  // showDemo() returns without doing anything unless tracking is 'camera', so any other
+  // case falls back to the plain startCamera() path.
+  function startMode(showDemoFn, cvTracking) {
+    return (typeof showDemoFn === 'function' && cvTracking === 'camera') ? 'demo' : 'camera';
+  }
+
+  return { shouldReset: shouldReset, noFrames: noFrames, stateKey: stateKey,
+           startMode: startMode };
 });
 
 // ---- DOM wiring (browser only) ------------------------------------------
@@ -96,8 +105,17 @@
     }
     camStartedAt = Date.now();
     try {
-      var r = window.startCamera();
-      if (r && r.catch) r.catch(function (e) { fail('startCamera: ' + e); });
+      var tracking = (typeof CV_TRACKING !== 'undefined') ? CV_TRACKING : '';
+      if (core.startMode(window.showDemo, tracking) === 'demo') {
+        // showDemo() starts the camera itself and queues the demo sequence.
+        window.addEventListener('unhandledrejection', function (e) {
+          if (!S.granted) fail('startCamera: ' + (e && e.reason));
+        });
+        window.showDemo();
+      } else {
+        var r = window.startCamera();
+        if (r && r.catch) r.catch(function (e) { fail('startCamera: ' + e); });
+      }
     } catch (e) { fail('startCamera: ' + e); }
   }
 

@@ -46,3 +46,10 @@ test('fetch guard: a blocked POST resolves to a 204 response and never reaches t
   assert.equal((await win.fetch('/g')).status, 200);
   assert.equal(calls.length, 1);
 });
+
+test('startMode: Start runs the demo sequence when showDemo exists and tracking is camera', () => {
+  const f = () => {};
+  assert.equal(ex.startMode(f, 'camera'), 'demo');
+  assert.equal(ex.startMode(f, 'guided'), 'camera');
+  assert.equal(ex.startMode(undefined, 'camera'), 'camera');
+});
