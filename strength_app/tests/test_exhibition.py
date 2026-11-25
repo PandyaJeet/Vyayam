@@ -9,7 +9,9 @@ from django.urls import reverse
 
 from strength_app.models import PatientProfile, StrengthProfile
 
-MIND_GAMES_SHA256 = '64d15cf5e89b8905055bb6fad9b322aba04ae475d21ed9662fb49361b5f5d605'
+MIND_GAMES_SHA256 = '09cb359b149044accb6916f279afc68dbdd500fc0fc19c325fd7fd8e58a60468'
+# SHA-256 of the <script> body of mind_games.html at 7ffa9f2: the game logic, pinned.
+MIND_GAMES_SCRIPT_SHA256 = 'e01864bc76ba8b3ea851029b4b44a76e2e63cac8b0e5e4eb2d0402b63596f583'
 CSRF_INPUT = re.compile(r'name="csrfmiddlewaretoken" value="[^"]*"')
 
 
@@ -24,6 +26,7 @@ class ExhibitionFlagOffTests(TestCase):
         self.assertEqual(self.client.get('/exhibition/').status_code, 404)
         self.assertEqual(self.client.get('/exhibition/squat/').status_code, 404)
         self.assertEqual(self.client.get('/exhibition/games/').status_code, 404)
+        self.assertEqual(self.client.get('/exhibition/progression/').status_code, 404)
 
     @override_settings(MIND_LAB_ENABLED=True)
     def test_games_404_even_when_mind_lab_flag_is_on(self):
@@ -216,7 +219,7 @@ class ExhibitionGamesTests(TestCase):
         r = self.client.get('/exhibition/games/')
         self.assertEqual(r.status_code, 200)
         self.assertEqual(hashlib.sha256(r.content).hexdigest(), MIND_GAMES_SHA256)
-        self.assertEqual(len(r.content), 21785)
+        self.assertEqual(len(r.content), 22691)
         self.assertEqual(r['Content-Type'], 'text/html; charset=utf-8')
 
     def test_sha_check_catches_a_one_byte_change(self):
@@ -253,3 +256,88 @@ class ExhibitionGamesTests(TestCase):
         self.assertNotIn('fetch(', games)
         self.assertIn('pointerdown', games)
         self.assertIn('performance.now()', games)
+
+
+# Every ID, class and attribute the game script queries or toggles.
+MIND_GAMES_IDS = ('app', 'menu', 'play', 'res', 'bests', 'hud', 'back', 'hl', 'hr', 'cw', 'cv',
+                  'bar', 'slow', 'sf', 'chk', 'rt', 'rs', 'stats', 'again', 'tomenu')
+MIND_GAMES_CLASSES = ('screen', 'on', 'game', 'ab', 't', 'row', 'p', 'num', 'big')
+
+
+@override_settings(EXHIBITION_MODE=True, MIND_LAB_ENABLED=False)
+class ExhibitionRefreshGuardTests(TestCase):
+    """Stall restyle: game logic, links and the squat style hook stay as they were."""
+
+    def _games(self):
+        return self.client.get('/exhibition/games/').content.decode()
+
+    def test_mind_games_script_block_unchanged(self):
+        body = re.search(r'<script>(.*?)</script>', self._games(), re.S).group(1)
+        self.assertEqual(hashlib.sha256(body.encode()).hexdigest(), MIND_GAMES_SCRIPT_SHA256)
+
+    def test_mind_games_keeps_script_ids(self):
+        html = self._games()
+        markup = html[:html.index('<script>')]
+        for i in MIND_GAMES_IDS:
+            self.assertEqual(markup.count('id="%s"' % i), 1, i)
+        classes = set(' '.join(re.findall(r'class="([^"]*)"', markup)).split())
+        for c in MIND_GAMES_CLASSES:
+            self.assertIn(c, classes, c)
+        self.assertIn('data-g="pass"', markup)
+        self.assertIn('data-g="mem"', markup)
+        self.assertIn('.screen.on{display:flex}', markup)
+        self.assertIn('.stat{', markup)   # rows the script builds on the results screen
+        self.assertIn('<title>Mind Games Prototype</title>', markup)
+
+    def test_every_exhibition_subpage_links_back_to_index(self):
+        for url in ('/exhibition/squat/', '/exhibition/games/', '/exhibition/progression/'):
+            self.assertContains(self.client.get(url), 'href="/exhibition/"', msg_prefix=url)
+
+    def test_index_links_exact(self):
+        html = self.client.get('/exhibition/').content.decode()
+        links = re.findall(r'<a class="big" href="([^"]+)">([^<]+)</a>', html)
+        self.assertEqual(links, [
+            (reverse('exhibition_squat'), 'Try the squat coach'),
+            (reverse('exhibition_games'), 'Play the demo games'),
+            (reverse('exhibition_progression'), 'See how a plan changes'),
+        ])
+        self.assertIn('id="exhibitionLinks"', html)
+        self.assertIn('<div class="qr" id="leadQr">Lead form QR goes here</div>', html)
+
+    def test_squat_hook_is_scoped(self):
+        squat = self.client.get('/exhibition/squat/').content.decode()
+        self.assertIn('exh-squat', re.search(r'<body[^>]*>', squat).group(0))
+        src = (Path(__file__).resolve().parents[1] / 'templates' / 'strength_app'
+               / 'exhibition_squat.html').read_text()
+        self.assertNotIn('refresh_css', src)
+        self.assertNotIn('vy_refresh', src)
+        self.assertNotIn('vy_refresh', squat)
+        # Every rule the wrapper adds after the camera layout block is scoped to body.exh-squat.
+        tail = src[src.index('/* Stall restyle'):src.index('</style>')]
+        tail = re.sub(r'/\*.*?\*/', '', tail, flags=re.S)
+        rules = [s.strip() for s in re.findall(r'([^{}]+)\{', tail)]
+        self.assertTrue(rules)
+        for sel in rules:
+            if sel.startswith('@media'):
+                continue
+            for part in re.sub(r'\([^()]*\)', '()', sel).split(','):
+                self.assertTrue(part.strip().startswith('body.exh-squat'), sel)
+        patient = _patient_execute_html(self.client)
+        self.assertNotIn('exh-squat', patient)
+        self.assertNotIn('exh-', patient)
+
+
+def _patient_execute_html(client):
+    patient = PatientProfile.objects.create(
+        patient_id='EXHP2', name='Exh Patient', phone='9000009982', age=30,
+        goals='Strength', training_history='intermediate')
+    StrengthProfile.objects.create(
+        patient=patient, assessment_number=1, squat_score=3, hinge_score=3,
+        push_score=3, pull_score=3, core_score=3, rotate_score=3, lunge_score=3)
+    s = client.session
+    s['patient_id'] = patient.patient_id
+    s.save()
+    client.get(reverse('v1_session_overview'))  # stores the session
+    r = client.get(reverse('v1_execute_exercise', args=[0]))
+    assert r.status_code == 200, r.status_code
+    return r.content.decode()

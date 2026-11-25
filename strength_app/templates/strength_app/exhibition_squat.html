@@ -7,46 +7,47 @@
   library_mode, and the early script below also blocks every non-GET fetch.
 {% endcomment %}
 
-{# No link out (the parent header links to the patient dashboard). #}
+{# One thin link back to the stall index only (the parent header links to the patient dashboard). #}
 {% block header %}
-<header class="exh-header">VYAYAM</header>
+<header class="exh-header"><a href="/exhibition/">VYAYAM</a></header>
 {% endblock %}
 
 {# No bottom padding (the base adds pb-32 = 128 px, which made the phone page scroll). #}
-{% block body_class %}bg-surface text-on-surface min-h-screen{% endblock %}
+{# exh-squat scopes every stall-only restyle rule below to this page. #}
+{% block body_class %}bg-surface text-on-surface min-h-screen exh-squat{% endblock %}
 
 {% block extra_head %}
 {{ block.super }}
 <script src="{% static 'strength_app/js/exhibition_guard.js' %}"></script>
 <style>
   .exh-header { padding: 8px 12px; text-align: center; font-weight: 800;
-    letter-spacing: .1em; color: #6bbf8a; font-size: 1rem; }
-  #exhStart, #exhFail { position: fixed; inset: 0; z-index: 9999; background: #0a0e27;
+    letter-spacing: .1em; color: #83d8a1; font-size: 1rem; }
+  #exhStart, #exhFail { position: fixed; inset: 0; z-index: 9999; background: #0e1411;
     flex-direction: column; align-items: center; justify-content: center;
     padding: 20px; text-align: center; box-sizing: border-box; }
   #exhStart { display: flex; }
   #exhFail { display: none; gap: 12px; overflow: auto; }
   #exhGo { width: 100%; max-width: 420px; padding: 22px 12px; font-size: 2.4rem;
-    font-weight: 800; border: 0; border-radius: 22px; color: #fff; cursor: pointer;
-    background: linear-gradient(135deg,#0c6c3f,#6bbf8a); }
-  .exh-hint { font-size: 1.2rem; font-weight: 700; color: #fde68a; max-width: 420px;
+    font-weight: 800; border: 2px solid #83d8a1; border-radius: 22px; color: #fff; cursor: pointer;
+    background: #0f3d2e; }
+  .exh-hint { font-size: 1.2rem; font-weight: 700; color: #dcebe2; max-width: 420px;
     margin: 14px 0 0; line-height: 1.35; }
   #exhFail h2 { font-size: 1.6rem; margin: 0; }
   #exhFail p { font-size: 1.1rem; margin: 0; }
   #exhFailVideo { width: 100%; max-width: 420px; max-height: 32vh; border-radius: 14px;
     background: #000; }
-  #exhDemoStage { position: fixed; inset: 0; z-index: 8500; background: #0a0e27;
+  #exhDemoStage { position: fixed; inset: 0; z-index: 8500; background: #0e1411;
     display: none; align-items: center; justify-content: center; padding-top: 70px;
     box-sizing: border-box; }
   #exhDemo { max-width: 100%; max-height: 75vh; border-radius: 14px; background: #000; }
   #exhFailReplay { padding: 8px 18px; font-size: 1rem; font-weight: 700;
-    border-radius: 12px; border: 1px solid rgba(255,255,255,.5); background: none;
+    border-radius: 12px; border: 2px solid #b7cdc0; background: none;
     color: #fff; margin-top: 6px; }
   #exhRetry { padding: 16px 28px; font-size: 1.3rem; font-weight: 800; border-radius: 14px;
-    border: 2px solid #fff; background: none; color: #fff; }
+    border: 2px solid #83d8a1; background: #0f3d2e; color: #fff; }
   #exhCaption { position: fixed; left: 0; right: 0; top: 0; z-index: 9000;
-    display: none; padding: 14px 16px; background: #000; color: #fff;
-    border-bottom: 3px solid #fde047; font-size: 1.7rem; font-weight: 800;
+    display: none; padding: 14px 16px; background: #0e1411; color: #fff;
+    border-bottom: 3px solid #2f9e64; font-size: 1.7rem; font-weight: 800;
     line-height: 1.25; text-align: center; }
   @media (max-width: 860px) { #exhCaption { font-size: 1.3rem; padding: 8px 12px;
     max-height: 4.2em; overflow: hidden; } }
@@ -67,6 +68,28 @@
     #partialCount { display: none !important; }
     #alignmentCue { max-height: 4.3em; overflow: hidden; } /* 2 lines (2 x 20.4) + 16 padding = 56.8 px; 4.3em = 58.5 px at .85rem */
     #videoCanvas { height: 100%; max-height: 100%; object-fit: contain; }
+  }
+  /* Stall restyle: colour, type, focus and motion. Every rule starts with body.exh-squat,
+     which only this page's body carries. No camera layout number changes. */
+  body.exh-squat { background: #0e1411 !important; }
+  body.exh-squat :is(.exh-header, #exhStart, #exhFail, #exhCaption) {
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  /* The header stays 40 px tall; its link is 48 px, reaching 4 px above and below. */
+  body.exh-squat .exh-header { display: flex; justify-content: center; padding: 0 12px; }
+  body.exh-squat .exh-header a { display: inline-flex; align-items: center; min-height: 48px;
+    margin: -4px 0; padding: 0 16px; color: inherit; text-decoration: none; position: relative; }
+  /* Start and failure panels begin under the header, so the link back stays visible. */
+  body.exh-squat #exhStart, body.exh-squat #exhFail { top: 40px; }
+  body.exh-squat #exhFailReplay, body.exh-squat #exhRetry { min-height: 48px; }
+  body.exh-squat :is(.top-bar, .video-section, .info-card) { background: #17211c; }
+  body.exh-squat .tempo-phase:not(.active) { background: #223029; }
+  body.exh-squat .tempo-phase .t-val { color: #83d8a1; }
+  body.exh-squat :is(a, button, input, select, textarea, [tabindex]):focus-visible {
+    outline: 3px solid #83d8a1; outline-offset: 3px; }
+  @media (prefers-reduced-motion: reduce) {
+    body.exh-squat *, body.exh-squat *::before, body.exh-squat *::after {
+      transition-duration: 0s !important; animation-duration: 0s !important;
+      animation-iteration-count: 1 !important; scroll-behavior: auto !important; }
   }
 </style>
 <script>

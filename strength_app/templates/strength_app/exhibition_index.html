@@ -5,32 +5,57 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>VYAYAM</title>
 <style>
-  html, body { margin: 0; min-height: 100%; background: #0e1411; color: #fff;
-    font-family: system-ui, -apple-system, sans-serif; }
-  main { max-width: 640px; margin: 0 auto; padding: 24px 18px; text-align: center; }
-  h1 { font-size: 1.1rem; letter-spacing: .12em; color: #83d8a1; margin: 8px 0 4px; }
-  p.line { font-size: 1.5rem; font-weight: 800; line-height: 1.25; margin: 8px 0 24px; }
-  a.big { display: block; padding: 26px 16px; margin: 12px 0; border-radius: 14px;
-    background: #0c6c3f; color: #fff; border: 1px solid #2f9e64;
-    font-size: 1.7rem; font-weight: 800; text-decoration: none;
+  /* Calm sports-medicine look: warm off-white page, deep green hero, solid text, no gradients. */
+  :root { --page: #f6f4ef; --ink: #14201a; --muted: #44524a; --line: #dcd8cc;
+    --card: #ffffff; --green: #0f3d2e; --green-hover: #eaf1ec; --light: #83d8a1; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; min-height: 100%; background: var(--page); color: var(--ink);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  main { max-width: 1120px; margin: 0 auto; padding: 16px 16px 32px; display: grid; gap: 20px; }
+  .hero { background: var(--green); color: #fff; border-radius: 20px; padding: 28px 22px; }
+  .eyebrow { margin: 0 0 12px; font-size: .8rem; font-weight: 700; letter-spacing: .16em; color: var(--light); }
+  h1 { margin: 0; font-size: 2rem; line-height: 1.15; font-weight: 800; }
+  #exhibitionLinks ol { list-style: none; margin: 0; padding: 0; counter-reset: station;
+    background: var(--card); border: 1px solid var(--line); border-radius: 20px; overflow: hidden; }
+  #exhibitionLinks li { counter-increment: station; }
+  #exhibitionLinks li + li { border-top: 1px solid var(--line); }
+  a.big { display: grid; grid-template-columns: 44px 1fr auto; align-items: center; gap: 14px;
+    min-height: 72px; padding: 12px 18px; color: var(--ink); text-decoration: none;
+    font-size: 1.25rem; font-weight: 700; line-height: 1.25;
     transition: background-color 160ms ease; }
-  a.big:hover { background: #095431; }
-  a.big:focus-visible { outline: 4px solid #83d8a1; outline-offset: 3px; }
+  a.big::before { content: counter(station); content: counter(station) / "";
+    display: flex; align-items: center; justify-content: center; width: 44px; height: 44px;
+    border-radius: 50%; background: var(--green); color: #fff; font-size: 1.1rem;
+    font-weight: 800; font-variant-numeric: tabular-nums; }
+  a.big::after { content: "\2192"; content: "\2192" / ""; color: var(--green); font-size: 1.4rem; }
+  a.big:hover { background: var(--green-hover); }
+  a.big:focus-visible { outline: 3px solid var(--green); outline-offset: -6px; border-radius: 14px; }
+  .qr { margin: 0 auto; width: 220px; height: 220px; border: 2px dashed #7d8a82;
+    border-radius: 16px; display: flex; align-items: center; justify-content: center;
+    padding: 16px; text-align: center; font-weight: 600; color: var(--muted); background: var(--card); }
+  @media (min-width: 900px) {
+    main { grid-template-columns: 1fr 1fr; align-items: start; gap: 32px; padding: 48px 32px; }
+    .hero { grid-row: span 2; padding: 48px 40px; min-height: 420px;
+      display: flex; flex-direction: column; justify-content: center; }
+    h1 { font-size: 3rem; }
+    a.big { min-height: 88px; font-size: 1.4rem; }
+  }
   @media (prefers-reduced-motion: reduce) { a.big { transition: none; } }
-  .qr { margin: 28px auto 0; width: 220px; height: 220px; border: 3px dashed #fbbf24;
-    border-radius: 14px; display: flex; align-items: center; justify-content: center;
-    padding: 12px; box-sizing: border-box; font-weight: 700; color: #fbbf24; }
-  {# Further stall links go in the list below, one <a class="big"> each. #}
+  {# Further stall links go in the list below, one <li><a class="big"> each. #}
 </style>
 </head>
 <body>
 <main>
-  <h1>VYAYAM</h1>
-  <p class="line">VYAYAM: a training plan that progresses on its own</p>
+  <section class="hero">
+    <p class="eyebrow">VYAYAM</p>
+    <h1>VYAYAM: a training plan that progresses on its own</h1>
+  </section>
   <nav id="exhibitionLinks">
-    <a class="big" href="{% url 'exhibition_squat' %}">Try the squat coach</a>
-    <a class="big" href="{% url 'exhibition_games' %}">Play the demo games</a>
-    <a class="big" href="{% url 'exhibition_progression' %}">See how a plan changes</a>
+    <ol>
+      <li><a class="big" href="{% url 'exhibition_squat' %}">Try the squat coach</a></li>
+      <li><a class="big" href="{% url 'exhibition_games' %}">Play the demo games</a></li>
+      <li><a class="big" href="{% url 'exhibition_progression' %}">See how a plan changes</a></li>
+    </ol>
   </nav>
   <div class="qr" id="leadQr">Lead form QR goes here</div>
 </main>
