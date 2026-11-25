@@ -617,3 +617,6 @@ body { font-variant-numeric: tabular-nums; }
 .t-msg-bubble .meta { opacity: 1; }
 /* Inline muted text in console templates (e.g. "opacity:.7" age lines). */
 .t-main [style*="color:var(--muted)"][style*="opacity"] { opacity: 1 !important; }
+
+/* AA placeholders: #5f655f is 5.98:1 on #fff and 5.53:1 on --bg. */
+::placeholder { color: #5f655f; opacity: 1; }

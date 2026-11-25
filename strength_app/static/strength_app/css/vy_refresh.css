@@ -205,3 +205,15 @@ html .pill-ok { color: #166534; }
     white-space: nowrap;
   }
 }
+
+/* ── Placeholders: AA 4.5:1 on white (5.98) and on #f7f6f2 (5.53).
+   Still lighter than entered text (#161917), so the two stay distinct.
+   !important beats Tailwind `placeholder:` utilities and page rules. */
+html :is(input, textarea)::placeholder { color: #5f655f !important; opacity: 1 !important; }
+
+/* ── Focus ring on solid-green panels (home CTA panel): green on green
+   was 1.00:1. White ring on #0c6c3f is 6.50:1; the 2 px offset gap is
+   panel green, so the ring touches only green. */
+html :is([class*="bg-gradient-to-"], .bg-primary) :is(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+  outline-color: #ffffff;
+}
