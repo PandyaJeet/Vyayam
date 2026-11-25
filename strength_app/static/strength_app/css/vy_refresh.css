@@ -169,3 +169,39 @@ html .btn-primary-c:hover { background: var(--vy-green-ink); opacity: 1; }
 html .btn-coach { min-height: 44px; transition: background-color var(--vy-ease), border-color var(--vy-ease); }
 html .search-input:focus { border-color: var(--vy-green); }
 html .nav-item { min-height: 44px; transition: background-color var(--vy-ease), color var(--vy-ease); }
+
+/* ── AA text contrast (normal text >= 4.5:1, large >= 3:1) ───────
+   Low opacity on muted text dropped it to 1.8-3.9:1. The muted
+   colours themselves pass, so draw them at full strength. */
+html :is(.opacity-40, .opacity-50, .opacity-60, .opacity-70, .opacity-75, .opacity-80) { opacity: 1; }
+html :is(.text-on-secondary-container\/70, .text-on-secondary-container\/80) { color: #5f655f; }
+html .text-outline-variant { color: #5f655f; }                 /* chevrons: 1.7 -> 6.0 */
+html .text-orange-500 { color: #c2410c; }                       /* streak flame: 4.8 */
+html .text-white\/75, html .text-white\/70, html .text-white\/80 { color: #fff; } /* on green: 6.5 */
+
+/* Managed-patient shell (inline styles in therapist_session_* pages). */
+html header[style*="#f7f8f7"] div[style*="opacity:.5"] { opacity: 1 !important; color: #4a544d; }
+html header[style*="#f7f8f7"] a[style*="color:#777"] { color: #4a544d !important; }
+html [style*="color:#9ca6a3"] { color: #5f655f !important; }
+html [style*="color:#d97706"] { color: #b45309 !important; }
+html [style*="color:#dc2626"] { color: #b91c1c !important; }
+
+/* Coach shell and pages: muted #3d4f42 is 8.8:1; remove the fading. */
+html :is(.brand-sub, .coach-role, .c-card-title, .stat-box .lbl, .c-table th,
+         .field-h, .athlete-meta, .empty, .wk, .rpe, .info-label) { opacity: 1; }
+html [style*="color:#3d4f42"][style*="opacity"] { opacity: 1 !important; }
+html a[style*="color:rgba(26,28,28,.4)"] { color: #4a544d !important; }
+html [style*="color:#16a34a"] { color: #15803d !important; }
+/* Status chips keep their colour family, darker text: >= 4.9:1. */
+html .pill-hsr { color: #7a5c00; }
+html .pill-ok { color: #166534; }
+
+/* Coach squad row at <= 1024 px: the 3-column grid put "View" in the
+   12 px dot column. Give it its own full-width row; keep it 44 px. */
+@media (max-width: 1024px) {
+  html .athlete-card > a.btn-coach:last-child {
+    grid-column: 2 / -1;
+    justify-self: start;
+    white-space: nowrap;
+  }
+}
