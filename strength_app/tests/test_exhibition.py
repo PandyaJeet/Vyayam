@@ -326,6 +326,23 @@ class ExhibitionRefreshGuardTests(TestCase):
         self.assertNotIn('exh-squat', patient)
         self.assertNotIn('exh-', patient)
 
+    def test_squat_overlays_take_covered_controls_out_of_tab_order(self):
+        # The CSS keys on the inline display values the wrapper scripts write; keep them in step.
+        src = (Path(__file__).resolve().parents[1] / 'templates' / 'strength_app'
+               / 'exhibition_squat.html').read_text()
+        for rule in ('body.exh-squat:has(#exhStart:not([style*="none"])) .ex-wrap',
+                     'body.exh-squat:has(#exhDemoStage[style*="flex"]) .ex-wrap',
+                     'body.exh-squat:has(#exhFail[style*="flex"]) .ex-wrap { visibility: hidden; }',
+                     'body.exh-squat:has(#exhCaption[style*="block"]) #voiceToggle { visibility: hidden; }',
+                     'body.exh-squat .exh-header a:focus-visible { outline-offset: -7px; }',
+                     'body.exh-squat #exhDemoStage, body.exh-squat #exhCaption { top: 40px; }'):
+            self.assertIn(rule, src)
+        self.assertIn("el.style.display = 'block'", src)   # caption shown
+        js = (STATIC_JS / 'exhibition_squat.js').read_text()
+        for needle in ("$('exhStart').style.display = 'none'", "$('exhDemoStage').style.display = 'flex'",
+                       "$('exhDemoStage').style.display = 'none'", "$('exhFail').style.display = 'flex'"):
+            self.assertIn(needle, js)
+
 
 def _patient_execute_html(client):
     patient = PatientProfile.objects.create(

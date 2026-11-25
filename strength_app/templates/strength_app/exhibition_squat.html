@@ -86,6 +86,21 @@
   body.exh-squat .tempo-phase .t-val { color: #83d8a1; }
   body.exh-squat :is(a, button, input, select, textarea, [tabindex]):focus-visible {
     outline: 3px solid #83d8a1; outline-offset: 3px; }
+  /* Tab scrolls a control into view with room for its whole ring (desktop page scrolls). */
+  body.exh-squat :is(a, button, input, select, textarea, [tabindex]) { scroll-margin: 12px; }
+  /* The header link's ring is inset, so all four sides stay inside the 40 px header. */
+  body.exh-squat .exh-header a:focus-visible { outline-offset: -7px; }
+  /* The demo stage and captions start under the header, so they never cover the link back. */
+  body.exh-squat #exhDemoStage, body.exh-squat #exhCaption { top: 40px; }
+  /* While a full-screen panel covers the camera page, the page's controls leave the Tab order.
+     exhibition_squat.js shows and hides these panels only through style.display. */
+  body.exh-squat:has(#exhStart:not([style*="none"])) .ex-wrap,
+  body.exh-squat:has(#exhDemoStage[style*="flex"]) .ex-wrap,
+  body.exh-squat:has(#exhFail[style*="flex"]) .ex-wrap { visibility: hidden; }
+  /* Phones: a caption covers the voice button at the top of the camera box while it shows. */
+  @media (max-width: 860px) {
+    body.exh-squat:has(#exhCaption[style*="block"]) #voiceToggle { visibility: hidden; }
+  }
   @media (prefers-reduced-motion: reduce) {
     body.exh-squat *, body.exh-squat *::before, body.exh-squat *::after {
       transition-duration: 0s !important; animation-duration: 0s !important;
