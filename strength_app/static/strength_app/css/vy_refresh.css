@@ -77,6 +77,9 @@ html .rounded-2xl { border-radius: 16px; }
 html .rounded-xl { border-radius: 14px; }
 html .rounded-lg { border-radius: 12px; }
 
+/* Empty decorative glow blobs (v1_home_gamified session card): no glow. */
+html .blur-3xl:empty { display: none; }
+
 /* Solid header and bottom bar: no frosted glass. */
 html :is(.backdrop-blur-md, .backdrop-blur-xl, .backdrop-blur) {
   -webkit-backdrop-filter: none;
