@@ -1,0 +1,168 @@
+/* ============================================================
+   VYAYAM refresh: calm sports-medicine look for opted-in pages.
+   Loaded ONLY by pages that fill {% block refresh_css %} in their
+   shell (base_gamified, therapist_session_base, athlete_base,
+   coach_base). Camera/execute pages never load this file.
+   Rules start with `html` so they outrank the Tailwind CDN styles,
+   which are injected after this link at runtime.
+   Visual only: no rule changes text, hides text, or moves forms.
+   ============================================================ */
+
+:root {
+  --vy-green: #0c6c3f;
+  --vy-green-ink: #095431;
+  --vy-green-soft: #e6efe9;
+  --vy-surface: #f7f6f2;
+  --vy-card: #ffffff;
+  --vy-line: #e2e0d9;
+  --vy-ink: #161917;
+  --vy-muted: #4a544d;
+  --vy-shadow: 0 1px 2px rgba(22, 25, 23, 0.06);
+  --vy-focus: #0c6c3f;
+  --vy-ease: 160ms cubic-bezier(0.2, 0, 0, 1);
+}
+
+/* ── Base: numbers line up, one easing for state changes ─────── */
+html body { font-variant-numeric: tabular-nums; }
+
+html :is(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+  outline: 3px solid var(--vy-focus);
+  outline-offset: 2px;
+}
+
+/* 44 px touch targets for controls (inline text links are exempt). */
+html :is(button, [type="submit"], [type="button"], select),
+html input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]):not([type="range"]) {
+  min-height: 44px;
+}
+
+/* State-change motion only, short. No idle loops on these pages. */
+html :is(.transition-all, .transition, .transition-colors, .tonal-transition) {
+  transition-property: color, background-color, border-color, opacity, box-shadow;
+  transition-duration: 160ms;
+}
+html :is(.animate-pulse, .animate-bounce, .animate-ping) { animation: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  html *, html *::before, html *::after {
+    transition-duration: 0s !important;
+    animation-duration: 0s !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ── Tailwind shells (base_gamified, therapist_session, coach) ── */
+html .bg-surface,
+html .bg-background { background-color: var(--vy-surface); }
+html .text-on-surface { color: var(--vy-ink); }
+
+/* Faint helper and legal text gets readable contrast (about 5:1 on the surface). */
+html :is(.text-on-secondary-container\/40, .text-on-secondary-container\/50, .text-on-secondary-container\/60) { color: #5f655f; }
+
+/* Solid fills: a gradient becomes its own first colour. */
+html [class*="bg-gradient-to-"] {
+  background-image: none;
+  background-color: var(--tw-gradient-from, var(--vy-green));
+}
+
+/* Restrained depth: hairline + one soft shadow instead of glow. */
+html [class*="shadow-["] { box-shadow: var(--vy-shadow); }
+html .bg-surface-container-lowest:not([class*="border"]) {
+  border: 1px solid var(--vy-line);
+}
+
+/* Tighter corners (token values stay; only these pages change). */
+html .rounded-2xl { border-radius: 16px; }
+html .rounded-xl { border-radius: 14px; }
+html .rounded-lg { border-radius: 12px; }
+
+/* Solid header and bottom bar: no frosted glass. */
+html :is(.backdrop-blur-md, .backdrop-blur-xl, .backdrop-blur) {
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+html header[class*="backdrop-blur"] {
+  background-color: var(--vy-surface);
+  border-bottom: 1px solid var(--vy-line);
+}
+html nav.fixed.rounded-full {
+  background-color: var(--vy-card);
+  box-shadow: 0 0 0 1px var(--vy-line), 0 4px 12px rgba(22, 25, 23, 0.06);
+}
+html nav.fixed.rounded-full .bg-emerald-100\/70 { background-color: var(--vy-green-soft); }
+
+/* Inputs: white field, hairline border. */
+html input.bg-surface-container,
+html select.bg-surface-container,
+html textarea.bg-surface-container {
+  background-color: var(--vy-card);
+  border-color: var(--vy-line);
+}
+
+/* ── Patient dashboard / progress page-level classes ────────── */
+html .hero { box-shadow: none; }
+html .card-light,
+html .session-preview,
+html .stat-box,
+html .football-card { box-shadow: var(--vy-shadow); border-color: var(--vy-line); }
+
+/* ── Managed patient shell (therapist_session_base) ─────────── */
+html .ts-card,
+html .ts-card-tight { border-color: var(--vy-line); box-shadow: var(--vy-shadow); }
+html .ts-btn { min-height: 48px; transition: background-color var(--vy-ease); }
+html .ts-btn:hover:not(:disabled) { background-color: var(--vy-green-ink); }
+html .ts-btn-ghost,
+html .ts-btn-outline { min-height: 44px; }
+html .ts-progress > div { background: var(--vy-green); }
+html .ts-pain-btn { min-width: 44px; min-height: 44px; }
+
+html nav[style*="rgba(255,255,255,0.88)"] {
+  background: var(--vy-card) !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+  box-shadow: 0 0 0 1px var(--vy-line), 0 4px 12px rgba(22, 25, 23, 0.06) !important;
+}
+html header[style*="#f7f8f7"] { background: var(--vy-surface) !important; border-bottom-color: var(--vy-line) !important; }
+html body:has(> header[style*="#f7f8f7"]) { background: var(--vy-surface); }
+
+/* ── Athlete shell: keeps its dark tier, drops glow and glass ── */
+html .ath-card,
+html .ath-card-tight { border-color: rgba(255, 255, 255, 0.09); }
+html .ath-btn {
+  background: var(--vy-green);
+  box-shadow: none;
+  min-height: 48px;
+  transition: background-color var(--vy-ease);
+}
+html .ath-btn:hover { background: var(--vy-green-ink); }
+html .ath-btn-ghost { min-height: 44px; }
+html .ath-bar > div { background: #2f9e64; }
+/* Its header and bottom bar set frosted glass inline; make them solid. */
+html:has(meta[name="theme-color"][content="#0e1411"]) :is(header, nav)[style*="backdrop-filter"] {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+html:has(meta[name="theme-color"][content="#0e1411"]) header[style*="backdrop-filter"] { background: #0e1411 !important; }
+html:has(meta[name="theme-color"][content="#0e1411"]) nav[style*="backdrop-filter"] {
+  background: #161d19 !important;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.08) !important;
+}
+/* athlete_base is the only shell with this theme colour. */
+html:has(meta[name="theme-color"][content="#0e1411"]) :is(a, button, input, select, textarea, summary):focus-visible {
+  outline-color: #83d8a1;
+}
+
+/* ── Coach shell ────────────────────────────────────────────── */
+html .brand-logo {
+  background: none;
+  -webkit-text-fill-color: currentColor;
+  color: var(--vy-green);
+}
+html .c-card,
+html .stat-box { box-shadow: var(--vy-shadow); border-color: var(--vy-line); }
+html .btn-primary-c { background: var(--vy-green); }
+html .btn-primary-c:hover { background: var(--vy-green-ink); opacity: 1; }
+html .btn-coach { min-height: 44px; transition: background-color var(--vy-ease), border-color var(--vy-ease); }
+html .search-input:focus { border-color: var(--vy-green); }
+html .nav-item { min-height: 44px; transition: background-color var(--vy-ease), color var(--vy-ease); }

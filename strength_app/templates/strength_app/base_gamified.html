@@ -93,6 +93,8 @@
     .tonal-transition { transition: background-color 0.3s ease; }
     ::-webkit-scrollbar { display: none; }
   </style>
+  {# Opt-in refresh styles: only pages that fill this block change. Camera pages leave it empty. #}
+  {% block refresh_css %}{% endblock %}
   {% block extra_head %}{% endblock %}
 </head>
 <body class="{% block body_class %}bg-surface text-on-surface min-h-screen pb-32{% endblock %}">

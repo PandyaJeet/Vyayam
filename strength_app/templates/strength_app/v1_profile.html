@@ -1,5 +1,7 @@
 {% extends 'strength_app/base_gamified.html' %}
 {% load static %}
+{% block refresh_css %}<link rel="stylesheet" href="{% static 'strength_app/css/vy_refresh.css' %}">{% endblock %}
+{% load static %}
 {% comment %}
 Context variables expected:
   user            — Django User object (first_name for avatar initial)

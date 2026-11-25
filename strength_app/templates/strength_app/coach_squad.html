@@ -1,4 +1,6 @@
 {% extends 'strength_app/coach_base.html' %}
+{% load static %}
+{% block refresh_css %}<link rel="stylesheet" href="{% static 'strength_app/css/vy_refresh.css' %}">{% endblock %}
 {% block title %}Squad — VYAYAM Coach{% endblock %}
 {% block nav_squad %}active{% endblock %}
 {% block page_title %}Squad — Football S&amp;C{% endblock %}

@@ -10,21 +10,19 @@
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
       font-family: 'Plus Jakarta Sans', sans-serif;
-      background: linear-gradient(135deg, #f4f7f5 0%, #e8f0ea 100%);
+      background: #f7f6f2;
       color: #1a1c1c; display: flex; align-items: center;
       justify-content: center; min-height: 100vh;
     }
     .login-wrap { width: 100%; max-width: 400px; padding: 20px; }
     .login-box {
-      background: #fff; border-radius: 20px; padding: 38px 34px;
-      border: 1px solid rgba(26,28,28,.08);
-      box-shadow: 0 8px 32px rgba(26,28,28,.10);
+      background: #fff; border-radius: 16px; padding: 34px 28px;
+      border: 1px solid #e2e0d9;
+      box-shadow: 0 1px 2px rgba(22,25,23,.06);
     }
     .brand {
       font-size: 1.6rem; font-weight: 800; text-align: center; margin-bottom: 4px;
-      background: linear-gradient(135deg, #0c6c3f, #6bbf8a);
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-      background-clip: text;
+      color: #0c6c3f;
     }
     .brand-sub {
       text-align: center; font-size: .78rem; color: #3d4f42; opacity: .65;
@@ -39,20 +37,24 @@
     }
     .form-label { font-size: .82rem; font-weight: 600; color: #3d4f42; margin-bottom: 6px; display: block; }
     .form-input {
-      width: 100%; background: #f4f7f5; border: 1px solid rgba(26,28,28,.14);
-      border-radius: 10px; padding: 11px 16px; color: #1a1c1c; font-size: .9rem; margin-bottom: 16px;
+      width: 100%; min-height: 44px; background: #fff; border: 1px solid #cfccc3;
+      border-radius: 10px; padding: 11px 16px; color: #161917; font-size: .9rem; margin-bottom: 16px;
       font-family: inherit;
     }
     .form-input:focus { outline: none; border-color: #0c6c3f; background: #fff; }
+    .form-input:focus-visible, .submit-btn:focus-visible, .patient-link a:focus-visible {
+      outline: 3px solid #0c6c3f; outline-offset: 2px;
+    }
     .form-input::placeholder { color: #3d4f42; opacity: .5; }
     .submit-btn {
-      width: 100%; padding: 13px;
-      background: linear-gradient(135deg, #0c6c3f, #6bbf8a);
+      width: 100%; min-height: 48px; padding: 13px;
+      background: #0c6c3f;
       border: none; border-radius: 12px; color: #fff; font-weight: 700;
       font-size: .95rem; cursor: pointer; font-family: inherit;
-      box-shadow: 0 4px 16px rgba(12,108,63,.25);
+      transition: background-color 160ms ease;
     }
-    .submit-btn:hover { opacity: .92; }
+    .submit-btn:hover { background: #095431; }
+    @media (prefers-reduced-motion: reduce) { .submit-btn { transition: none; } }
     .error-box {
       background: rgba(186,26,26,.08); border: 1px solid rgba(186,26,26,.25);
       border-radius: 10px; padding: 11px 15px; font-size: .84rem; color: #ba1a1a; margin-bottom: 16px;

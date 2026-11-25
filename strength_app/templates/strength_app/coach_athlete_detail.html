@@ -1,4 +1,6 @@
 {% extends 'strength_app/coach_base.html' %}
+{% load static %}
+{% block refresh_css %}<link rel="stylesheet" href="{% static 'strength_app/css/vy_refresh.css' %}">{% endblock %}
 {% load vyayam_filters %}
 {% block title %}{{ patient.name }} — VYAYAM Coach{% endblock %}
 {% block page_title %}

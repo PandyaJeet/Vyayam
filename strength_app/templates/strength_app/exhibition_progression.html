@@ -5,8 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>VYAYAM: {{ t.title }}</title>
 <style>
-  html, body { margin: 0; background: #0a0e27; color: #fff;
+  html, body { margin: 0; background: #0e1411; color: #fff;
     font-family: system-ui, -apple-system, sans-serif; }
+  a:focus-visible, table:focus-visible { outline: 3px solid #83d8a1; outline-offset: 3px; }
   main { max-width: 1180px; margin: 0 auto; padding: 24px 28px 48px; }
   h1 { font-size: 1.1rem; letter-spacing: .12em; color: #6bbf8a; margin: 0 0 6px; }
   h2 { font-size: 1.7rem; margin: 0 0 10px; }
@@ -17,7 +18,7 @@
   .tag.live { border-color: #6bbf8a; color: #6bbf8a; }
   .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
   table { border-collapse: collapse; width: 100%; font-size: 1rem; margin: 6px 0 4px; }
-  th, td { text-align: left; padding: 7px 10px; border-bottom: 1px solid #334; vertical-align: top; }
+  th, td { text-align: left; padding: 7px 10px; border-bottom: 1px solid #2a3a31; vertical-align: top; }
   th { opacity: .85; font-weight: 600; }
   .dot { display: inline-block; width: 12px; height: 12px; border-radius: 50%;
     background: #22c55e; margin-right: 6px; vertical-align: middle; }
@@ -27,17 +28,27 @@
   a.back { color: #fde68a; font-size: 1.1rem; }
   .status { border: 2px solid #f59e0b; border-radius: 10px; padding: 8px 12px; }
   .hero { min-height: 520px; display: flex; flex-direction: column; justify-content: center;
-    padding: 8px 0 20px; border-bottom: 1px solid #334; margin-bottom: 16px; }
+    padding: 8px 0 20px; border-bottom: 1px solid #2a3a31; margin-bottom: 16px; }
   .hero h2 { font-size: 56px; line-height: 1.1; margin: 10px 0 8px; max-width: 1100px; }
   .hero .sub { font-size: 26px; margin: 0 0 22px; opacity: .9; max-width: 1100px; }
   .tiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
-  .tile { border: 2px solid #334; border-radius: 14px; padding: 12px 14px; background: #11163a; }
+  .tile { border: 2px solid #2a3a31; border-radius: 14px; padding: 12px 14px; background: #161d19; }
   .tile .lab { font-size: 22px; font-weight: 700; color: #fbbf24; }
   .tile .nums { font-size: min(46px, 3.5vw); font-weight: 800; line-height: 1.15; white-space: nowrap; }
   .tile .was { opacity: .55; }
   .tile .arrow { color: #fbbf24; padding: 0 4px; }
   .tile .now { color: #6bbf8a; }
   .tile .small { font-size: 18px; opacity: .85; }
+  /* Phones: stack tiles and columns; wide tables scroll inside themselves. */
+  @media (max-width: 640px) {
+    main { padding: 18px 16px 40px; }
+    .hero { min-height: 0; }
+    .hero h2 { font-size: 34px; }
+    .hero .sub { font-size: 19px; }
+    .tiles, .cols { grid-template-columns: 1fr; }
+    .tile .nums { font-size: 34px; white-space: normal; }
+    table { display: block; overflow-x: auto; }
+  }
   a.cue { display: inline-block; margin-top: 18px; font-size: 22px; color: #fde68a; text-decoration: none; }
 </style>
 </head>

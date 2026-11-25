@@ -1,4 +1,6 @@
 {% extends 'strength_app/base_gamified.html' %}
+{% load static %}
+{% block refresh_css %}<link rel="stylesheet" href="{% static 'strength_app/css/vy_refresh.css' %}">{% endblock %}
 {% block title %}VYAYAM — Personalised Physiotherapy & Strength Training{% endblock %}
 {% block bottom_nav %}{% endblock %}
 
@@ -9,13 +11,11 @@
 {% endblock %}
 
 {% block content %}
-<div class="max-w-xl mx-auto px-4 pt-6 pb-12 space-y-6">
+<div class="max-w-xl lg:max-w-5xl mx-auto px-4 pt-6 pb-12 space-y-6">
 
   <!-- Hero -->
   <div class="text-center py-6">
-    <div class="w-20 h-20 rounded-2xl bg-gradient-to-br from-primary to-primary-container flex items-center justify-center mx-auto mb-5 shadow-[0_8px_32px_rgba(12,108,63,0.30)]">
-      <i class="fas fa-dumbbell text-white text-3xl"></i>
-    </div>
+    {# Font Awesome is not loaded on this shell, so the old icon tile here rendered empty; removed. #}
     <h1 class="text-3xl font-extrabold text-on-surface tracking-tight mb-3">
       Welcome to <span class="text-primary">VYAYAM</span>
     </h1>
@@ -38,12 +38,9 @@
   </div>
 
   <!-- 3 feature cards -->
-  <div class="grid grid-cols-1 gap-3">
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-3">
 
     <div class="bg-surface-container-lowest rounded-xl p-5 shadow-[0_4px_20px_rgba(26,28,28,0.04)] flex items-start gap-4">
-      <div class="w-11 h-11 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
-        <i class="fas fa-robot text-primary text-lg"></i>
-      </div>
       <div>
         <div class="font-bold text-sm text-on-surface mb-1">Personalised Prescription</div>
         <div class="text-xs text-on-secondary-container leading-relaxed">Intelligent exercise programming based on movement test results and 8 health dimensions. Adapts every session.</div>
@@ -51,9 +48,6 @@
     </div>
 
     <div class="bg-surface-container-lowest rounded-xl p-5 shadow-[0_4px_20px_rgba(26,28,28,0.04)] flex items-start gap-4">
-      <div class="w-11 h-11 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
-        <i class="fas fa-camera text-primary text-lg"></i>
-      </div>
       <div>
         <div class="font-bold text-sm text-on-surface mb-1">Real-Time Form Analysis</div>
         <div class="text-xs text-on-secondary-container leading-relaxed">MediaPipe computer vision tracks every rep. Green ✓, Yellow -, Red ✗ — ensuring perfect form every time.</div>
@@ -61,9 +55,6 @@
     </div>
 
     <div class="bg-surface-container-lowest rounded-xl p-5 shadow-[0_4px_20px_rgba(26,28,28,0.04)] flex items-start gap-4">
-      <div class="w-11 h-11 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
-        <i class="fas fa-chart-line text-primary text-lg"></i>
-      </div>
       <div>
         <div class="font-bold text-sm text-on-surface mb-1">Professional Reports</div>
         <div class="text-xs text-on-secondary-container leading-relaxed">Detailed weekly progress with metrics, progressions, and recommendations. Track your journey with precision.</div>
@@ -79,7 +70,7 @@
         <i class="fas fa-route me-2"></i>How It Works
       </div>
     </div>
-    <div class="grid grid-cols-2 gap-0 divide-x divide-y divide-outline-variant/15">
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-0 divide-x divide-y lg:divide-y-0 divide-outline-variant/15">
 
       <div class="p-5 text-center">
         <div class="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-primary-container flex items-center justify-center mx-auto mb-3">
@@ -122,7 +113,7 @@
       <div class="text-lg font-extrabold text-primary">Platform Features</div>
       <div class="text-xs text-on-secondary-container mt-1">Everything you need for professional strength training</div>
     </div>
-    <div class="grid grid-cols-1 gap-3">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-3">
       {% for feature in features_list %}
       <div class="bg-surface-container-lowest rounded-xl p-4 shadow-[0_4px_20px_rgba(26,28,28,0.04)] border-l-4 border-primary flex items-start gap-3">
         <i class="fas fa-check-circle text-primary mt-0.5 flex-shrink-0"></i>

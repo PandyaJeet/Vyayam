@@ -155,6 +155,8 @@
       .page-body { padding: 14px 16px; }
     }
   </style>
+  {# Opt-in refresh styles: only pages that fill this block change. #}
+  {% block refresh_css %}{% endblock %}
   {% block extra_css %}{% endblock %}
 </head>
 <body>
