@@ -302,7 +302,8 @@ class ExhibitionRefreshGuardTests(TestCase):
             (reverse('exhibition_progression'), 'See how a plan changes'),
         ])
         self.assertIn('id="exhibitionLinks"', html)
-        self.assertIn('<div class="qr" id="leadQr">Lead form QR goes here</div>', html)
+        self.assertNotIn('leadQr', html)
+        self.assertNotIn('Lead form QR', html)
 
     def test_squat_hook_is_scoped(self):
         squat = self.client.get('/exhibition/squat/').content.decode()

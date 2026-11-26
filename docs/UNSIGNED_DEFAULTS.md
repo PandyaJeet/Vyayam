@@ -133,7 +133,6 @@ Every new athlete-facing string on `/exhibition/` and `/exhibition/squat/`. None
 |---|---|
 | Index, tagline | VYAYAM: a training plan that progresses on its own |
 | Index, link | Try the squat coach |
-| Index, QR box | Lead form QR goes here |
 | Squat, Start button | Start |
 | Squat, placement hint (follows the SQUAT `cameraPosition` text in `v1_exercise_execute.html`) | Prop your phone at waist height, facing you. Step back so your whole body is on screen. |
 | Squat, spoken unlock line (also shown as a caption) | Ready. |

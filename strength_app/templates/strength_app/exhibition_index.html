@@ -6,7 +6,7 @@
 <title>VYAYAM</title>
 <style>
   /* Calm sports-medicine look: warm off-white page, deep green hero, solid text, no gradients. */
-  :root { --page: #f6f4ef; --ink: #14201a; --muted: #44524a; --line: #dcd8cc;
+  :root { --page: #f6f4ef; --ink: #14201a; --line: #dcd8cc;
     --card: #ffffff; --green: #0f3d2e; --green-hover: #eaf1ec; --light: #83d8a1; }
   * { box-sizing: border-box; }
   html, body { margin: 0; min-height: 100%; background: var(--page); color: var(--ink);
@@ -30,12 +30,9 @@
   a.big::after { content: "\2192"; content: "\2192" / ""; color: var(--green); font-size: 1.4rem; }
   a.big:hover { background: var(--green-hover); }
   a.big:focus-visible { outline: 3px solid var(--green); outline-offset: -6px; border-radius: 14px; }
-  .qr { margin: 0 auto; width: 220px; height: 220px; border: 2px dashed #7d8a82;
-    border-radius: 16px; display: flex; align-items: center; justify-content: center;
-    padding: 16px; text-align: center; font-weight: 600; color: var(--muted); background: var(--card); }
   @media (min-width: 900px) {
     main { grid-template-columns: 1fr 1fr; align-items: start; gap: 32px; padding: 48px 32px; }
-    .hero { grid-row: span 2; padding: 48px 40px; min-height: 420px;
+    .hero { padding: 48px 40px; min-height: 420px;
       display: flex; flex-direction: column; justify-content: center; }
     h1 { font-size: 3rem; }
     a.big { min-height: 88px; font-size: 1.4rem; }
@@ -57,7 +54,6 @@
       <li><a class="big" href="{% url 'exhibition_progression' %}">See how a plan changes</a></li>
     </ol>
   </nav>
-  <div class="qr" id="leadQr">Lead form QR goes here</div>
 </main>
 </body>
 </html>

@@ -644,7 +644,7 @@ Needs `MIND_LAB_ENABLED=True`. Phone, portrait. Login: `/login/` → `9000000005
 Needs `EXHIBITION_MODE=True` and HTTPS (or `localhost`): camera access needs a secure context. Phone, portrait, no login. Nothing on this page is saved.
 
 1. Start the server with `EXHIBITION_MODE=True` (for example `EXHIBITION_MODE=True DJANGO_SECRET_KEY=test-key DJANGO_DEBUG=True python manage.py runserver 0.0.0.0:8000` behind an HTTPS tunnel). Without the flag, `/exhibition/` and `/exhibition/squat/` must give 404.
-2. On the phone open `/exhibition/`. See the line "VYAYAM: a training plan that progresses on its own", a large "Try the squat coach" link and the dashed QR box. Tap the link.
+2. On the phone open `/exhibition/`. See the line "VYAYAM: a training plan that progresses on its own", a large "Try the squat coach" link. Tap the link.
 3. `/exhibition/squat/` opens on the Start screen: a large Start button and the placement hint. No voice and no camera yet.
 4. Tap Start. Allow the camera. You hear "Ready." and see it as a large caption. The header, camera box and rep card fit a 375 x 667 screen with no scrolling, and the rep count and position cue are visible. There is no "Show demo" button under 860 px.
 5. Do 3 squats. Every spoken coach line appears as a large black caption bar at the TOP of the screen (it must never cover the rep card), in step with the voice. Turn the phone volume off: you can still follow every line.
