@@ -203,6 +203,23 @@ EXERCISES = [
         "default_reps": 15,
         "default_rest_seconds": 45,
     },
+    {
+        "exercise_id": "ex_bicep_curl",
+        "name": "Bicep Curl",
+        "movement_pattern": "Pull",
+        "equipment": "Dumbbell",
+        "video_url": "",
+        "v2_ghost_supported": False,
+        # Key names the registry/content/video asset only. Ghost stays False:
+        # this is a guided exercise until a curl camera coach is filmed and
+        # checked on a real phone. Deliberately NOT '_rx' so the QA
+        # dark-coach surface (which selects by endswith('_rx')) never lists it.
+        "v2_exercise_key": "bicep_curls",
+        "description": "Stand tall holding a dumbbell in each hand, arms straight and palms facing forward. Keep your elbows pinned to your sides and curl both weights up together toward your shoulders without swinging or leaning back. Pause briefly at the top, then lower slowly over 2-3 seconds until your arms are fully straight. This exercise is guided: camera tracking of the curl is not yet verified, so count your own reps.",
+        "default_sets": 3,
+        "default_reps": 12,
+        "default_rest_seconds": 60,
+    },
     # ------------------------------------------------------------------
     # LUNGE
     # ------------------------------------------------------------------
