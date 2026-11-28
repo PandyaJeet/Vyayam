@@ -214,7 +214,7 @@ EXERCISES = [
         # together. Still NOT '_rx', so the QA dark-coach list (which selects
         # by endswith('_rx')) skips it. Description pending physio review.
         "v2_exercise_key": "bicep_curls",
-        "description": "Stand side-on to the camera with your whole body in view, a dumbbell in each hand, arms straight and palms facing forward. Keep your elbows pinned to your sides and curl both weights up together without swinging or leaning back. Squeeze briefly at the top, then lower slowly over 2-3 seconds until your arms are straight. The camera counts a rep only when you curl all the way up and lower all the way down.",
+        "description": "Stand side-on to the camera with your whole body in view, a dumbbell in each hand, arms straight and palms facing forward. Keep your elbows pinned to your sides and curl both weights up together without swinging or leaning back. Take about 2 seconds to curl up, squeeze for 1 second at the top, then lower slowly over 2 seconds until your arms are straight. The camera counts a rep only when you curl all the way up and lower all the way down.",
         "default_sets": 3,
         "default_reps": 12,
         "default_rest_seconds": 60,

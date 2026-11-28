@@ -732,4 +732,13 @@ test('CURL N7: the 11 dark coaches are still there, nothing else added', () => {
   }
 });
 
+test('CURL N8: ghost tempo 2 s up, 1 s hold, 2 s down, exact (no template floors)', () => {
+  const def = dark.PHASES.CURL;
+  assert.deepEqual(def.phases.map((p) => p.duration), [1500, 2000, 1000, 2000]);
+  assert.equal(def.exactTempo, true);
+  for (const key of Object.keys(dark.PHASES).filter((k) => k !== 'CURL')) {
+    assert.equal(dark.PHASES[key].exactTempo, undefined, `${key} must keep the floors`);
+  }
+});
+
 // [VYAYAM-DARK-TESTS-END]

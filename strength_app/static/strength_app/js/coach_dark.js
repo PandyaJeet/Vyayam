@@ -16,6 +16,7 @@
  * near arm, both arms together. It adds curlGhost() for the template's
  * ghost figure (the generic elbow ghost is a push-up drop). The eleven
  * `_rx` coaches above stay dark and unchanged.
+ * CURL sets exactTempo: true, so the template runs its durations as written.
  *
  * This file follows the cv_core/coach_core UMD pattern so node can unit-test
  * every checkAngles + fault observer (coach_dark.test.mjs). It depends ONLY
@@ -766,11 +767,12 @@
     ],
     commonMistake: 'Most common mistake: swinging the weight. Keep your elbows by your sides and your body still.',
     stanceCheck: null,
+    exactTempo: true,  // ghost runs the phase durations as written (no 1.5 s / 2 s floor, no 3 s between-rep gate)
     phases: [
-      { name: 'start', duration: 0,    joints: { elbow: 165 }, voice: 'Arms long, elbows by your sides' },
-      { name: 'lift',  duration: 1500, joints: { elbow: 45 },  voice: 'Curl up' },
-      { name: 'hold',  duration: 600,  joints: { elbow: 45 },  voice: 'Squeeze' },
-      { name: 'lower', duration: 2500, joints: { elbow: 165 }, voice: 'Lower slowly, all the way down' },
+      { name: 'start', duration: 1500, joints: { elbow: 165 }, voice: 'Arms long, elbows by your sides' },
+      { name: 'lift',  duration: 2000, joints: { elbow: 45 },  voice: 'Curl up' },
+      { name: 'hold',  duration: 1000, joints: { elbow: 45 },  voice: 'Squeeze' },
+      { name: 'lower', duration: 2000, joints: { elbow: 165 }, voice: 'Lower slowly, all the way down' },
     ],
     checkAngles: function (lm) { return { elbow: _clamp(_curlArm(lm).elbow, 45, 165) }; },
     cues: { elbow: 'Curl all the way up' },

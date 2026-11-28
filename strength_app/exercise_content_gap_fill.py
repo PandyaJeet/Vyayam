@@ -2591,15 +2591,15 @@ EXERCISE_CONTENT_GAP_FILL = {
         'instructions': [
             'Stand tall with feet hip-width apart, a dumbbell in each hand, arms straight and palms facing forward.',
             'Keep your elbows close to your sides.',
-            'Curl both weights up together toward your shoulders.',
-            'Pause briefly at the top and squeeze the front of the upper arm.',
-            'Lower slowly over 2 to 3 seconds until your arms are fully straight.',
+            'Curl both weights up together toward your shoulders over about 2 seconds.',
+            'Pause for 1 second at the top and squeeze the front of the upper arm.',
+            'Lower slowly over 2 seconds until your arms are fully straight.',
         ],
         'form_cues': [
             'Elbows stay by your sides - only the forearms move.',
             'No swinging and no leaning back to lift the weight.',
             'Straighten the arms fully at the bottom of every rep.',
-            'Lower slowly - take 2 to 3 seconds on the way down.',
+            'Lower slowly - take 2 seconds on the way down.',
         ],
         'mind_muscle_cue': {
             'palpation': 'Rest the fingers of one hand on the front of the other upper arm. Feel the biceps tighten as you curl.',

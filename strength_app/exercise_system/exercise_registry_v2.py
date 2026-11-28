@@ -396,6 +396,7 @@ EXERCISE_METADATA = {
         'unilateral': False,
         'new_in_v2': True,
         'movement_pattern': 'pull',
+        'tempo': '2-1-2-0',
     },
     'tricep_extensions': {
         'class': TricepExtensionsV2,

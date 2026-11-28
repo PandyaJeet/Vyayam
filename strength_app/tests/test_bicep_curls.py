@@ -149,6 +149,61 @@ class TestBicepCurlCameraSession(TestCase):
         self.assertIn('"tracking":"camera"', body)
         self.assertIn('"js_type":"CURL"', body)
 
+    def test_library_route_tempo_is_2_1_2_0(self):
+        body = _compact(self.client.get(f'/exercises/{KEY}/execute/'))
+        self.assertIn('constTEMPO_PARTS=["2","1","2","0"]', body)
+
+    def test_other_exercise_keeps_default_tempo(self):
+        resp = self.client.get('/exercises/full_squats/execute/')
+        self.assertEqual(resp.status_code, 200)
+        self.assertIn('constTEMPO_PARTS=["3","1","2","0"]', _compact(resp))
+
+    def test_therapist_tempo_blank_uses_curl_metadata(self):
+        # The seeded first item carries glute bridge tempo '3-1-1'; blank it.
+        item = PrescriptionItem.objects.order_by('order').first()
+        item.tempo = ''
+        item.save(update_fields=['tempo'])
+        resp = self.client.get(reverse('therapist_session_exercise', args=[0]))
+        self.assertIn('constTEMPO_PARTS=["2","1","2","0"]', _compact(resp))
+
+    def test_therapist_item_tempo_wins(self):
+        item = PrescriptionItem.objects.order_by('order').first()
+        item.tempo = '4-1-3-0'
+        item.save(update_fields=['tempo'])
+        resp = self.client.get(reverse('therapist_session_exercise', args=[0]))
+        self.assertIn('constTEMPO_PARTS=["4","1","3","0"]', _compact(resp))
+
+
+class TestBicepCurlExactTempo(SimpleTestCase):
+
+    def test_template_reads_exact_tempo_and_keeps_floors(self):
+        text = (APP_DIR / 'templates' / 'strength_app' /
+                'v1_exercise_execute.html').read_text(encoding='utf-8')
+        # DEMO floor, GHOST_LEADS floor, between-rep gate.
+        self.assertEqual(text.count('exactTempo'), 3)
+        self.assertIn('Math.max(phase.duration || 0, 1500)', text)
+        self.assertIn('Math.max(phase.duration || 0, 2000)', text)
+        self.assertIn('restModeUntil = Date.now() + 3000', text)
+
+    def test_registry_tempo(self):
+        from strength_app.exercise_system.exercise_registry_v2 import (
+            EXERCISE_METADATA,
+        )
+        self.assertEqual(EXERCISE_METADATA[KEY]['tempo'], '2-1-2-0')
+
+    def test_text_has_no_old_tempo(self):
+        from therapist_app.exercise_catalog import EXERCISES_BY_ID
+        from strength_app.exercise_content_gap_fill import (
+            EXERCISE_CONTENT_GAP_FILL,
+        )
+        desc = EXERCISES_BY_ID[EX_ID]['description']
+        self.assertNotIn('2-3 seconds', desc)
+        self.assertIn('squeeze for 1 second', desc)
+        content = EXERCISE_CONTENT_GAP_FILL[KEY]
+        lines = ' '.join(content['instructions'] + content['form_cues'])
+        self.assertNotIn('2 to 3 seconds', lines)
+        self.assertNotIn('briefly', lines)
+
 
 class TestBicepCurlNotADarkCoach(TestCase):
 

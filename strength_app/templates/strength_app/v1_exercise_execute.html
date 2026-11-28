@@ -3754,7 +3754,7 @@ async function startCamera() {
       case 'DEMO': {
         var elapsed = Date.now() - ghostState.phaseStartTime;
         var phase = phases[ghostState.currentPhaseIndex];
-        var phaseDur = Math.max(phase.duration || 0, 1500);  // minimum 1.5s per phase during demo
+        var phaseDur = ghostState.exerciseDef.exactTempo ? (phase.duration || 0) : Math.max(phase.duration || 0, 1500);  // minimum 1.5s per phase during demo (CURL: exact)
         if (elapsed >= phaseDur) {
           ghostState.currentPhaseIndex++;
           ghostState.phaseStartTime = Date.now();
@@ -3877,7 +3877,7 @@ async function startCamera() {
       case 'GHOST_LEADS': {
         var elapsed = Date.now() - ghostState.phaseStartTime;
         var phase = phases[ghostState.currentPhaseIndex];
-        var phaseDur = Math.max(phase.duration || 0, 2000);  // minimum 2 seconds per phase when guiding
+        var phaseDur = ghostState.exerciseDef.exactTempo ? (phase.duration || 0) : Math.max(phase.duration || 0, 2000);  // minimum 2 seconds per phase when guiding (CURL: exact)
         var rawP = Math.min(1, elapsed / phaseDur);
         ghostState.ghostAnimProgress = rawP < 0.5
           ? 4 * rawP * rawP * rawP
@@ -4252,8 +4252,10 @@ async function startCamera() {
           ghostState.ghostAnimProgress = 0;
           ghostState.lastRepPartial = false;
           ghostState.userHasMovedFromStart = false;
-          ghostState.restMode = true;
-          ghostState.restModeUntil = Date.now() + 3000;
+          if (!ghostState.exerciseDef.exactTempo) {  // CURL: no between-rep gate
+            ghostState.restMode = true;
+            ghostState.restModeUntil = Date.now() + 3000;
+          }
           ghostState.stallStartTime = null;
           ghostState.stallBaseScore = null;
           VoiceCoach.speak('Again. ' + (phases.length > 1 ? phases[1].voice : phases[0].voice), false);
