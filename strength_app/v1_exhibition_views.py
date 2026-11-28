@@ -32,6 +32,18 @@ SQUAT_TEXT = {
     'demo_line2': 'One more time.',
     'demo_again': 'Show demo',  # same label as the camera page's own button
 }
+CURL_KEY = 'bicep_curls'
+# Same wording as SQUAT_TEXT except hint and fail_body (no clip, side view).
+CURL_TEXT = {
+    'start': 'Start',
+    # Wording follows the CURL cameraPosition data in coach_dark.js (side view).
+    'hint': 'Prop your phone at waist height, to your side. '
+            'Stand side-on and step back so your whole body is on screen.',
+    'unlock': 'Ready.',
+    'fail_title': 'Camera not available',
+    'fail_body': 'We could not start the camera.',
+    'retry': 'Try again',
+}
 # Games page wording. Also unsigned: see docs/UNSIGNED_DEFAULTS.md.
 GAMES_TEXT = {
     'title': 'Demo games',
@@ -124,6 +136,46 @@ def exhibition_squat(request):
         'library_mode': True,
         'library_return_url': '/exhibition/',
         'exh': SQUAT_TEXT,
+        'exh_cfg_json': json.dumps(wrapper_cfg),
+    })
+
+
+def exhibition_bicep_curl(request):
+    """Real camera page for bicep_curls, library mode (so it saves nothing),
+    wrapped by exhibition_curl.html. No clip: Start runs the camera page's own
+    showDemo(). Tempo is the registry's 2-1-2-0 (pinned by test_exhibition.py)."""
+    _require_flag()
+    content = EXERCISE_CONTENT[CURL_KEY]
+    cfg = get_cv_config(CURL_KEY)
+    exercise = {
+        'exercise_id': CURL_KEY,
+        'exercise_name': content['display_name'],
+        'movement_pattern': content['movement_pattern'],
+        'sets': 1,
+        'reps': 5,
+        'tempo': '2-1-2-0',
+        'tempo_parts': ['2', '1', '2', '0'],
+        'rest_seconds': 60,
+        'prescribed_rest': 60,
+        'is_unilateral': False,
+        'mind_muscle_cue': content.get('mind_muscle_cue', {}),
+        'form_cues': content.get('form_cues', []),
+        'instructions': ' '.join(content.get('instructions', [])),
+        'asymmetry': {},
+        'capability_level': 2,
+        'is_hold': bool(cfg.get('is_hold')),
+    }
+    wrapper_cfg = dict(CURL_TEXT, idle_seconds=IDLE_SECONDS,
+                       no_frame_seconds=NO_FRAME_SECONDS)
+    return render(request, 'strength_app/exhibition_curl.html', {
+        'exercise': exercise,
+        'exercise_index': 0,
+        'total_exercises': 1,
+        'is_last_exercise': True,
+        'has_strength_profile': True,
+        'library_mode': True,
+        'library_return_url': '/exhibition/',
+        'exh': CURL_TEXT,
         'exh_cfg_json': json.dumps(wrapper_cfg),
     })
 

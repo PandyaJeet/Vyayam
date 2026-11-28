@@ -27,6 +27,7 @@ class ExhibitionFlagOffTests(TestCase):
         self.assertEqual(self.client.get('/exhibition/squat/').status_code, 404)
         self.assertEqual(self.client.get('/exhibition/games/').status_code, 404)
         self.assertEqual(self.client.get('/exhibition/progression/').status_code, 404)
+        self.assertEqual(self.client.get('/exhibition/bicep-curl/').status_code, 404)
 
     @override_settings(MIND_LAB_ENABLED=True)
     def test_games_404_even_when_mind_lab_flag_is_on(self):
@@ -67,17 +68,19 @@ class ExhibitionFlagOffTests(TestCase):
 @override_settings(EXHIBITION_MODE=True)
 class ExhibitionFlagOnTests(TestCase):
     def test_anonymous_200_no_login_redirect(self):
-        for url in ('/exhibition/', '/exhibition/squat/'):
+        for url in ('/exhibition/', '/exhibition/squat/', '/exhibition/bicep-curl/'):
             r = self.client.get(url)
             self.assertEqual(r.status_code, 200, url)
         self.assertContains(self.client.get('/exhibition/'),
                             'a training plan that progresses on its own')
         self.assertContains(self.client.get('/exhibition/'), reverse('exhibition_squat'))
+        self.assertContains(self.client.get('/exhibition/'), reverse('exhibition_bicep_curl'))
 
     def test_visit_stores_nothing(self):
         before = _row_counts()
         self.client.get('/exhibition/')
         self.client.get('/exhibition/squat/')
+        self.client.get('/exhibition/bicep-curl/')
         self.assertEqual(before, _row_counts())
 
     def test_squat_page_is_full_squats_wrapper(self):
@@ -194,7 +197,8 @@ class ExhibitionFlagOnTests(TestCase):
         doc = (Path(__file__).resolve().parents[2] / 'docs' / 'UNSIGNED_DEFAULTS.md').read_text()
         row = re.search(r'\| Page titles \(<title>\) \|(.*)\|', doc).group(1)
         # /exhibition/games/ is Pawan's own file, served unchanged (<title>Mind Games Prototype</title>).
-        for url in ('/exhibition/', '/exhibition/squat/', '/exhibition/progression/'):
+        for url in ('/exhibition/', '/exhibition/squat/', '/exhibition/progression/',
+                    '/exhibition/bicep-curl/'):
             html = self.client.get(url).content.decode()
             title = re.search(r'<title>(.*?)</title>', html, re.S).group(1).strip()
             self.assertIn('`%s`' % title, row, (url, title))
@@ -290,7 +294,8 @@ class ExhibitionRefreshGuardTests(TestCase):
         self.assertIn('<title>Mind Games Prototype</title>', markup)
 
     def test_every_exhibition_subpage_links_back_to_index(self):
-        for url in ('/exhibition/squat/', '/exhibition/games/', '/exhibition/progression/'):
+        for url in ('/exhibition/squat/', '/exhibition/games/', '/exhibition/progression/',
+                    '/exhibition/bicep-curl/'):
             self.assertContains(self.client.get(url), 'href="/exhibition/"', msg_prefix=url)
 
     def test_index_links_exact(self):
@@ -300,6 +305,7 @@ class ExhibitionRefreshGuardTests(TestCase):
             (reverse('exhibition_squat'), 'Try the squat coach'),
             (reverse('exhibition_games'), 'Play the demo games'),
             (reverse('exhibition_progression'), 'See how a plan changes'),
+            (reverse('exhibition_bicep_curl'), 'Try the bicep curl coach'),
         ])
         self.assertIn('id="exhibitionLinks"', html)
         self.assertNotIn('leadQr', html)
@@ -343,6 +349,83 @@ class ExhibitionRefreshGuardTests(TestCase):
         for needle in ("$('exhStart').style.display = 'none'", "$('exhDemoStage').style.display = 'flex'",
                        "$('exhDemoStage').style.display = 'none'", "$('exhFail').style.display = 'flex'"):
             self.assertIn(needle, js)
+
+
+@override_settings(EXHIBITION_MODE=True)
+class ExhibitionCurlTests(TestCase):
+    """/exhibition/bicep-curl/: the real CURL camera page, library mode, no clip."""
+
+    def _get(self):
+        r = self.client.get(reverse('exhibition_bicep_curl'))
+        self.assertEqual(r.status_code, 200)
+        return r
+
+    def test_curl_page_is_bicep_curls_wrapper(self):
+        r = self._get()
+        html = r.content.decode()
+        names = [t.name for t in r.templates]
+        for t in ('strength_app/exhibition_curl.html', 'strength_app/exhibition_squat.html',
+                  'strength_app/v1_exercise_execute.html'):
+            self.assertIn(t, names)
+        self.assertRegex(html, r'EXERCISE_ID\s*=\s*"bicep_curls"')
+        body = re.sub(r'\s+', '', html)
+        self.assertIn('"js_type":"CURL"', body)
+        self.assertIn('"tracking":"camera"', body)
+        self.assertIn('constTEMPO_PARTS=["2","1","2","0"]', body)
+        self.assertRegex(html, r'const LIBRARY_MODE = true')
+        self.assertIn('const SET_LOG_URL = ""', html)
+        self.assertIn('const REST_EVENT_URL = ""', html)
+        self.assertIn('const REPORT_PAIN_URL = ""', html)
+        # Script tags (hashed names when the manifest storage is on); squat JS before curl JS.
+        srcs = re.findall(r'<script src="[^"]*/(exhibition_[a-z]+)\.(?:[0-9a-f]+\.)?js"', html)
+        self.assertEqual(srcs, ['exhibition_guard', 'exhibition_squat', 'exhibition_curl'])
+        for needle in ('id="exhGo"', 'id="exhFail"', 'id="exhRetry"', 'id="exhCaption"',
+                       'EXH_CURL_CFG = JSON.parse("', 'show-demo-label'):
+            self.assertIn(needle, html)
+        # No clip and no squat DOM wiring on this page.
+        # (The inherited stylesheet still names #exhFailVideo etc.; the elements are gone.)
+        for bad in ('id="exhDemo"', 'id="exhDemoStage"', 'id="exhFailVideo"', 'id="exhFailReplay"',
+                    'videos/full_squats', 'window.EXH_CFG'):
+            self.assertNotIn(bad, html)
+        fail = html[html.index('id="exhFail"'):html.index('id="exhCaption"')]
+        self.assertNotIn('<video', fail)
+        self.assertNotIn('QA — not patient mode', html)
+        self.assertIn('exh-squat', re.search(r'<body[^>]*>', html).group(0))
+
+    def test_curl_hint_is_side_on(self):
+        from strength_app.v1_exhibition_views import CURL_TEXT
+        self.assertContains(self._get(), CURL_TEXT['hint'])
+        self.assertIn('side-on', CURL_TEXT['hint'])
+
+    def test_curl_tempo_matches_registry(self):
+        from strength_app.exercise_system.exercise_registry_v2 import EXERCISE_METADATA
+        body = re.sub(r'\s+', '', self._get().content.decode())
+        # The view hardcodes the tempo (no registry import); it must not drift from the registry.
+        parts = EXERCISE_METADATA['bicep_curls']['tempo'].split('-')
+        self.assertIn('constTEMPO_PARTS=[%s]' % ','.join('"%s"' % p for p in parts), body)
+
+    def test_curl_js_runs_showdemo_once_and_never_networks(self):
+        js = (STATIC_JS / 'exhibition_curl.js').read_text()
+        self.assertEqual(js.count('window.showDemo()'), 1)
+        self.assertIn('window.EXH_CURL_CFG', js)
+        for bad in ('startCamera(', 'fetch(', 'XMLHttpRequest', 'sendBeacon',
+                    'localStorage', 'sessionStorage', 'exhFailReplay', 'exhDemo'):
+            self.assertNotIn(bad, js)
+
+    def test_curl_template_adds_no_save_or_feedback_url(self):
+        src = (Path(__file__).resolve().parents[1] / 'templates' / 'strength_app'
+               / 'exhibition_curl.html').read_text()
+        for bad in ('{% url', 'v1_save', 'save_', 'feedback', 'POST'):
+            self.assertNotIn(bad, src)
+
+    def test_curl_wording_listed_in_unsigned_defaults(self):
+        from strength_app.v1_exhibition_views import CURL_TEXT, SQUAT_TEXT
+        doc = (Path(__file__).resolve().parents[2] / 'docs' / 'UNSIGNED_DEFAULTS.md').read_text()
+        new = {k: v for k, v in CURL_TEXT.items() if SQUAT_TEXT.get(k) != v}
+        self.assertEqual(set(new), {'hint', 'fail_body'})
+        for v in new.values():
+            self.assertIn(v, doc)
+        self.assertIn('Try the bicep curl coach', doc)
 
 
 def _patient_execute_html(client):

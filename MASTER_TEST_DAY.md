@@ -746,3 +746,16 @@ Needs `EXHIBITION_MODE=True`. Laptop at 1366 x 768 and at 1280 x 800, browser zo
 5. Scroll down from the hero: the title "How a plan changes" and every section below are the same as before.
 6. Compare the hero numbers with the symmetry table (Lunge row) and the "What changed" table (lunge row, Level and Weaker-side sets columns). They match.
 7. No red anywhere in the hero. With the flag off the page gives 404.
+
+## Part U9 — Bicep curl stall page (`/exhibition/bicep-curl/`)
+
+Needs `EXHIBITION_MODE=True` and HTTPS (or `127.0.0.1` on the PC). Phone 375 x 667 portrait, or laptop. No login. Light dumbbells help; tracking reads arm angles only.
+
+1. With the flag off, `/exhibition/bicep-curl/` gives 404.
+2. Open `/exhibition/`. Four items show, in order: squat, games, progression, "Try the bicep curl coach". Items 1-3 are as before. Item 4 opens `/exhibition/bicep-curl/`.
+3. The page shows only the Start button and the hint "Prop your phone at waist height, to your side. Stand side-on and step back so your whole body is on screen." No video. No scrolling.
+4. Tap Start. The camera prompt appears at once (there is no clip). Allow it.
+5. Stand side-on, whole body in view. After the framing check the coach says where to put the camera, gives the setup cues, shows two ghost curl reps (2 s up, 1 s hold, 2 s down), then "Now you try".
+6. Do curls. Reps count and cues show in the caption bar. Nothing is saved: no new session or set appears for any patient.
+7. Reload, tap Start, and choose Don't Allow: "Camera not available" and "We could not start the camera." show with "Try again" (returns to Start). No video and no "Show demo" button on that panel.
+8. After Start, leave the page alone for 60 s once coaching runs: it reloads to the Start screen.

@@ -179,18 +179,18 @@
   <p class="exh-hint" id="exhHint">{{ exh.hint }}</p>
 </div>
 {# Played twice after Start, camera still off. No autoplay, no loop. #}
-<div id="exhDemoStage">
+{% block exh_demo %}<div id="exhDemoStage">
   <video id="exhDemo" muted playsinline preload="auto">
     <source src="{% static 'strength_app/videos/full_squats.mp4' %}" type="video/mp4">
   </video>
-</div>
+</div>{% endblock %}
 <div id="exhFail" role="alert">
   <h2>{{ exh.fail_title }}</h2>
   <p>{{ exh.fail_body }}</p>
-  <video id="exhFailVideo" muted loop playsinline autoplay preload="none">
+  {% block exh_fail_media %}<video id="exhFailVideo" muted loop playsinline autoplay preload="none">
     <source src="{% static 'strength_app/videos/full_squats.mp4' %}" type="video/mp4">
   </video>
-  <button id="exhFailReplay" type="button">{{ exh.demo_again }}</button>
+  <button id="exhFailReplay" type="button">{{ exh.demo_again }}</button>{% endblock %}
   <button id="exhRetry" type="button">{{ exh.retry }}</button>
 </div>
 <div id="exhCaption" aria-live="polite"></div>
@@ -198,8 +198,8 @@
 
 {% block extra_scripts %}
 {{ block.super }}
-<script>
+{% block exh_script %}<script>
   window.EXH_CFG = JSON.parse("{{ exh_cfg_json|escapejs }}");
 </script>
-<script src="{% static 'strength_app/js/exhibition_squat.js' %}"></script>
+<script src="{% static 'strength_app/js/exhibition_squat.js' %}"></script>{% endblock %}
 {% endblock %}

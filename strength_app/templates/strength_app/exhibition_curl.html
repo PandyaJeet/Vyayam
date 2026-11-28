@@ -1,0 +1,19 @@
+{% extends 'strength_app/exhibition_squat.html' %}
+{% load static %}
+{% comment %}
+  Stall bicep curl page. Reuses the squat stall wrapper (header, styles, early hooks,
+  Start panel, fail panel, caption) and overrides only its three inner blocks:
+  no demo clip, no clip on the fail panel, and the curl script. The demo is the
+  camera page's own showDemo(), run by exhibition_curl.js on the Start tap.
+{% endcomment %}
+
+{% block exh_demo %}{% endblock %}
+
+{% block exh_fail_media %}{% endblock %}
+
+{# exhibition_squat.js loads only for its pure parts: without window.EXH_CFG its DOM part stays off. #}
+{% block exh_script %}<script>
+  window.EXH_CURL_CFG = JSON.parse("{{ exh_cfg_json|escapejs }}");
+</script>
+<script src="{% static 'strength_app/js/exhibition_squat.js' %}"></script>
+<script src="{% static 'strength_app/js/exhibition_curl.js' %}"></script>{% endblock %}

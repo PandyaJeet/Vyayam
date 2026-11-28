@@ -127,7 +127,7 @@ All unsigned. Hold and notify only: nothing here changes load or a stage number.
 
 ## Exhibition pages (`EXHIBITION_MODE`) — wording for Pawan's mentor
 
-Every new athlete-facing string on `/exhibition/` and `/exhibition/squat/`. None is signed off. The strings live in `strength_app/v1_exhibition_views.py` (`SQUAT_TEXT`) and `strength_app/templates/strength_app/exhibition_index.html`. Captions show the existing camera coach lines word for word; they add no new text.
+Every new athlete-facing string on `/exhibition/`, `/exhibition/squat/` and `/exhibition/bicep-curl/`. None is signed off. The strings live in `strength_app/v1_exhibition_views.py` (`SQUAT_TEXT`, `CURL_TEXT`) and `strength_app/templates/strength_app/exhibition_index.html`. Captions show the existing camera coach lines word for word; they add no new text.
 
 | Where | String |
 |---|---|
@@ -143,9 +143,13 @@ Every new athlete-facing string on `/exhibition/` and `/exhibition/squat/`. None
 | Squat, demo line 2 (spoken and captioned on play 2) | One more time. |
 | Squat, demo replay button (failure panel only; the existing camera-page label) | Show demo |
 | Squat, header | VYAYAM |
-| Page titles (<title>) | `VYAYAM` (index) · `Full Squats — VYAYAM` (squat; the camera page's own title) · `Mind Games Prototype` (games; Pawan's own file, served unchanged) · `VYAYAM: How a plan changes` (progression) |
+| Index, link (item 4) | Try the bicep curl coach |
+| Bicep curl, placement hint (follows the CURL `cameraPosition` text in `coach_dark.js`) | Prop your phone at waist height, to your side. Stand side-on and step back so your whole body is on screen. |
+| Bicep curl, camera failure body (no clip on this page) | We could not start the camera. |
+| Bicep curl, other strings | Same as squat: Start · Ready. · Camera not available · Try again · VYAYAM (header). No demo lines: the demo is the camera page's own Show demo sequence, word for word. |
+| Page titles (<title>) | `VYAYAM` (index) · `Full Squats — VYAYAM` (squat; the camera page's own title) · `Mind Games Prototype` (games; Pawan's own file, served unchanged) · `VYAYAM: How a plan changes` (progression) · `Bicep Curls — VYAYAM` (bicep curl; the camera page's own title) |
 
-Other defaults: idle reset 60 s (`IDLE_SECONDS`), camera-frame timeout 10 s (`NO_FRAME_SECONDS`). The squat page runs `full_squats` as 1 set of 5 reps with tempo 3-1-2-0 (nothing is saved, so these only set the on-screen targets).
+Other defaults: idle reset 60 s (`IDLE_SECONDS`), camera-frame timeout 10 s (`NO_FRAME_SECONDS`). The squat page runs `full_squats` as 1 set of 5 reps with tempo 3-1-2-0 (nothing is saved, so these only set the on-screen targets). The bicep curl page runs `bicep_curls`, 1 set of 5, tempo 2-1-2-0 (the registry tempo).
 
 ### `/exhibition/games/` (iPad)
 
