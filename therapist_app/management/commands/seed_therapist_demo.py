@@ -2,7 +2,9 @@
 Seeds the therapist console demo fixtures.
 
 Idempotent — wipes existing demo therapists / their links / linked
-PatientProfiles and recreates.
+PatientProfiles and recreates. Demo session history (SessionReport and
+SessionLog rows on those links and profiles) is wiped too, so a reseed
+after someone used the demo does not hit the PROTECT foreign keys.
 
 Usage:
     python manage.py seed_therapist_demo
@@ -38,6 +40,8 @@ from datetime import date, timedelta
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.models import User
 from django.core.management.base import BaseCommand
+from django.db import transaction
+from django.db.models import Q
 from django.utils import timezone
 
 from strength_app.models import PatientProfile
@@ -46,6 +50,8 @@ from therapist_app.exercise_catalog import EXERCISES_BY_ID
 from therapist_app.models import (
     Prescription,
     PrescriptionItem,
+    SessionLog,
+    SessionReport,
     Therapist,
     TherapistPatientHealthProfile,
     TherapistPatientLink,
@@ -220,6 +226,7 @@ DR_IYER_PATIENTS = [
 class Command(BaseCommand):
     help = 'Seeds the therapist console demo fixtures (idempotent).'
 
+    @transaction.atomic
     def handle(self, *args, **options):
         self._wipe()
         therapists = self._seed_therapists()
@@ -239,6 +246,32 @@ class Command(BaseCommand):
 
     def _wipe(self):
         usernames = ['dr_shah', 'dr_iyer', 'anika', 'rohan', 'sara', 'vikram', 'neha@example.com']
+        seed_phones = ['9000000001', '9000000002', '9000000003', '9000000004']
+        seed_pids = ['THERA_ANIKA', 'THERA_ROHAN', 'THERA_SARA', 'THERA_VIKRAM']
+
+        # Session history is PROTECT (B-X2), so the User cascade cannot
+        # remove it. Delete only history on links/profiles this wipe deletes
+        # anyway: links of the demo therapists (including patients a judge
+        # invited) and of the demo patients. Reports first (they protect
+        # logs, links and profiles), then logs (they protect prescriptions).
+        links = TherapistPatientLink.objects.filter(
+            Q(therapist__user__username__in=usernames)
+            | Q(patient__username__in=usernames))
+        profiles = PatientProfile.objects.filter(
+            Q(user__username__in=usernames)
+            | Q(phone__in=seed_phones)
+            | Q(patient_id__in=seed_pids))
+        reports = SessionReport.objects.filter(
+            Q(link__in=links)
+            | Q(session_log__link__in=links)
+            | Q(patient__in=profiles)).delete()
+        logs = SessionLog.objects.filter(
+            Q(link__in=links) | Q(prescription__link__in=links)).delete()
+        if reports[0] or logs[0]:
+            self.stdout.write(
+                f'  Wiped demo session history: {reports[0]} report row(s), '
+                f'{logs[0]} session log row(s) + cascades.')
+
         # Deleting Users cascades to PatientProfile.user (OneToOne CASCADE),
         # so the linked PatientProfile rows go with them. We still defensively
         # wipe any orphaned PatientProfile rows that share our reserved phones
@@ -248,8 +281,6 @@ class Command(BaseCommand):
         if deleted[0]:
             self.stdout.write(f'  Wiped {deleted[0]} existing user record(s) + cascades.')
 
-        seed_phones = ['9000000001', '9000000002', '9000000003', '9000000004']
-        seed_pids = ['THERA_ANIKA', 'THERA_ROHAN', 'THERA_SARA', 'THERA_VIKRAM']
         orphans = PatientProfile.objects.filter(phone__in=seed_phones).delete()
         orphans2 = PatientProfile.objects.filter(patient_id__in=seed_pids).delete()
         leftover = (orphans[0] or 0) + (orphans2[0] or 0)
