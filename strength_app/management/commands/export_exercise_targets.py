@@ -51,6 +51,7 @@ from django.core.management.base import BaseCommand
 #                                         Nordic page is positional diagnostic only, W2-6)
 #   bicep_curls       was ROW           → manual (elbow signal matches but the
 #                                         ghost would coach a rowing motion)
+#                                         2026-11: camera via dedicated CURL coach (curl ghost, side view)
 #   scapular_pull / hanging_leg_raise were HANG → manual (elbows never bend;
 #                                         the HANG rep detector can never fire)
 #   single_leg_glute_bridge family was HINGE_SINGLE (standing) → manual (supine)
@@ -133,6 +134,7 @@ CAMERA = {
     'table_row': 'ROW', 'elevated_table_row': 'ROW', 'doorframe_row': 'ROW',
     'bedsheet_row': 'ROW', 'towel_row': 'ROW', 'single_arm_towel_row': 'ROW',
     'renegade_row': 'ROW',
+    'bicep_curls': 'CURL',  # side view, near arm (coach_dark.js CURL)
     # ── Band pulls: arm-spread ratio ──
     'band_pull_apart': 'BAND_PULL_APART', 'face_pull_band': 'PULL',
     # ── Supine core ──
@@ -241,7 +243,6 @@ MANUAL |= {
 MANUAL |= {
     'scapular_pull', 'hanging_leg_raise', 'muscle_up_progression',
     'prone_y_t_w', 'prone_trap_raise', 'side_lying_external_rotation',
-    'bicep_curls',
 }
 # Ballistic hinge / overhead: phase machine and ghost don't match.
 MANUAL |= {'kettlebell_swing', 'medicine_ball_slam', 'hip_abduction_standing'}

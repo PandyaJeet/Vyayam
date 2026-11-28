@@ -2581,7 +2581,7 @@ EXERCISE_CONTENT_GAP_FILL = {
         'language_athlete': 'Use post-surgery or injury for circulatory support. First exercise in ankle rehab progression.',
     },
 
-    # Guided exercise (tracking: manual). Wording is neutral public form
+    # Camera exercise (CURL coach). Wording is neutral public form
     # guidance pending physio review.
     'bicep_curls': {
         'display_name': 'Bicep Curls',

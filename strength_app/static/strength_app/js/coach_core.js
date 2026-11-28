@@ -77,6 +77,9 @@
     pelvis_still:        { text: 'Keep your pelvis still',                    priority: 'primary' },
     press_even:          { text: 'Press both arms up together',               priority: 'primary' },
     row_sit_tall:        { text: 'Sit tall — pull with your back',            priority: 'primary' },
+    curl_elbows_still:   { text: 'Keep your elbows by your sides',            priority: 'primary' },
+    curl_stand_tall:     { text: 'Stand tall, keep your body still',          priority: 'primary' },
+    curl_full_range:     { text: 'Curl all the way up',                       priority: 'primary' },
   };
 
   // Reinforcement when a specific cue is corrected (R4c) — specific first,

@@ -209,13 +209,12 @@ EXERCISES = [
         "movement_pattern": "Pull",
         "equipment": "Dumbbell",
         "video_url": "",
-        "v2_ghost_supported": False,
-        # Key names the registry/content/video asset only. Ghost stays False:
-        # this is a guided exercise until a curl camera coach is filmed and
-        # checked on a real phone. Deliberately NOT '_rx' so the QA
-        # dark-coach surface (which selects by endswith('_rx')) never lists it.
+        "v2_ghost_supported": True,
+        # Camera coach CURL (coach_dark.js), side view, near arm, both arms
+        # together. Still NOT '_rx', so the QA dark-coach list (which selects
+        # by endswith('_rx')) skips it. Description pending physio review.
         "v2_exercise_key": "bicep_curls",
-        "description": "Stand tall holding a dumbbell in each hand, arms straight and palms facing forward. Keep your elbows pinned to your sides and curl both weights up together toward your shoulders without swinging or leaning back. Pause briefly at the top, then lower slowly over 2-3 seconds until your arms are fully straight. This exercise is guided: camera tracking of the curl is not yet verified, so count your own reps.",
+        "description": "Stand side-on to the camera with your whole body in view, a dumbbell in each hand, arms straight and palms facing forward. Keep your elbows pinned to your sides and curl both weights up together without swinging or leaning back. Squeeze briefly at the top, then lower slowly over 2-3 seconds until your arms are straight. The camera counts a rep only when you curl all the way up and lower all the way down.",
         "default_sets": 3,
         "default_reps": 12,
         "default_rest_seconds": 60,

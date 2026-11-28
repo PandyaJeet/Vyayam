@@ -115,6 +115,9 @@ CUE_TEXT = {
     'pelvis_still': 'Keep your pelvis still',
     'press_even': 'Press both arms up together',
     'row_sit_tall': 'Sit tall — pull with your back',
+    'curl_elbows_still': 'Keep your elbows by your sides',
+    'curl_stand_tall': 'Stand tall, keep your body still',
+    'curl_full_range': 'Curl all the way up',
 }
 
 DIFFICULTY_LABEL = {

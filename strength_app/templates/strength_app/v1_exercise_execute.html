@@ -2464,7 +2464,6 @@ async function startCamera() {
     'negative_table_row': 'ROW_HORIZONTAL', 'elevated_table_row': 'ROW_HORIZONTAL',
     'doorframe_row': 'ROW_HORIZONTAL', 'bedsheet_row': 'ROW_HORIZONTAL',
     'single_arm_towel_row': 'ROW_HORIZONTAL', 'towel_row': 'ROW_HORIZONTAL',
-    'bicep_curls': 'ROW_HORIZONTAL',
 
     // HANG_PULL (15)
     'dead_hang': 'HANG_HOLD', 'scapular_pull': 'HANG_PULL', 'negative_pull_up': 'HANG_PULL',
@@ -3711,9 +3710,9 @@ async function startCamera() {
     if (!ghostState.exerciseDef) return;
     var phases = ghostState.exerciseDef.phases;
 
-    // 2026-07 dark coaches: per-frame fault observer for *_rx exercise
-    // types only — FAULTS has no key for any live js_type, so this line is
-    // inert on every existing exercise. Observer only (detection boundary).
+    // 2026-07 dark coaches: per-frame fault observer — FAULTS has keys only
+    // for the *_rx types and CURL, so this line is inert on every other
+    // exercise. Observer only (detection boundary).
     if (window.VyayamDark && VyayamDark.FAULTS[ghostState.exerciseType]) {
       try {
         VyayamDark.FAULTS[ghostState.exerciseType].frame(lm, ghostState, coachCue, Date.now());
@@ -4665,6 +4664,19 @@ async function startCamera() {
 
     // If no targets, return user pose (for STRETCH etc)
     if (!targetJoints || Object.keys(targetJoints).length === 0) return ghost;
+
+    // CURL: forearms rotate about the elbow and the body stays still
+    // (the generic elbow branch below is a push-up drop). Math: coach_dark.js.
+    if (exerciseType === 'CURL' && window.VyayamDark && VyayamDark.curlGhost) {
+      var _cE = targetJoints.elbow;
+      if ((ghostState.mode === 'DEMO' || ghostState.mode === 'GHOST_LEADS') && progress !== undefined) {
+        var _cPrev = ghostState.currentPhaseIndex > 0 ?
+          ghostState.exerciseDef.phases[ghostState.currentPhaseIndex - 1] : ghostState.exerciseDef.phases[0];
+        var _cFrom = (_cPrev.joints && _cPrev.joints.elbow != null) ? _cPrev.joints.elbow : 165;
+        _cE = _cFrom + (_cE - _cFrom) * progress;
+      }
+      return VyayamDark.curlGhost(ghost, _cE);
+    }
 
     function dist(a, b) {
       return Math.sqrt((a.x-b.x)*(a.x-b.x) + (a.y-b.y)*(a.y-b.y));

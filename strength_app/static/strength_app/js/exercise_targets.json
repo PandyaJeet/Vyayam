@@ -546,7 +546,7 @@
  "bicep_curls": {
   "display_name": "Bicep Curls",
   "is_hold": false,
-  "js_type": null,
+  "js_type": "CURL",
   "movement_pattern": "pull",
   "phases": {
    "contracted": {
@@ -572,7 +572,7 @@
     "tolerance": 15
    }
   },
-  "tracking": "manual",
+  "tracking": "camera",
   "unilateral": false
  },
  "bicycle_crunch": {

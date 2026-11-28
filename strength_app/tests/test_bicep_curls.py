@@ -1,36 +1,49 @@
 """
-Bicep curls as a GUIDED therapist exercise (engine key 'bicep_curls').
+Bicep curls as a CAMERA therapist exercise (engine key 'bicep_curls',
+js_type 'CURL', coach in coach_dark.js).
 
 Pins:
-  - catalog row ex_bicep_curl: Pull, Dumbbell, ghost False, key not '_rx'
-  - targets artifact keeps bicep_curls manual with no js_type
+  - catalog row ex_bicep_curl: Pull, Dumbbell, ghost True, key not '_rx'
+  - targets artifact: bicep_curls camera, js_type CURL, phases, no overrides
   - gap-fill content exists and merges into EXERCISE_CONTENT
-  - the therapist session renders the no-camera guided page, no pacer
-  - a guided set persists once, and a retry of the same set stays one row
+  - the therapist session renders the camera page with the CURL config
+  - a camera set persists once, and a retry of the same set stays one row
+  - the library route opens the same camera config
+  - the legacy ROW map line is gone from the template
+  - the 3 curl cue ids are synced in coach_core CUES and report CUE_TEXT
   - the QA dark-coach surface never lists it
 """
 
 import json
+import re
 from io import StringIO
+from pathlib import Path
 
 from django.core.cache import cache
 from django.core.management import call_command
 from django.test import SimpleTestCase, TestCase
 from django.urls import reverse
 
+import strength_app
 from therapist_app.models import ExerciseSetLog, PrescriptionItem
 
 KEY = 'bicep_curls'
 EX_ID = 'ex_bicep_curl'
+CURL_CUE_IDS = ['curl_elbows_still', 'curl_stand_tall', 'curl_full_range']
+APP_DIR = Path(strength_app.__file__).parent
+
+
+def _compact(resp):
+    return re.sub(r'\s+', '', resp.content.decode())
 
 
 class TestBicepCurlCatalogAndContent(SimpleTestCase):
 
-    def test_catalog_row_is_guided_pull_dumbbell(self):
+    def test_catalog_row_is_camera_pull_dumbbell(self):
         from therapist_app.exercise_catalog import EXERCISES, EXERCISES_BY_ID
         entry = EXERCISES_BY_ID[EX_ID]
         self.assertEqual(entry['v2_exercise_key'], KEY)
-        self.assertIs(entry['v2_ghost_supported'], False)
+        self.assertIs(entry['v2_ghost_supported'], True)
         self.assertFalse(entry['v2_exercise_key'].endswith('_rx'))
         self.assertEqual(entry['movement_pattern'], 'Pull')
         self.assertEqual(entry['equipment'], 'Dumbbell')
@@ -39,11 +52,14 @@ class TestBicepCurlCatalogAndContent(SimpleTestCase):
         rows = [e for e in EXERCISES if e['v2_exercise_key'] == KEY]
         self.assertEqual(len(rows), 1)
 
-    def test_targets_stay_manual(self):
+    def test_targets_are_camera_curl(self):
         from strength_app.cv_targets import get_cv_config
         cfg = get_cv_config(KEY)
-        self.assertEqual(cfg['tracking'], 'manual')
-        self.assertIsNone(cfg['js_type'])
+        self.assertEqual(cfg['tracking'], 'camera')
+        self.assertEqual(cfg['js_type'], 'CURL')
+        self.assertTrue(cfg.get('phases'))
+        self.assertFalse(cfg.get('is_hold'))
+        self.assertFalse(cfg.get('js_overrides'))
 
     def test_content_present_and_merged(self):
         from strength_app.exercise_content import EXERCISE_CONTENT
@@ -58,8 +74,27 @@ class TestBicepCurlCatalogAndContent(SimpleTestCase):
         self.assertEqual(EXERCISE_CONTENT[KEY]['form_cues'],
                          content['form_cues'])
 
+    def test_template_has_no_legacy_row_mapping(self):
+        text = (APP_DIR / 'templates' / 'strength_app' /
+                'v1_exercise_execute.html').read_text(encoding='utf-8')
+        self.assertNotIn("'bicep_curls': 'ROW_HORIZONTAL'", text)
 
-class TestBicepCurlGuidedSession(TestCase):
+    def test_curl_cue_ids_synced(self):
+        from strength_app.tests.test_camera_dark import (
+            _coach_core_cue_ids, _report_cue_ids,
+        )
+        core_ids = _coach_core_cue_ids()
+        report_ids = _report_cue_ids()
+        dark_js = (APP_DIR / 'static' / 'strength_app' / 'js' /
+                   'coach_dark.js').read_text(encoding='utf-8')
+        self.assertIn('PHASES.CURL = {', dark_js)
+        for cue_id in CURL_CUE_IDS:
+            self.assertIn(cue_id, core_ids, cue_id)
+            self.assertIn(cue_id, report_ids, cue_id)
+            self.assertIn(f"'{cue_id}'", dark_js, cue_id)
+
+
+class TestBicepCurlCameraSession(TestCase):
 
     def setUp(self):
         cache.clear()
@@ -79,24 +114,21 @@ class TestBicepCurlGuidedSession(TestCase):
         resp = self.client.post(reverse('therapist_session_start'))
         self.assertEqual(resp.status_code, 302, 'session start failed')
 
-    def test_guided_page_has_no_camera_and_no_pacer(self):
+    def test_therapist_page_is_camera_curl(self):
         resp = self.client.get(reverse('therapist_session_exercise', args=[0]))
         self.assertEqual(resp.status_code, 200)
-        self.assertTemplateUsed(
-            resp, 'strength_app/therapist_session_exercise.html')
-        self.assertTemplateNotUsed(
-            resp, 'strength_app/v1_exercise_execute.html')
-        self.assertContains(resp, 'Bicep Curl')
-        self.assertContains(resp, '>Pull</span>')
-        self.assertContains(resp, '>Dumbbell</span>')
-        self.assertContains(resp, 'Video demo coming soon')
-        self.assertNotContains(resp, 'Count-along pacer')
-        self.assertNotContains(resp, 'getUserMedia')
+        self.assertTemplateUsed(resp, 'strength_app/v1_exercise_execute.html')
+        body = _compact(resp)
+        self.assertIn('"tracking":"camera"', body)
+        self.assertIn('"js_type":"CURL"', body)
+        self.assertIn('coach_dark.js', body)
+        self.assertNotContains(resp, 'Video demo coming soon')
 
-    def test_guided_set_persists_once(self):
+    def test_camera_set_persists_once(self):
         self.client.get(reverse('therapist_session_exercise', args=[0]))
         url = reverse('therapist_session_set_log', args=[0])
-        payload = {'mode': 'guided', 'set_number': 1, 'reps_count': 12}
+        payload = {'mode': 'camera', 'set_number': 1, 'reps_count': 12,
+                   'reps': [{'rep_n': 1, 'partial': False}]}
         for _ in range(2):  # a client retry must not duplicate the set
             resp = self.client.post(url, data=json.dumps(payload),
                                     content_type='application/json')
@@ -105,9 +137,17 @@ class TestBicepCurlGuidedSession(TestCase):
         rows = ExerciseSetLog.objects.filter(exercise_id=EX_ID)
         self.assertEqual(rows.count(), 1)
         row = rows.get()
-        self.assertEqual(row.mode, 'guided')
+        self.assertEqual(row.mode, 'camera')
         self.assertEqual(row.reps_count, 12)
         self.assertEqual(row.set_number, 1)
+
+    def test_library_route_is_camera_curl(self):
+        resp = self.client.get(f'/exercises/{KEY}/execute/')
+        self.assertEqual(resp.status_code, 200)
+        self.assertTemplateUsed(resp, 'strength_app/v1_exercise_execute.html')
+        body = _compact(resp)
+        self.assertIn('"tracking":"camera"', body)
+        self.assertIn('"js_type":"CURL"', body)
 
 
 class TestBicepCurlNotADarkCoach(TestCase):

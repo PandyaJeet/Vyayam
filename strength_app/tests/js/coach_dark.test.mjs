@@ -512,4 +512,224 @@ test('ROW_BAND_RX: reach/pull phases score; lean-back faults', () => {
   assert.deepEqual(runFaults(obs, [reach, pull, reach, pull], gs), []);
 });
 
+// ── CURL (bicep_curls) — the one LIVE coach in this file ────────────────
+// Side-view synthetic frames. The user faces +x (nose right of the
+// shoulders); the LEFT side is nearest the camera (vis 1), the right arm is
+// hidden (vis 0.2, junk points).
+const DEG = Math.PI / 180;
+/** Rotate (x, y) by `deg` in image coords (y down). */
+function rot(x, y, deg) {
+  const c = Math.cos(deg * DEG), s = Math.sin(deg * DEG);
+  return [x * c - y * s, x * s + y * c];
+}
+/**
+ * One side-view curl frame. elbow = near-arm shoulder-elbow-wrist angle;
+ * flex = upper arm swung forward from the trunk line; tilt = trunk lean
+ * (+ = shoulders ahead of the hips toward +x).
+ */
+function curlFrame(elbow, { flex = 0, tilt = 0, junk = 0 } = {}) {
+  const lm = frame();
+  const H = { x: 0.50, y: 0.55 };
+  const S = { x: H.x + 0.25 * Math.sin(tilt * DEG), y: H.y - 0.25 * Math.cos(tilt * DEG) };
+  // Upper arm: trunk-down direction, rotated forward by flex.
+  const [dx, dy] = rot(H.x - S.x, H.y - S.y, -flex);
+  const n = Math.hypot(dx, dy);
+  const E = { x: S.x + 0.14 * dx / n, y: S.y + 0.14 * dy / n };
+  // Forearm: (S - E) rotated toward the front by `elbow` degrees.
+  const [fx, fy] = rot(S.x - E.x, S.y - E.y, elbow);
+  const fn = Math.hypot(fx, fy);
+  const W = { x: E.x + 0.12 * fx / fn, y: E.y + 0.12 * fy / fn };
+  lm[L.nose] = P(S.x + 0.05, S.y - 0.10);
+  lm[L.leftShoulder] = P(S.x, S.y);     lm[L.leftElbow] = P(E.x, E.y);
+  lm[L.leftWrist] = P(W.x, W.y);        lm[L.leftHip] = P(H.x, H.y);
+  lm[L.leftKnee] = P(0.50, 0.72);       lm[L.leftAnkle] = P(0.50, 0.90);
+  // Hidden far arm: low visibility, junk positions.
+  lm[L.rightShoulder] = P(0.30 + junk, 0.10, 0.2);
+  lm[L.rightElbow] = P(0.80, 0.20 + junk, 0.2);
+  lm[L.rightWrist] = P(0.10 + junk, 0.70, 0.2);
+  lm[L.rightHip] = P(0.51, 0.55, 0.2);
+  return lm;
+}
+/** Template rule: >= 70 for 5 frames advances; phases in order; rep at the end. */
+function walkReps(def, elbows) {
+  let idx = 0, frames = 0, reps = 0;
+  for (const e of elbows) {
+    const s = cv.computeMatchScore(def.checkAngles(curlFrame(e)), def.phases[idx].joints);
+    frames = s >= 70 ? frames + 1 : Math.max(0, frames - 1);
+    if (frames >= 5) {
+      idx++; frames = 0;
+      if (idx >= def.phases.length) { reps++; idx = 1; }
+    }
+  }
+  return reps;
+}
+const ramp = (a, b, n) => Array.from({ length: n }, (_, i) => a + (b - a) * (i + 1) / n);
+const fullCurl = () => [...ramp(165, 45, 12), ...Array(12).fill(40),
+                        ...ramp(45, 170, 12), ...Array(8).fill(175)];
+const CURL_DARK_KEYS = ['WALL_SIT_RX', 'PLANK_RX', 'SIDE_PLANK_RX', 'BALANCE_RX',
+  'SLR_RX', 'KNEE_TO_CHEST_RX', 'PRONE_KNEE_BEND_RX', 'SUPINE_ABD_RX',
+  'SIDELYING_ABD_RX', 'PRESS_DB_RX', 'ROW_BAND_RX'];
+
+test('CURL N1: 4 phases start/lift/hold/lower, side view, not a hold', () => {
+  const def = dark.PHASES.CURL;
+  assert.deepEqual(def.phases.map((p) => p.name), ['start', 'lift', 'hold', 'lower']);
+  assert.deepEqual(def.phases.map((p) => p.joints.elbow), [165, 45, 45, 165]);
+  assert.equal(def.cameraPosition.view, 'side');
+  assert.equal(def.bodyOrientation, 'standing');
+  assert.ok(def.commonMistake);
+  assert.ok(dark.FAULTS.CURL);
+});
+
+test('CURL N2: side-view scoring - down, curled, mid, over-curl, locked', () => {
+  const def = dark.PHASES.CURL;
+  const down = curlFrame(175), up = curlFrame(40), mid = curlFrame(105);
+  assert.ok(Math.abs(def.checkAngles(curlFrame(120)).elbow - 120) < 0.5, 'raw angle reads true');
+  for (const ph of ['start', 'lower']) assert.ok(scorePhase(def, ph, down) >= 70, ph);
+  assert.ok(scorePhase(def, 'lift', down) < 70);
+  for (const ph of ['lift', 'hold']) assert.ok(scorePhase(def, ph, up) >= 70, ph);
+  assert.ok(scorePhase(def, 'start', up) < 70);
+  for (const ph of ['start', 'lift', 'hold', 'lower']) {
+    assert.ok(scorePhase(def, ph, mid) < 70, `mid passed ${ph}`);
+  }
+  // Over-curl past 45 still matches the top; locked past 165 the bottom.
+  assert.ok(scorePhase(def, 'lift', curlFrame(25)) >= 70, 'over-curl');
+  assert.ok(scorePhase(def, 'start', curlFrame(180)) >= 70, 'locked elbow');
+  // Edge of the 20-degree band: 65 counts, 70 does not.
+  assert.ok(scorePhase(def, 'lift', curlFrame(64)) >= 70);
+  assert.ok(scorePhase(def, 'lift', curlFrame(70)) < 70);
+});
+
+test('CURL N3: near arm wins; far-arm junk never changes the angle', () => {
+  const def = dark.PHASES.CURL;
+  for (const e of [170, 100, 50]) {
+    const a = def.checkAngles(curlFrame(e, { junk: 0 })).elbow;
+    const b = def.checkAngles(curlFrame(e, { junk: 0.15 })).elbow;
+    assert.equal(a, b, `junk moved the angle at ${e}`);
+  }
+  // Mirror: right side near, left side hidden -> right arm is read.
+  const m = curlFrame(60);
+  for (const [l, r] of [[L.leftShoulder, L.rightShoulder], [L.leftElbow, L.rightElbow],
+                        [L.leftWrist, L.rightWrist], [L.leftHip, L.rightHip]]) {
+    const t = m[l]; m[l] = m[r]; m[r] = t;
+  }
+  assert.ok(Math.abs(def.checkAngles(m).elbow - 60) < 0.5);
+});
+
+test('CURL N4: rep model - full curls count, half and unstraightened do not', () => {
+  const def = dark.PHASES.CURL;
+  const start = Array(8).fill(170);
+  const full = [...start, ...fullCurl(), ...fullCurl(), ...fullCurl()];
+  assert.equal(walkReps(def, full), 3);
+  const half = () => [...ramp(165, 95, 8), ...Array(10).fill(95), ...ramp(95, 165, 8), ...Array(6).fill(170)];
+  assert.equal(walkReps(def, [...start, ...half(), ...half(), ...half()]), 0);
+  const bentBack = () => [...ramp(130, 45, 10), ...Array(12).fill(40), ...ramp(45, 130, 10), ...Array(8).fill(130)];
+  assert.equal(walkReps(def, [...start, ...ramp(170, 130, 4), ...bentBack(), ...bentBack(), ...bentBack()]), 0);
+  // Phase-1 hover at 90 never advances.
+  assert.equal(walkReps(def, [...start, ...Array(60).fill(90)]), 0);
+});
+
+test('CURL N4b: far-arm-only curls (alternating) do not count for the near arm', () => {
+  const def = dark.PHASES.CURL;
+  // The hidden arm curls while the near arm stays long: angle stays ~170.
+  const frames = [];
+  for (let k = 0; k < 40; k++) frames.push(curlFrame(170, { junk: (k % 5) * 0.03 }));
+  let idx = 0, n = 0, reps = 0;
+  for (const lm of frames) {
+    const s = cv.computeMatchScore(def.checkAngles(lm), def.phases[idx].joints);
+    n = s >= 70 ? n + 1 : Math.max(0, n - 1);
+    if (n >= 5) { idx++; n = 0; if (idx >= def.phases.length) { reps++; idx = 1; } }
+  }
+  assert.equal(reps, 0);
+  assert.equal(idx, 1, 'stuck waiting for the near-arm lift');
+});
+
+test('CURL N5: swing, lean, hover each fire their cue; clean curl is silent', () => {
+  const obs = dark.FAULTS.CURL;
+  const gs = { mode: 'USER_FOLLOWS', isHoldExercise: false, repCount: 0, currentPhaseIndex: 1 };
+  const fresh = () => { obs.resetSet(); obs._lastAt = {}; };
+
+  const swing = curlFrame(160, { flex: 45 });
+  fresh();
+  assert.deepEqual(runFaults(obs, [swing, swing, swing, swing], gs), ['curl_elbows_still']);
+
+  const upright = curlFrame(160), lean = curlFrame(160, { tilt: 20 });
+  fresh();
+  assert.deepEqual(runFaults(obs, [upright, lean, lean, lean, lean], gs), ['curl_stand_tall']);
+  // Leaning back the other way is also caught.
+  const leanBack = curlFrame(160, { tilt: -20 });
+  fresh();
+  assert.deepEqual(runFaults(obs, [upright, leanBack, leanBack, leanBack, leanBack], gs),
+                   ['curl_stand_tall']);
+
+  const hover = curlFrame(90);
+  fresh();
+  assert.deepEqual(runFaults(obs, Array(9).fill(hover), gs), ['curl_full_range']);
+  // Hover shorter than 1.5 s, or outside the lift phase, stays silent.
+  fresh();
+  assert.deepEqual(runFaults(obs, Array(7).fill(hover), gs), []);
+  fresh();
+  assert.deepEqual(runFaults(obs, Array(12).fill(hover), { ...gs, currentPhaseIndex: 3 }), []);
+  // Hover is a USER_FOLLOWS cue only (the ghost is still leading).
+  fresh();
+  assert.deepEqual(runFaults(obs, Array(12).fill(hover), { ...gs, mode: 'GHOST_LEADS' }), []);
+
+  // Clean strict curl (165 -> 45 -> 165, 200 ms a frame) is silent, even in phase 1.
+  const clean = [165, 150, 135, 120, 105, 90, 75, 60, 45, 40, 40, 45, 60, 75, 90, 105,
+                 120, 135, 150, 165, 170].map((e) => curlFrame(e));
+  fresh();
+  assert.deepEqual(runFaults(obs, clean, gs), []);
+  // Small natural movement (flex 20, tilt 8) is still clean.
+  fresh();
+  assert.deepEqual(runFaults(obs, clean.map((_, i) =>
+    curlFrame(165 - i * 5, { flex: 20, tilt: i ? 8 : 0 })), gs), []);
+  // Faults stay silent while waiting / in the demo.
+  fresh();
+  assert.deepEqual(runFaults(obs, [swing, swing, swing, swing], { ...gs, mode: 'WAITING' }), []);
+
+  // resetSet clears the lean baseline: a new set that starts leaning is the
+  // new baseline and does not fire.
+  fresh();
+  assert.deepEqual(runFaults(obs, [lean, lean, lean, lean, lean], gs), []);
+});
+
+test('CURL N6: curlGhost rotates only the forearms to the asked angle', () => {
+  const base = curlFrame(175);
+  // Give the far arm a real pose so both arms are checked.
+  base[L.rightShoulder] = P(0.51, 0.30); base[L.rightElbow] = P(0.51, 0.44);
+  base[L.rightWrist] = P(0.52, 0.56);    base[L.rightHip] = P(0.51, 0.55);
+  const fixed = [L.leftShoulder, L.rightShoulder, L.leftElbow, L.rightElbow,
+                 L.leftHip, L.rightHip, L.leftKnee, L.rightKnee, L.leftAnkle, L.rightAnkle, L.nose];
+  for (const d of [165, 90, 45]) {
+    const g = dark.curlGhost(base, d);
+    assert.notEqual(g, base, 'returns a copy');
+    for (const [s, e, w] of [[L.leftShoulder, L.leftElbow, L.leftWrist],
+                             [L.rightShoulder, L.rightElbow, L.rightWrist]]) {
+      const a = cv.calcAngle(g[s], g[e], g[w]);
+      assert.ok(Math.abs(a - d) <= 1, `arm ${s} at ${d}: ${a}`);
+    }
+    for (const i of fixed) {
+      assert.equal(g[i].x, base[i].x, `x moved ${i}`);
+      assert.equal(g[i].y, base[i].y, `y moved ${i}`);
+    }
+    if (d === 90) {
+      assert.ok(g[L.leftWrist].x > g[L.leftElbow].x, 'wrist on the nose side');
+      assert.ok(g[L.rightWrist].x > g[L.rightElbow].x, 'far wrist on the nose side');
+    }
+  }
+  // Facing the other way: the forearm swings to -x.
+  const mirror = base.map((p) => P(1 - p.x, p.y, p.visibility));
+  const gm = dark.curlGhost(mirror, 90);
+  assert.ok(gm[L.leftWrist].x < gm[L.leftElbow].x);
+  // Input is not mutated.
+  assert.ok(Math.abs(cv.calcAngle(base[L.leftShoulder], base[L.leftElbow], base[L.leftWrist]) - 175) < 0.5);
+});
+
+test('CURL N7: the 11 dark coaches are still there, nothing else added', () => {
+  assert.deepEqual(Object.keys(dark.PHASES).filter((k) => k !== 'CURL'), CURL_DARK_KEYS);
+  assert.deepEqual(Object.keys(dark.FAULTS).filter((k) => k !== 'CURL'), CURL_DARK_KEYS);
+  for (const id of ['curl_elbows_still', 'curl_stand_tall', 'curl_full_range']) {
+    assert.ok(dark.CUE_IDS.includes(id), id);
+  }
+});
+
 // [VYAYAM-DARK-TESTS-END]

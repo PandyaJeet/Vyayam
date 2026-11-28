@@ -11,6 +11,12 @@
  *     references any *_rx key.
  *   - flip day per exercise = set v2_ghost_supported True. One line.
  *
+ * 2026-11: one LIVE, non-`_rx` coach also lives here: CURL (registry key
+ * bicep_curls, catalog ex_bicep_curl, v2_ghost_supported True). Side view,
+ * near arm, both arms together. It adds curlGhost() for the template's
+ * ghost figure (the generic elbow ghost is a push-up drop). The eleven
+ * `_rx` coaches above stay dark and unchanged.
+ *
  * This file follows the cv_core/coach_core UMD pattern so node can unit-test
  * every checkAngles + fault observer (coach_dark.test.mjs). It depends ONLY
  * on VyayamCV. The execute template:
@@ -691,12 +697,136 @@
   FAULTS.ROW_BAND_RX.resetSet = function () { _rowBase.v = null; _rowReset(); };
   CUE_IDS.push('row_sit_tall');
 
+  // ── bicep_curls — LIVE camera coach (js_type CURL), side view ───────────
+  // Primary: near-arm elbow angle (shoulder-elbow-wrist) cycling 165 -> 45,
+  // clamped to [45, 165] so an over-curl or a locked elbow still matches.
+  // Near arm = higher mean visibility of shoulder, elbow, wrist; from the
+  // side the far arm is hidden, so it is never averaged in. Faults: elbow
+  // swinging forward, body leaning, hovering at a half curl.
+  function _clamp(v, lo, hi) {
+    return Math.max(lo, Math.min(hi, v));
+  }
+  function _curlArm(lm) {
+    var lv = (vis(lm[LM.leftShoulder]) + vis(lm[LM.leftElbow]) + vis(lm[LM.leftWrist])) / 3;
+    var rv = (vis(lm[LM.rightShoulder]) + vis(lm[LM.rightElbow]) + vis(lm[LM.rightWrist])) / 3;
+    var left = lv >= rv;
+    var S = lm[left ? LM.leftShoulder : LM.rightShoulder];
+    var E = lm[left ? LM.leftElbow : LM.rightElbow];
+    var W = lm[left ? LM.leftWrist : LM.rightWrist];
+    var H = lm[left ? LM.leftHip : LM.rightHip];
+    return { left: left, elbow: calcAngle(S, E, W), flex: calcAngle(H, S, E), vis: left ? lv : rv };
+  }
+  // Hip -> shoulder line from vertical, degrees, signed (+ = shoulder ahead
+  // of the hip in +x).
+  function _torsoTilt(lm, left) {
+    var S = lm[left ? LM.leftShoulder : LM.rightShoulder];
+    var H = lm[left ? LM.leftHip : LM.rightHip];
+    return Math.atan2(S.x - H.x, H.y - S.y) * 180 / Math.PI;
+  }
+  // Ghost figure: copy of lm with each forearm rotated about its elbow so
+  // calcAngle(S, E, W') === elbowDeg. Nothing but the wrists moves. The
+  // forearm swings toward the side the nose is on (the way the user faces).
+  function curlGhost(lm, elbowDeg) {
+    var out = [];
+    for (var i = 0; i < lm.length; i++) {
+      var p = lm[i] || { x: 0, y: 0 };
+      out.push({ x: p.x, y: p.y, z: p.z || 0, visibility: p.visibility });
+    }
+    var nose = lm[LM.nose], ls = lm[LM.leftShoulder], rs = lm[LM.rightShoulder];
+    if (!ls || !rs) return out;
+    var s = (nose && nose.x >= (ls.x + rs.x) / 2) ? 1 : -1;
+    var th = s * elbowDeg * Math.PI / 180;
+    var c = Math.cos(th), sn = Math.sin(th);
+    var arms = [[LM.leftShoulder, LM.leftElbow, LM.leftWrist],
+                [LM.rightShoulder, LM.rightElbow, LM.rightWrist]];
+    for (var a = 0; a < arms.length; a++) {
+      var S = lm[arms[a][0]], E = lm[arms[a][1]], W = lm[arms[a][2]];
+      if (!S || !E) continue;
+      var ux = S.x - E.x, uy = S.y - E.y;
+      var upper = Math.sqrt(ux * ux + uy * uy);
+      if (upper < 1e-6) continue;
+      ux /= upper; uy /= upper;
+      var f = W ? Math.sqrt((W.x - E.x) * (W.x - E.x) + (W.y - E.y) * (W.y - E.y)) : 0;
+      if (f < 1e-6) f = 0.8 * upper;
+      out[arms[a][2]].x = E.x + f * (ux * c - uy * sn);
+      out[arms[a][2]].y = E.y + f * (ux * sn + uy * c);
+    }
+    return out;
+  }
+
+  PHASES.CURL = {
+    name: 'Bicep Curl',
+    bodyOrientation: 'standing',
+    cameraPosition: { view: 'side', instruction: 'Place camera to your side at waist height. Step back so your whole body, head to feet, is visible.' },
+    setupCues: [
+      'Stand tall, side-on to the camera, a dumbbell in each hand.',
+      'Arms long, palms facing forward.',
+      'Elbows pinned to your sides.',
+      'Curl both arms up together, then lower slowly.',
+    ],
+    commonMistake: 'Most common mistake: swinging the weight. Keep your elbows by your sides and your body still.',
+    stanceCheck: null,
+    phases: [
+      { name: 'start', duration: 0,    joints: { elbow: 165 }, voice: 'Arms long, elbows by your sides' },
+      { name: 'lift',  duration: 1500, joints: { elbow: 45 },  voice: 'Curl up' },
+      { name: 'hold',  duration: 600,  joints: { elbow: 45 },  voice: 'Squeeze' },
+      { name: 'lower', duration: 2500, joints: { elbow: 165 }, voice: 'Lower slowly, all the way down' },
+    ],
+    checkAngles: function (lm) { return { elbow: _clamp(_curlArm(lm).elbow, 45, 165) }; },
+    cues: { elbow: 'Curl all the way up' },
+    forceArrows: [],
+  };
+
+  var _curlBase = { v: null };
+  FAULTS.CURL = makeFaults([
+    {
+      // Elbow swinging forward: upper arm opens >35 deg from the trunk.
+      cue: 'curl_elbows_still', modes: ['USER_FOLLOWS', 'GHOST_LEADS'], minMs: 400,
+      test: function (lm) {
+        var arm = _curlArm(lm);
+        var l = arm.left;
+        if (!allVisible(lm, [l ? LM.leftHip : LM.rightHip, l ? LM.leftShoulder : LM.rightShoulder,
+                             l ? LM.leftElbow : LM.rightElbow])) return null;
+        if (arm.flex <= 35) return null;
+        return armSegs(l);
+      },
+    },
+    {
+      // Lean (back or forward) to cheat the weight up: trunk tilt moves
+      // >12 deg from its per-set baseline.
+      cue: 'curl_stand_tall', modes: ['USER_FOLLOWS', 'GHOST_LEADS'], minMs: 400,
+      test: function (lm) {
+        var l = _curlArm(lm).left;
+        if (!allVisible(lm, [l ? LM.leftShoulder : LM.rightShoulder, l ? LM.leftHip : LM.rightHip])) return null;
+        var tilt = _torsoTilt(lm, l);
+        if (_curlBase.v === null) { _curlBase.v = tilt; return null; }
+        if (Math.abs(tilt - _curlBase.v) <= 12) return null;
+        return TRUNK_SEGS;
+      },
+    },
+    {
+      // Hovering at a half curl during the lift phase.
+      cue: 'curl_full_range', modes: ['USER_FOLLOWS'], minMs: 1500,
+      test: function (lm, gs) {
+        if (gs.currentPhaseIndex !== 1) return null;
+        var arm = _curlArm(lm);
+        if (!(arm.elbow > 70 && arm.elbow < 110)) return null;
+        return armSegs(arm.left);
+      },
+    },
+  ]);
+  // Baseline resets with the observer (new set = new stance).
+  var _curlReset = FAULTS.CURL.resetSet.bind(FAULTS.CURL);
+  FAULTS.CURL.resetSet = function () { _curlBase.v = null; _curlReset(); };
+  CUE_IDS.push('curl_elbows_still', 'curl_stand_tall', 'curl_full_range');
+
   // [VYAYAM-DARK-DEFS-END]
 
   return {
     PHASES: PHASES,
     FAULTS: FAULTS,
     CUE_IDS: CUE_IDS,
+    curlGhost: curlGhost,
     makeFaults: makeFaults,   // exported for node tests
     install: function (registry) {
       for (var key in PHASES) {
